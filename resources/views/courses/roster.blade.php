@@ -1,0 +1,134 @@
+<x-layouts.dashboard>
+    <x-slot name="title">{{ __('Roster') }} - {{ $course->title }}</x-slot>
+
+    <div class="mb-6">
+        <div class="flex items-center justify-between">
+            <div>
+                <h1 class="text-2xl font-bold text-white">{{ $course->title }}</h1>
+                <p class="text-gray-400 text-sm mt-1">{{ __('Course roster') }} &mdash; {{ $course->students->count() }} {{ __('enrolled') }}</p>
+            </div>
+            <div class="flex items-center gap-3">
+                <a href="{{ route('courses.show', $course) }}" class="text-sm text-brand-400 hover:text-brand-300 transition-colors">{{ __('Back to Course') }} &rarr;</a>
+            </div>
+        </div>
+    </div>
+
+    {{-- Primary Instructor --}}
+    <div class="bg-surface-800 border border-surface-700 rounded-xl p-5 mb-6">
+        <h3 class="text-sm font-semibold text-white mb-3">{{ __('Primary Instructor') }}</h3>
+        <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-full bg-brand-500/20 flex items-center justify-center text-white text-sm font-bold shrink-0">
+                {{ strtoupper(substr($course->instructor->name ?? '?', 0, 1)) }}
+            </div>
+            <div>
+                <p class="text-sm font-medium text-white">{{ $course->instructor->name ?? __('Unknown') }}</p>
+                <p class="text-xs text-gray-500">{{ $course->instructor->email ?? '' }}</p>
+            </div>
+        </div>
+    </div>
+
+    {{-- Co-Instructors --}}
+    <div class="bg-surface-800 border border-surface-700 rounded-xl p-5 mb-6">
+        <h3 class="text-sm font-semibold text-white mb-3">{{ __('Co-Instructors') }}</h3>
+        @if($course->coInstructors->isNotEmpty())
+            <ul class="space-y-2 mb-4">
+                @foreach($course->coInstructors as $coInstructor)
+                    <li class="flex items-center justify-between py-2 px-3 bg-surface-700/50 rounded-lg">
+                        <div class="flex items-center gap-2">
+                            <div class="w-7 h-7 rounded-full bg-brand-500/20 flex items-center justify-center text-white text-[10px] font-bold">
+                                {{ strtoupper(substr($coInstructor->name, 0, 1)) }}
+                            </div>
+                            <span class="text-sm text-gray-300">{{ $coInstructor->name }}</span>
+                            <span class="text-xs text-gray-500">{{ $coInstructor->email }}</span>
+                        </div>
+                        @if($course->instructor_id === auth()->id() || auth()->user()->isAdmin())
+                            <form method="POST" action="{{ route('courses.roster.co-instructor.remove', [$course, $coInstructor]) }}" class="inline">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="text-xs text-red-400 hover:text-red-300 transition-colors" onclick="return confirm('{{ __('Remove this co-instructor?') }}')">{{ __('Remove') }}</button>
+                            </form>
+                        @endif
+                    </li>
+                @endforeach
+            </ul>
+        @else
+            <p class="text-sm text-gray-500 mb-4">{{ __('No co-instructors assigned.') }}</p>
+        @endif
+
+        <h4 class="text-xs font-medium text-gray-400 uppercase tracking-wider mb-2">{{ __('Add Co-Instructor') }}</h4>
+        <form method="POST" action="{{ route('courses.roster.co-instructor.add', $course) }}" class="flex gap-2">
+            @csrf
+            <input type="email" name="email" placeholder="{{ __('Instructor email...') }}" required
+                   class="flex-1 bg-surface-700 border border-surface-600 rounded-lg px-3 py-2 text-sm text-gray-200 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-brand-500/50 focus:border-brand-500/50 transition-colors">
+            <button type="submit" class="text-sm bg-brand-500 hover:bg-brand-600 text-white font-medium px-4 py-2 rounded-lg transition-colors shrink-0">{{ __('Add') }}</button>
+        </form>
+    </div>
+
+    {{-- Add Student --}}
+    @if($course->instructor_id === auth()->id() || auth()->user()->isAdmin())
+    <div class="bg-surface-800 border border-surface-700 rounded-xl p-5 mb-6">
+        <h3 class="text-sm font-semibold text-white mb-3">{{ __('Add Student') }}</h3>
+        <form method="POST" action="{{ route('courses.roster.add', $course) }}" class="flex gap-2">
+            @csrf
+            <input type="email" name="email" placeholder="{{ __('Student email...') }}" required
+                   class="flex-1 bg-surface-700 border border-surface-600 rounded-lg px-3 py-2 text-sm text-gray-200 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-brand-500/50 focus:border-brand-500/50 transition-colors">
+            <button type="submit" class="text-sm bg-brand-500 hover:bg-brand-600 text-white font-medium px-4 py-2 rounded-lg transition-colors shrink-0">{{ __('Add Student') }}</button>
+        </form>
+        <p class="text-xs text-gray-500 mt-2">{{ __('Enter the email address of an existing student account.') }}</p>
+    </div>
+    @endif
+
+    {{-- Enrolled Students --}}
+    <div class="bg-surface-800 border border-surface-700 rounded-xl overflow-hidden">
+        <div class="px-5 py-4 border-b border-surface-700">
+            <h3 class="text-sm font-semibold text-white">{{ __('Enrolled Students') }}</h3>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="w-full">
+                <thead>
+                    <tr class="border-b border-surface-700">
+                        <th class="text-left px-5 py-3 text-[11px] font-semibold uppercase tracking-wider text-gray-500">{{ __('Name') }}</th>
+                        <th class="text-left px-5 py-3 text-[11px] font-semibold uppercase tracking-wider text-gray-500">{{ __('Email') }}</th>
+                        <th class="text-left px-5 py-3 text-[11px] font-semibold uppercase tracking-wider text-gray-500">{{ __('Program') }}</th>
+                        <th class="text-left px-5 py-3 text-[11px] font-semibold uppercase tracking-wider text-gray-500">{{ __('Enrolled') }}</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-surface-700">
+                    @forelse($course->students as $student)
+                        <tr class="hover:bg-surface-700/50 transition-colors">
+                            <td class="px-5 py-3.5">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-8 h-8 rounded-full bg-brand-500/20 flex items-center justify-center text-white text-xs font-bold shrink-0">
+                                        {{ strtoupper(substr($student->name ?? '?', 0, 1)) }}
+                                    </div>
+                                    <span class="text-sm font-medium text-white">{{ $student->name ?? __('Unknown') }}</span>
+                                </div>
+                            </td>
+                            <td class="px-5 py-3.5 text-sm text-gray-400">{{ $student->email ?? '—' }}</td>
+                            <td class="px-5 py-3.5">
+                                @if($student->program ?? false)
+                                    <span class="text-[11px] font-medium px-2 py-0.5 rounded-full bg-brand-500/10 text-brand-400">{{ $student->program }}</span>
+                                @else
+                                    <span class="text-sm text-gray-600">—</span>
+                                @endif
+                            </td>
+                            <td class="px-5 py-3.5 text-sm text-gray-400">
+                                {{ $student->pivot->enrolled_at ? \Carbon\Carbon::parse($student->pivot->enrolled_at)->format('M d, Y') : '—' }}
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="4" class="px-5 py-12 text-center">
+                                <div class="w-12 h-12 mx-auto mb-3 rounded-xl bg-surface-700 flex items-center justify-center">
+                                    <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197"/></svg>
+                                </div>
+                                <p class="text-gray-400 text-sm">{{ __('No students enrolled yet.') }}</p>
+                                <p class="text-gray-500 text-xs mt-1">{{ __('Students will appear here once they enroll.') }}</p>
+                            </td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+    </div>
+</x-layouts.dashboard>

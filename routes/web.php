@@ -1,0 +1,280 @@
+<?php
+use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\Auth\RegisterController;
+use App\Http\Controllers\Auth\ForgotPasswordController;
+use App\Http\Controllers\Auth\GoogleController;
+use App\Http\Controllers\Api\LiveKitController;
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\CourseController;
+use App\Http\Controllers\ModuleController;
+use App\Http\Controllers\LessonController;
+use App\Http\Controllers\AssignmentController;
+use App\Http\Controllers\SubmissionController;
+use App\Http\Controllers\GradingController;
+use App\Http\Controllers\QuizController;
+use App\Http\Controllers\RubricController;
+use App\Http\Controllers\CourseFileController;
+use App\Http\Controllers\DiscussionController;
+use App\Http\Controllers\TopicController;
+use App\Http\Controllers\LiveSessionController;
+use App\Http\Controllers\PortfolioController;
+use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\ViewController;
+use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\RosterController;
+use App\Http\Controllers\GroupController;
+use App\Http\Controllers\GradeRuleController;
+use App\Http\Controllers\Admin\AnalyticsController;
+use App\Http\Controllers\Admin\AdminCourseController;
+use App\Http\Controllers\Admin\ProgramController;
+use App\Http\Controllers\LandingController;
+
+Route::get('/', [LandingController::class, 'index'])->name('landing');
+
+Route::middleware('guest')->group(function () {
+    Route::get('/login', [LoginController::class, 'showForm'])->name('login');
+    Route::post('/login', [LoginController::class, 'login']);
+    Route::get('/signup', [RegisterController::class, 'choose'])->name('signup');
+    Route::get('/signup/student', [RegisterController::class, 'studentForm'])->name('signup.student');
+    Route::post('/signup/student', [RegisterController::class, 'registerStudent'])->name('signup.student.store');
+    Route::get('/signup/instructor', [RegisterController::class, 'instructorForm'])->name('signup.instructor');
+    Route::post('/signup/instructor', [RegisterController::class, 'registerInstructor'])->name('signup.instructor.store');
+    Route::get('/forgot-password', [ForgotPasswordController::class, 'showForm'])->name('password.request');
+    Route::post('/forgot-password', [ForgotPasswordController::class, 'send'])->name('password.email');
+    Route::get('/reset-password/{token}', [ForgotPasswordController::class, 'showResetForm'])->name('password.reset');
+    Route::post('/reset-password', [ForgotPasswordController::class, 'reset'])->name('password.update');
+
+    Route::get('/auth/google', [GoogleController::class, 'redirect'])->name('auth.google');
+    Route::get('/auth/google/callback', [GoogleController::class, 'callback'])->name('auth.google.callback');
+});
+
+Route::post('/logout', [LoginController::class, 'logout'])->name('logout')->middleware('auth');
+Route::post('/locale', function(\Illuminate\Http\Request $req) {
+    $req->validate(['locale' => 'required|in:en,ar']);
+    session(['locale' => $req->locale]);
+    if (auth()->check()) {
+        auth()->user()->update(['locale' => $req->locale]);
+    }
+    app()->setLocale($req->locale);
+    return back();
+})->name('locale.switch');
+
+Route::middleware('auth')->group(function () {
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::post('/api/livekit-token', [LiveKitController::class, 'token'])->name('api.livekit.token');
+    Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
+    Route::post('/notifications/read-all', [NotificationController::class, 'markAllRead'])->name('notifications.read-all');
+    Route::post('/notifications/{notification}/read', [NotificationController::class, 'markRead'])->name('notifications.read');
+    Route::get('/portfolio', [PortfolioController::class, 'edit'])->name('portfolio.edit');
+    Route::post('/portfolio', [PortfolioController::class, 'store'])->name('portfolio.store');
+    Route::delete('/portfolio/{item}', [PortfolioController::class, 'destroy'])->name('portfolio.destroy');
+    Route::get('/portfolio/{user}', [PortfolioController::class, 'show'])->name('portfolio.show');
+    Route::get('/assignments', [AssignmentController::class, 'studentIndex'])->name('assignments.index');
+    Route::get('/live', [LiveSessionController::class, 'index'])->name('live.index');
+    Route::get('/live/{session}', [LiveSessionController::class, 'showStandalone'])->name('live.show');
+    Route::post('/live', [LiveSessionController::class, 'storeStandalone'])->name('live.store')->middleware('role:instructor,admin');
+
+    Route::post('/view/student', [ViewController::class, 'student'])->name('view.student');
+    Route::post('/view/instructor', [ViewController::class, 'instructor'])->name('view.instructor');
+    Route::post('/view/exit', [ViewController::class, 'exit'])->name('view.exit');
+
+Route::post('/theme', [ViewController::class, 'theme'])->name('theme.switch');
+
+    Route::middleware('role:instructor,admin')->group(function () {
+        Route::get('/grading', [GradingController::class, 'index'])->name('grading.index');
+        Route::get('/grading/{submission}', [GradingController::class, 'show'])->name('grading.show');
+        Route::post('/grading/{submission}', [GradingController::class, 'store'])->name('grading.store');
+        Route::post('/plagiarism/check/{submission}', [SubmissionController::class, 'checkPlagiarism'])->name('plagiarism.check');
+    });
+
+    Route::get('/courses', [CourseController::class, 'index'])->name('courses.index');
+    Route::get('/courses/catalog', [CourseController::class, 'catalog'])->name('courses.catalog');
+    Route::middleware('role:admin')->group(function () {
+        Route::get('/courses/create', [CourseController::class, 'create'])->name('courses.create');
+        Route::post('/courses', [CourseController::class, 'store'])->name('courses.store');
+    });
+
+    Route::prefix('/courses/{course}')->name('courses.')->group(function () {
+        Route::get('/', [CourseController::class, 'show'])->name('show');
+        Route::post('/enroll', [CourseController::class, 'enroll'])->name('enroll');
+        Route::delete('/enroll', [CourseController::class, 'unenroll'])->name('unenroll');
+        Route::get('/progress', [CourseController::class, 'progress'])->name('progress');
+        Route::get('/roster', [RosterController::class, 'index'])->name('roster')->middleware('role:instructor,admin');
+        Route::middleware('role:instructor,admin')->group(function () {
+            Route::get('/groups', [GroupController::class, 'index'])->name('groups.index');
+            Route::post('/groups', [GroupController::class, 'store'])->name('groups.store');
+            Route::put('/groups/{group}', [GroupController::class, 'update'])->name('groups.update');
+            Route::delete('/groups/{group}', [GroupController::class, 'destroy'])->name('groups.destroy');
+            Route::post('/groups/{group}/students', [GroupController::class, 'addStudent'])->name('groups.students.add');
+            Route::delete('/groups/{group}/students/{student}', [GroupController::class, 'removeStudent'])->name('groups.students.remove');
+            Route::get('/grade-rules', [GradeRuleController::class, 'index'])->name('grade-rules.index');
+            Route::post('/grade-rules', [GradeRuleController::class, 'update'])->name('grade-rules.update');
+            Route::get('/edit', [CourseController::class, 'edit'])->name('edit');
+            Route::put('/', [CourseController::class, 'update'])->name('update');
+            Route::delete('/', [CourseController::class, 'destroy'])->name('destroy');
+            Route::post('/duplicate', [CourseController::class, 'duplicate'])->name('duplicate');
+            Route::post('/roster/co-instructor', [RosterController::class, 'addCoInstructor'])->name('roster.co-instructor.add');
+            Route::delete('/roster/co-instructor/{user}', [RosterController::class, 'removeCoInstructor'])->name('roster.co-instructor.remove');
+            Route::post('/roster/add-student', [CourseController::class, 'addStudent'])->name('roster.add');
+            Route::post('/roster/bulk', [CourseController::class, 'bulkEnrollCSV'])->name('roster.bulk');
+        });
+        Route::prefix('content')->name('content.')->group(function () {
+            Route::get('/', [ModuleController::class, 'index'])->name('index');
+            Route::middleware('role:instructor,admin')->group(function () {
+                Route::get('/create', [ModuleController::class, 'create'])->name('create');
+                Route::post('/', [ModuleController::class, 'store'])->name('store');
+                Route::get('/{module}/edit', [ModuleController::class, 'edit'])->name('edit');
+                Route::put('/{module}', [ModuleController::class, 'update'])->name('update');
+                Route::delete('/{module}', [ModuleController::class, 'destroy'])->name('destroy');
+                Route::get('/lesson/create', [LessonController::class, 'create'])->name('lesson.create');
+                Route::post('/lesson', [LessonController::class, 'store'])->name('lesson.store');
+                Route::get('/lesson/{lesson}/edit', [LessonController::class, 'edit'])->name('lesson.edit');
+                Route::put('/lesson/{lesson}', [LessonController::class, 'update'])->name('lesson.update');
+                Route::delete('/lesson/{lesson}', [LessonController::class, 'destroy'])->name('lesson.destroy');
+                Route::prefix('/lesson/{lesson}/topics')->name('topics.')->group(function () {
+                    Route::get('/create', [TopicController::class, 'create'])->name('create');
+                    Route::post('/', [TopicController::class, 'store'])->name('store');
+                    Route::get('/{topic}/edit', [TopicController::class, 'edit'])->name('edit');
+                    Route::put('/{topic}', [TopicController::class, 'update'])->name('update');
+                    Route::delete('/{topic}', [TopicController::class, 'destroy'])->name('destroy');
+                });
+            });
+            Route::get('/lesson/{lesson}', [LessonController::class, 'show'])->name('lesson.show');
+            Route::post('/lesson/{lesson}/complete', [LessonController::class, 'complete'])->name('lesson.complete')->middleware('role:student');
+        });
+        Route::prefix('assignments')->name('assignments.')->group(function () {
+            Route::get('/', [AssignmentController::class, 'index'])->name('index');
+            Route::middleware('role:instructor,admin')->group(function () {
+                Route::get('/create', [AssignmentController::class, 'create'])->name('create');
+                Route::post('/', [AssignmentController::class, 'store'])->name('store');
+            });
+            Route::get('/{assignment}', [AssignmentController::class, 'show'])->name('show');
+            Route::post('/{assignment}/submit', [SubmissionController::class, 'store'])->name('submit');
+            Route::middleware('role:instructor,admin')->group(function () {
+                Route::get('/{assignment}/edit', [AssignmentController::class, 'edit'])->name('edit');
+                Route::put('/{assignment}', [AssignmentController::class, 'update'])->name('update');
+                Route::delete('/{assignment}', [AssignmentController::class, 'destroy'])->name('destroy');
+                Route::get('/{assignment}/gradebook', [GradingController::class, 'gradebook'])->name('gradebook');
+                Route::put('/{assignment}/gradebook/{submission}', [AssignmentController::class, 'updateGrade'])->name('gradebook.update');
+                Route::post('/{assignment}/grade/{student}', [GradingController::class, 'directGrade'])->name('direct-grade');
+            });
+        });
+        Route::prefix('question-bank')->name('question-bank.')->middleware('role:instructor,admin')->group(function () {
+            Route::get('/', [\App\Http\Controllers\QuestionBankController::class, 'index'])->name('index');
+            Route::get('/create', [\App\Http\Controllers\QuestionBankController::class, 'create'])->name('create');
+            Route::post('/', [\App\Http\Controllers\QuestionBankController::class, 'store'])->name('store');
+            Route::get('/{questionBankItem}/edit', [\App\Http\Controllers\QuestionBankController::class, 'edit'])->name('edit');
+            Route::put('/{questionBankItem}', [\App\Http\Controllers\QuestionBankController::class, 'update'])->name('update');
+            Route::delete('/{questionBankItem}', [\App\Http\Controllers\QuestionBankController::class, 'destroy'])->name('destroy');
+        });
+        Route::prefix('quizzes')->name('quizzes.')->group(function () {
+            Route::get('/', [QuizController::class, 'index'])->name('index');
+            Route::middleware('role:instructor,admin')->group(function () {
+                Route::get('/create', [QuizController::class, 'create'])->name('create');
+                Route::post('/', [QuizController::class, 'store'])->name('store');
+            });
+            Route::get('/{quiz}', [QuizController::class, 'show'])->name('show');
+            Route::get('/{quiz}/take', [QuizController::class, 'take'])->name('take');
+            Route::post('/{quiz}/attempt', [QuizController::class, 'attempt'])->name('attempt');
+            Route::get('/{quiz}/results', [QuizController::class, 'results'])->name('results');
+            Route::middleware('role:instructor,admin')->group(function () {
+                Route::get('/{quiz}/edit', [QuizController::class, 'edit'])->name('edit');
+                Route::put('/{quiz}', [QuizController::class, 'update'])->name('update');
+                Route::delete('/{quiz}', [QuizController::class, 'destroy'])->name('destroy');
+                Route::post('/{quiz}/release/{attempt}', [QuizController::class, 'releaseGrade'])->name('release');
+            });
+        });
+        Route::prefix('discussions')->name('discussions.')->group(function () {
+            Route::get('/', [DiscussionController::class, 'index'])->name('index');
+            Route::get('/create', [DiscussionController::class, 'create'])->name('create');
+            Route::post('/', [DiscussionController::class, 'store'])->name('store');
+            Route::get('/{discussion}', [DiscussionController::class, 'show'])->name('show');
+            Route::post('/{discussion}/reply', [DiscussionController::class, 'reply'])->name('reply');
+            Route::middleware('role:instructor,admin')->group(function () {
+                Route::post('/{discussion}/pin', [DiscussionController::class, 'pin'])->name('pin');
+                Route::post('/{discussion}/lock', [DiscussionController::class, 'lock'])->name('lock');
+            });
+        });
+        Route::prefix('live')->name('live.')->group(function () {
+            Route::get('/', [LiveSessionController::class, 'courseIndex'])->name('index');
+            Route::middleware('role:instructor,admin')->group(function () {
+                Route::get('/create', [LiveSessionController::class, 'create'])->name('create');
+                Route::post('/', [LiveSessionController::class, 'store'])->name('store');
+            });
+            Route::get('/{session}', [LiveSessionController::class, 'show'])->name('show');
+        });
+        Route::middleware('role:instructor,admin')->prefix('attendance')->name('attendance.')->group(function () {
+            Route::get('/', [\App\Http\Controllers\AttendanceController::class, 'index'])->name('index');
+            Route::post('/', [\App\Http\Controllers\AttendanceController::class, 'store'])->name('store');
+            Route::post('/bulk', [\App\Http\Controllers\AttendanceController::class, 'bulkStore'])->name('bulk');
+        });
+
+        Route::middleware('role:instructor,admin')->prefix('rubrics')->name('rubrics.')->group(function () {
+            Route::get('/', [RubricController::class, 'index'])->name('index');
+            Route::get('/create', [RubricController::class, 'create'])->name('create');
+            Route::post('/', [RubricController::class, 'store'])->name('store');
+            Route::get('/{rubric}/edit', [RubricController::class, 'edit'])->name('edit');
+            Route::put('/{rubric}', [RubricController::class, 'update'])->name('update');
+            Route::post('/import', [RubricController::class, 'importXml'])->name('import');
+            Route::delete('/{rubric}', [RubricController::class, 'destroy'])->name('destroy');
+        });
+
+        Route::middleware('role:instructor,admin')->prefix('files')->name('files.')->group(function () {
+            Route::get('/', [CourseFileController::class, 'index'])->name('index');
+            Route::post('/', [CourseFileController::class, 'store'])->name('store');
+            Route::delete('/{file}', [CourseFileController::class, 'destroy'])->name('destroy');
+        });
+    });
+
+    Route::get('/roster', [RosterController::class, 'globalIndex'])->name('roster.index')->middleware('role:instructor,admin');
+
+    Route::middleware('role:admin')->prefix('admin')->name('admin.')->group(function () {
+
+        // ── Users ─────────────────────────────────────────────────────────────
+        Route::get('/users',                                [UserController::class, 'index'])->name('users.index');
+        Route::get('/users/{user}',                         [UserController::class, 'show'])->name('users.show');
+        Route::post('/users',                               [UserController::class, 'store'])->name('users.store');
+        Route::put('/users/{user}',                         [UserController::class, 'update'])->name('users.update');
+        Route::put('/users/{user}/role',                    [UserController::class, 'updateRole'])->name('users.role');
+        Route::post('/users/{user}/password',               [UserController::class, 'updatePassword'])->name('users.password');
+        Route::post('/users/{user}/verify',                 [UserController::class, 'verifyInstructor'])->name('users.verify');
+        Route::post('/users/{user}/revoke',                 [UserController::class, 'revokeVerification'])->name('users.revoke');
+        Route::post('/users/invite',                        [UserController::class, 'invite'])->name('users.invite');
+        Route::post('/users/{user}/enroll',                 [UserController::class, 'enrollInCourse'])->name('users.enroll');
+        Route::delete('/users/{user}/enroll/{course}',      [UserController::class, 'unenrollFromCourse'])->name('users.unenroll');
+        Route::delete('/users/{user}',                      [UserController::class, 'destroy'])->name('users.destroy');
+
+        // ── Courses ───────────────────────────────────────────────────────────
+        Route::get('/courses',                              [AdminCourseController::class, 'index'])->name('courses.index');
+        Route::get('/courses/{course}',                     [AdminCourseController::class, 'show'])->name('courses.show');
+        Route::post('/courses/{course}/toggle-publish',     [AdminCourseController::class, 'togglePublish'])->name('courses.toggle-publish');
+        Route::put('/courses/{course}/instructor',          [AdminCourseController::class, 'reassignInstructor'])->name('courses.reassign');
+        Route::post('/courses/bulk',                        [AdminCourseController::class, 'bulk'])->name('courses.bulk');
+        Route::delete('/courses/{course}',                  [AdminCourseController::class, 'destroy'])->name('courses.destroy');
+
+        // ── Question Bank ─────────────────────────────────────────────────────
+        Route::get('/question-bank',                            [\App\Http\Controllers\Admin\QuestionBankController::class, 'index'])->name('question-bank.index');
+        Route::get('/question-bank/create',                     [\App\Http\Controllers\Admin\QuestionBankController::class, 'create'])->name('question-bank.create');
+        Route::post('/question-bank',                           [\App\Http\Controllers\Admin\QuestionBankController::class, 'store'])->name('question-bank.store');
+        Route::get('/question-bank/{questionBankItem}/edit',    [\App\Http\Controllers\Admin\QuestionBankController::class, 'edit'])->name('question-bank.edit');
+        Route::put('/question-bank/{questionBankItem}',         [\App\Http\Controllers\Admin\QuestionBankController::class, 'update'])->name('question-bank.update');
+        Route::delete('/question-bank/{questionBankItem}',      [\App\Http\Controllers\Admin\QuestionBankController::class, 'destroy'])->name('question-bank.destroy');
+
+        // ── Programs ──────────────────────────────────────────────────────────
+        Route::get('/programs',                             [ProgramController::class, 'index'])->name('programs.index');
+        Route::post('/programs',                            [ProgramController::class, 'store'])->name('programs.store');
+        Route::get('/programs/{program}',                   [ProgramController::class, 'show'])->name('programs.show');
+        Route::get('/programs/{program}/edit',              [ProgramController::class, 'edit'])->name('programs.edit');
+        Route::put('/programs/{program}',                   [ProgramController::class, 'update'])->name('programs.update');
+        Route::delete('/programs/{program}',                [ProgramController::class, 'destroy'])->name('programs.destroy');
+        Route::post('/programs/{program}/courses',          [ProgramController::class, 'assignCourse'])->name('programs.courses.assign');
+        Route::delete('/programs/{program}/courses/{course}',[ProgramController::class, 'unassignCourse'])->name('programs.courses.unassign');
+
+        // ── Analytics ─────────────────────────────────────────────────────────
+        Route::get('/analytics',                            [AnalyticsController::class, 'index'])->name('analytics.index');
+    });
+});
