@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class QuestionBankItem extends Model
 {
     protected $fillable = [
-        'course_id', 'user_id', 'type', 'question', 'options', 'correct_answer', 'points',
+        'question_bank_id', 'user_id', 'type', 'question', 'options', 'correct_answer', 'points',
     ];
 
     protected function casts(): array
@@ -20,9 +20,9 @@ class QuestionBankItem extends Model
         ];
     }
 
-    public function course(): BelongsTo
+    public function bank(): BelongsTo
     {
-        return $this->belongsTo(Course::class);
+        return $this->belongsTo(QuestionBank::class, 'question_bank_id');
     }
 
     public function user(): BelongsTo

@@ -50,19 +50,15 @@ class DiscussionController extends Controller
             ]);
         });
 
-        // Notify instructors and co-instructors (skip the author)
-        $course->load('coInstructors');
-        $instructorIds = collect([$course->instructor_id])
-            ->merge($course->coInstructors->pluck('id'))
-            ->reject(fn($id) => $id === auth()->id());
-        User::whereIn('id', $instructorIds)->each(function ($instructor) use ($course, $discussion) {
-            $instructor->notifications()->create([
+        // Notify the course instructor (skip the author)
+        if ($course->instructor_id !== auth()->id()) {
+            $course->instructor->notifications()->create([
                 'type'    => 'discussion',
                 'title'   => 'New Discussion: ' . $discussion->title,
                 'message' => auth()->user()->name . ' posted "' . $discussion->title . '" in ' . $course->title,
                 'link'    => route('courses.discussions.show', [$course, $discussion]),
             ]);
-        });
+        }
 
         return redirect()->route('courses.discussions.index', $course)
             ->with('success', 'Discussion topic created successfully.');
@@ -93,19 +89,15 @@ class DiscussionController extends Controller
             ]);
         }
 
-        // Notify instructors and co-instructors (skip the replier)
-        $course->load('coInstructors');
-        $instructorIds = collect([$course->instructor_id])
-            ->merge($course->coInstructors->pluck('id'))
-            ->reject(fn($id) => $id === auth()->id());
-        User::whereIn('id', $instructorIds)->each(function ($instructor) use ($course, $discussion) {
-            $instructor->notifications()->create([
+        // Notify the course instructor (skip the replier)
+        if ($course->instructor_id !== auth()->id()) {
+            $course->instructor->notifications()->create([
                 'type'    => 'discussion_reply',
                 'title'   => 'New Reply: ' . $discussion->title,
                 'message' => auth()->user()->name . ' replied to "' . $discussion->title . '" in ' . $course->title,
                 'link'    => route('courses.discussions.show', [$course, $discussion]),
             ]);
-        });
+        }
 
         return redirect()->route('courses.discussions.show', [$course, $discussion])
             ->with('success', 'Reply posted successfully.');

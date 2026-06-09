@@ -50,13 +50,8 @@ class SubmissionController extends Controller
             $data
         );
 
-        $course->load('coInstructors');
-        $instructorIds = collect([$course->instructor_id])
-            ->merge($course->coInstructors->pluck('id'))
-            ->unique()
-            ->reject(fn($id) => $id == $user->id);
-
-        User::whereIn('id', $instructorIds)->each(function ($instructor) use ($course, $assignment, $user) {
+        User::where('id', $course->instructor_id)
+            ->each(function ($instructor) use ($course, $assignment, $user) {
             $instructor->notifications()->create([
                 'type'    => 'submission',
                 'title'   => 'Submission: ' . $assignment->title,

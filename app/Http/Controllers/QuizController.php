@@ -7,6 +7,7 @@ use App\Models\Course;
 use App\Models\Quiz;
 use App\Models\QuizAttempt;
 use App\Models\QuizQuestion;
+use App\Models\QuestionBank;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 
@@ -89,8 +90,12 @@ class QuizController extends Controller
 
         $importedBankIds = collect();
         if ($request->has('bank_item_ids')) {
+            $bankIds = $course->questionBanks()->pluck('question_banks.id');
+            $globalBankIds = QuestionBank::where('is_visible_to_all', true)->pluck('id');
+            $allowedBankIds = $bankIds->merge($globalBankIds)->unique();
             $items = \App\Models\QuestionBankItem::whereIn('id', $request->input('bank_item_ids'))
-                ->where('course_id', $course->id)->get();
+                ->whereIn('question_bank_id', $allowedBankIds)
+                ->get();
             $order = $quiz->questions()->count();
             foreach ($items as $item) {
                 $quiz->questions()->create([
@@ -108,7 +113,10 @@ class QuizController extends Controller
 
         $bankRandomCount = (int) $request->input('bank_random_count', 0);
         if ($bankRandomCount > 0) {
-            $randomItems = \App\Models\QuestionBankItem::where('course_id', $course->id)
+            $bankIds = $course->questionBanks()->pluck('question_banks.id');
+            $globalBankIds = QuestionBank::where('is_visible_to_all', true)->pluck('id');
+            $allowedBankIds = $bankIds->merge($globalBankIds)->unique();
+            $randomItems = \App\Models\QuestionBankItem::whereIn('question_bank_id', $allowedBankIds)
                 ->whereNotIn('id', $importedBankIds)
                 ->inRandomOrder()
                 ->take($bankRandomCount)
@@ -182,8 +190,12 @@ class QuizController extends Controller
 
         $importedBankIds = collect();
         if ($request->has('bank_item_ids')) {
+            $bankIds = $course->questionBanks()->pluck('question_banks.id');
+            $globalBankIds = QuestionBank::where('is_visible_to_all', true)->pluck('id');
+            $allowedBankIds = $bankIds->merge($globalBankIds)->unique();
             $items = \App\Models\QuestionBankItem::whereIn('id', $request->input('bank_item_ids'))
-                ->where('course_id', $course->id)->get();
+                ->whereIn('question_bank_id', $allowedBankIds)
+                ->get();
             $order = $quiz->questions()->count();
             foreach ($items as $item) {
                 $quiz->questions()->create([
@@ -201,7 +213,10 @@ class QuizController extends Controller
 
         $bankRandomCount = (int) $request->input('bank_random_count', 0);
         if ($bankRandomCount > 0) {
-            $randomItems = \App\Models\QuestionBankItem::where('course_id', $course->id)
+            $bankIds = $course->questionBanks()->pluck('question_banks.id');
+            $globalBankIds = QuestionBank::where('is_visible_to_all', true)->pluck('id');
+            $allowedBankIds = $bankIds->merge($globalBankIds)->unique();
+            $randomItems = \App\Models\QuestionBankItem::whereIn('question_bank_id', $allowedBankIds)
                 ->whereNotIn('id', $importedBankIds)
                 ->inRandomOrder()
                 ->take($bankRandomCount)

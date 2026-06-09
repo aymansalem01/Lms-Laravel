@@ -91,11 +91,13 @@ Route::post('/theme', [ViewController::class, 'theme'])->name('theme.switch');
         Route::get('/grading/{submission}', [GradingController::class, 'show'])->name('grading.show');
         Route::post('/grading/{submission}', [GradingController::class, 'store'])->name('grading.store');
         Route::post('/plagiarism/check/{submission}', [SubmissionController::class, 'checkPlagiarism'])->name('plagiarism.check');
+        Route::get('/question-bank', [\App\Http\Controllers\QuestionBankController::class, 'globalIndex'])->name('question-bank.index');
+        Route::post('/question-bank/{questionBank}/items', [\App\Http\Controllers\QuestionBankController::class, 'addItem'])->name('question-bank.add-item');
     });
 
     Route::get('/courses', [CourseController::class, 'index'])->name('courses.index');
     Route::get('/courses/catalog', [CourseController::class, 'catalog'])->name('courses.catalog');
-    Route::middleware('role:admin')->group(function () {
+    Route::middleware('role:admin,instructor')->group(function () {
         Route::get('/courses/create', [CourseController::class, 'create'])->name('courses.create');
         Route::post('/courses', [CourseController::class, 'store'])->name('courses.store');
     });
@@ -119,10 +121,12 @@ Route::post('/theme', [ViewController::class, 'theme'])->name('theme.switch');
             Route::put('/', [CourseController::class, 'update'])->name('update');
             Route::delete('/', [CourseController::class, 'destroy'])->name('destroy');
             Route::post('/duplicate', [CourseController::class, 'duplicate'])->name('duplicate');
-            Route::post('/roster/co-instructor', [RosterController::class, 'addCoInstructor'])->name('roster.co-instructor.add');
-            Route::delete('/roster/co-instructor/{user}', [RosterController::class, 'removeCoInstructor'])->name('roster.co-instructor.remove');
+        });
+
+        Route::middleware('role:admin')->group(function () {
             Route::post('/roster/add-student', [CourseController::class, 'addStudent'])->name('roster.add');
             Route::post('/roster/bulk', [CourseController::class, 'bulkEnrollCSV'])->name('roster.bulk');
+            Route::delete('/roster/{student}', [CourseController::class, 'removeStudent'])->name('roster.remove');
         });
         Route::prefix('content')->name('content.')->group(function () {
             Route::get('/', [ModuleController::class, 'index'])->name('index');
@@ -267,9 +271,10 @@ Route::post('/theme', [ViewController::class, 'theme'])->name('theme.switch');
         Route::get('/question-bank',                            [\App\Http\Controllers\Admin\QuestionBankController::class, 'index'])->name('question-bank.index');
         Route::get('/question-bank/create',                     [\App\Http\Controllers\Admin\QuestionBankController::class, 'create'])->name('question-bank.create');
         Route::post('/question-bank',                           [\App\Http\Controllers\Admin\QuestionBankController::class, 'store'])->name('question-bank.store');
-        Route::get('/question-bank/{questionBankItem}/edit',    [\App\Http\Controllers\Admin\QuestionBankController::class, 'edit'])->name('question-bank.edit');
-        Route::put('/question-bank/{questionBankItem}',         [\App\Http\Controllers\Admin\QuestionBankController::class, 'update'])->name('question-bank.update');
-        Route::delete('/question-bank/{questionBankItem}',      [\App\Http\Controllers\Admin\QuestionBankController::class, 'destroy'])->name('question-bank.destroy');
+        Route::get('/question-bank/{questionBank}',             [\App\Http\Controllers\Admin\QuestionBankController::class, 'show'])->name('question-bank.show');
+        Route::get('/question-bank/{questionBank}/edit',        [\App\Http\Controllers\Admin\QuestionBankController::class, 'edit'])->name('question-bank.edit');
+        Route::put('/question-bank/{questionBank}',             [\App\Http\Controllers\Admin\QuestionBankController::class, 'update'])->name('question-bank.update');
+        Route::delete('/question-bank/{questionBank}',          [\App\Http\Controllers\Admin\QuestionBankController::class, 'destroy'])->name('question-bank.destroy');
 
         // ── Modules ───────────────────────────────────────────────────────────
         Route::get('/modules',                                [AdminModuleController::class, 'index'])->name('modules.index');

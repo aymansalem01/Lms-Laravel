@@ -23,7 +23,7 @@
             </p>
         </div>
         <div class="flex items-center gap-2">
-            @if(auth()->user()->role !== 'student')
+            @if(auth()->user()->isAdmin())
                 <a href="{{ route('courses.create') }}" class="flex items-center gap-2 bg-brand-500 hover:bg-brand-600 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
                     {{ __('New Course') }}
@@ -123,10 +123,6 @@
                 </a>
             @elseif(auth()->user()->role === 'instructor')
                 <p class="text-gray-500 text-sm mb-4">{{ __('You haven\'t created any courses yet.') }}</p>
-                <a href="{{ route('courses.create') }}" class="inline-flex items-center gap-2 text-sm bg-brand-500 hover:bg-brand-600 text-white px-5 py-2.5 rounded-lg transition-colors">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-                    {{ __('Create Your First Course') }}
-                </a>
             @else
                 <p class="text-gray-500 text-sm">{{ __('No courses exist on the platform yet.') }}</p>
             @endif

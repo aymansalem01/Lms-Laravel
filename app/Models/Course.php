@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use App\Models\QuestionBank;
+use App\Models\QuestionBankItem;
 
 class Course extends Model
 {
@@ -23,11 +25,6 @@ class Course extends Model
     public function instructor(): BelongsTo
     {
         return $this->belongsTo(User::class, 'instructor_id');
-    }
-
-    public function coInstructors(): BelongsToMany
-    {
-        return $this->belongsToMany(User::class, 'course_instructors', 'course_id', 'instructor_id');
     }
 
     public function enrollments(): HasMany
@@ -92,9 +89,14 @@ class Course extends Model
         return $this->hasMany(Discussion::class);
     }
 
-    public function questionBankItems(): HasMany
+    public function questionBanks(): BelongsToMany
     {
-        return $this->hasMany(QuestionBankItem::class);
+        return $this->belongsToMany(QuestionBank::class, 'question_bank_course');
+    }
+
+    public function questionBankItems()
+    {
+        return QuestionBankItem::whereIn('question_bank_id', $this->questionBanks()->select('question_banks.id'));
     }
 
     public function groups(): HasMany

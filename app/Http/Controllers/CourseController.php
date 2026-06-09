@@ -7,6 +7,7 @@ use App\Models\Enrollment;
 use App\Models\LessonProgress;
 use App\Models\Grade;
 use App\Models\User;
+use App\Models\QuestionBank;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
@@ -84,6 +85,7 @@ class CourseController extends Controller
         $assignments = $course->assignments;
         $quizzes = $course->quizzes;
         $modules = $course->modules;
+        $questionBanks = $course->questionBanks()->with('items', 'items.user')->latest()->get();
         $liveSessions = $course->liveSessions;
         $isEnrolled = $user->role === 'student' && $course->students()->where('users.id', $user->id)->exists();
         $course->load('students');
@@ -109,7 +111,7 @@ class CourseController extends Controller
             ->orderBy('name')
             ->get();
 
-        return view('courses.show', compact('course', 'discussions', 'attendance', 'assignments', 'quizzes', 'modules', 'liveSessions', 'isEnrolled', 'moduleProgress', 'availableStudents'));
+        return view('courses.show', compact('course', 'discussions', 'attendance', 'assignments', 'quizzes', 'modules', 'liveSessions', 'isEnrolled', 'moduleProgress', 'availableStudents', 'questionBanks'));
     }
 
     public function create()
@@ -224,12 +226,7 @@ class CourseController extends Controller
             'link'    => route('courses.show', $course),
         ]);
 
-        $course->load('coInstructors');
-        $instructorIds = collect([$course->instructor_id])
-            ->merge($course->coInstructors->pluck('id'))
-            ->unique();
-
-        User::whereIn('id', $instructorIds)->each(function ($instructor) use ($course) {
+        User::where('id', $course->instructor_id)->each(function ($instructor) use ($course) {
             $instructor->notifications()->create([
                 'type'    => 'enrollment',
                 'title'   => 'New Enrollment: ' . $course->title,
@@ -296,9 +293,7 @@ class CourseController extends Controller
 
     public function roster(Course $course)
     {
-        $course->load('coInstructors');
-
-        if ($course->instructor_id !== auth()->id() && !auth()->user()->isAdmin() && !$course->coInstructors->contains(auth()->id())) {
+        if ($course->instructor_id !== auth()->id() && !auth()->user()->isAdmin()) {
             abort(403);
         }
 
@@ -364,56 +359,8 @@ class CourseController extends Controller
             ->with('success', 'Course duplicated successfully.');
     }
 
-    public function addCoInstructor(Request $request, Course $course)
-    {
-        if ($course->instructor_id !== auth()->id() && !auth()->user()->isAdmin()) {
-            abort(403);
-        }
-
-        $request->validate([
-            'email' => 'required|email|exists:users,email',
-        ]);
-
-        $instructor = User::where('email', $request->email)->firstOrFail();
-
-        if (!$instructor->isInstructor()) {
-            return redirect()->back()->with('error', 'User is not an instructor.');
-        }
-
-        if ($instructor->id === $course->instructor_id) {
-            return redirect()->back()->with('error', 'The main instructor cannot be added as a co-instructor.');
-        }
-
-        $exists = $course->coInstructors()->where('instructor_id', $instructor->id)->exists();
-
-        if ($exists) {
-            return redirect()->back()->with('error', 'User is already a co-instructor.');
-        }
-
-        $course->coInstructors()->attach($instructor->id, ['added_by' => auth()->id()]);
-
-        return redirect()->back()->with('success', 'Co-instructor added successfully.');
-    }
-
-    public function removeCoInstructor(Course $course, User $user)
-    {
-        if ($course->instructor_id !== auth()->id() && !auth()->user()->isAdmin()) {
-            abort(403);
-        }
-
-        $course->coInstructors()->detach($user->id);
-
-        return redirect()->back()->with('success', 'Co-instructor removed successfully.');
-    }
-
     public function addStudent(Request $request, Course $course)
     {
-        $course->load('coInstructors');
-
-        if ($course->instructor_id !== auth()->id() && !auth()->user()->isAdmin() && !$course->coInstructors->contains(auth()->id())) {
-            abort(403);
-        }
-
         $request->validate([
             'student_ids' => 'required|array',
             'student_ids.*' => 'required|exists:users,id',
@@ -462,14 +409,17 @@ class CourseController extends Controller
         return redirect()->back()->with('success', $msg);
     }
 
+    public function removeStudent(Course $course, User $student)
+    {
+        Enrollment::where('student_id', $student->id)
+            ->where('course_id', $course->id)
+            ->delete();
+
+        return redirect()->back()->with('success', $student->name . ' removed from ' . $course->title . '.');
+    }
+
     public function bulkEnrollCSV(Request $request, Course $course)
     {
-        $course->load('coInstructors');
-
-        if ($course->instructor_id !== auth()->id() && !auth()->user()->isAdmin() && !$course->coInstructors->contains(auth()->id())) {
-            abort(403);
-        }
-
         $request->validate([
             'csv_file' => 'required|file|mimes:csv,txt',
         ]);

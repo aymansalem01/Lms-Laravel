@@ -27,45 +27,8 @@
         </div>
     </div>
 
-    {{-- Co-Instructors --}}
-    <div class="bg-surface-800 border border-surface-700 rounded-xl p-5 mb-6">
-        <h3 class="text-sm font-semibold text-white mb-3">{{ __('Co-Instructors') }}</h3>
-        @if($course->coInstructors->isNotEmpty())
-            <ul class="space-y-2 mb-4">
-                @foreach($course->coInstructors as $coInstructor)
-                    <li class="flex items-center justify-between py-2 px-3 bg-surface-700/50 rounded-lg">
-                        <div class="flex items-center gap-2">
-                            <div class="w-7 h-7 rounded-full bg-brand-500/20 flex items-center justify-center text-white text-[10px] font-bold">
-                                {{ strtoupper(substr($coInstructor->name, 0, 1)) }}
-                            </div>
-                            <span class="text-sm text-gray-300">{{ $coInstructor->name }}</span>
-                            <span class="text-xs text-gray-500">{{ $coInstructor->email }}</span>
-                        </div>
-                        @if($course->instructor_id === auth()->id() || auth()->user()->isAdmin())
-                            <form method="POST" action="{{ route('courses.roster.co-instructor.remove', [$course, $coInstructor]) }}" class="inline">
-                                @csrf
-                                @method('DELETE')
-                                <button type="submit" class="text-xs text-red-400 hover:text-red-300 transition-colors" onclick="return confirm('{{ __('Remove this co-instructor?') }}')">{{ __('Remove') }}</button>
-                            </form>
-                        @endif
-                    </li>
-                @endforeach
-            </ul>
-        @else
-            <p class="text-sm text-gray-500 mb-4">{{ __('No co-instructors assigned.') }}</p>
-        @endif
-
-        <h4 class="text-xs font-medium text-gray-400 uppercase tracking-wider mb-2">{{ __('Add Co-Instructor') }}</h4>
-        <form method="POST" action="{{ route('courses.roster.co-instructor.add', $course) }}" class="flex gap-2">
-            @csrf
-            <input type="email" name="email" placeholder="{{ __('Instructor email...') }}" required
-                   class="flex-1 bg-surface-700 border border-surface-600 rounded-lg px-3 py-2 text-sm text-gray-200 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-brand-500/50 focus:border-brand-500/50 transition-colors">
-            <button type="submit" class="text-sm bg-brand-500 hover:bg-brand-600 text-white font-medium px-4 py-2 rounded-lg transition-colors shrink-0">{{ __('Add') }}</button>
-        </form>
-    </div>
-
     {{-- Add Student --}}
-    @if($course->instructor_id === auth()->id() || auth()->user()->isAdmin())
+    @if(auth()->user()->isAdmin())
     @php $studentOptions = $availableStudents->map(fn($s) => ['id' => (string)$s->id, 'label' => $s->name . ' (' . $s->email . ')'])->values(); @endphp
     <div x-data="{
         search: '',
@@ -130,6 +93,9 @@
                         <th class="text-left px-5 py-3 text-[11px] font-semibold uppercase tracking-wider text-gray-500">{{ __('Email') }}</th>
                         <th class="text-left px-5 py-3 text-[11px] font-semibold uppercase tracking-wider text-gray-500">{{ __('Program') }}</th>
                         <th class="text-left px-5 py-3 text-[11px] font-semibold uppercase tracking-wider text-gray-500">{{ __('Enrolled') }}</th>
+                        @if(auth()->user()->isAdmin())
+                            <th class="text-right px-5 py-3 text-[11px] font-semibold uppercase tracking-wider text-gray-500">{{ __('Actions') }}</th>
+                        @endif
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-surface-700">
@@ -154,10 +120,18 @@
                             <td class="px-5 py-3.5 text-sm text-gray-400">
                                 {{ $student->pivot->enrolled_at ? \Carbon\Carbon::parse($student->pivot->enrolled_at)->format('M d, Y') : '—' }}
                             </td>
+                            @if(auth()->user()->isAdmin())
+                                <td class="px-5 py-3.5 text-right">
+                                    <form method="POST" action="{{ route('courses.roster.remove', [$course, $student]) }}" onsubmit="return confirm('Remove {{ $student->name }} from this course?')">
+                                        @csrf @method('DELETE')
+                                        <button type="submit" class="text-xs text-red-400 hover:text-red-300 px-2 py-1 rounded hover:bg-red-500/10 transition-colors">{{ __('Remove') }}</button>
+                                    </form>
+                                </td>
+                            @endif
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="4" class="px-5 py-12 text-center">
+                            <td colspan="{{ auth()->user()->isAdmin() ? 5 : 4 }}" class="px-5 py-12 text-center">
                                 <div class="w-12 h-12 mx-auto mb-3 rounded-xl bg-surface-700 flex items-center justify-center">
                                     <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197"/></svg>
                                 </div>

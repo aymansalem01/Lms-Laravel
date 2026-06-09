@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Course;
+use App\Models\QuestionBank;
 use App\Models\QuestionBankItem;
 use Illuminate\Http\Request;
 
@@ -11,16 +12,16 @@ class QuestionBankController extends Controller
 {
     public function index(Request $request)
     {
-        $query = QuestionBankItem::with(['course', 'user'])->latest();
+        $query = QuestionBank::with(['user', 'courses', 'items'])->latest();
 
         if ($request->filled('course_id')) {
-            $query->where('course_id', $request->course_id);
+            $query->whereHas('courses', fn($q) => $q->where('courses.id', $request->course_id));
         }
 
-        $items = $query->paginate(20);
+        $banks = $query->paginate(20);
         $courses = Course::orderBy('title')->get();
 
-        return view('admin.question-bank.index', compact('items', 'courses'));
+        return view('admin.question-bank.index', compact('banks', 'courses'));
     }
 
     public function create()
@@ -32,65 +33,86 @@ class QuestionBankController extends Controller
     public function store(Request $request)
     {
         $data = $request->validate([
-            'course_id'      => 'required|exists:courses,id',
-            'type'           => 'required|in:multiple_choice,true_false,short_answer,long_answer',
-            'question'       => 'required|string',
-            'options'        => 'nullable|array',
-            'options.*'      => 'nullable|string',
-            'correct_answer' => 'nullable|string',
-            'points'         => 'required|integer|min:1',
+            'name'                     => 'required|string|max:255',
+            'course_ids'               => 'required_without:is_visible_to_all|array',
+            'course_ids.*'             => 'exists:courses,id',
+            'is_visible_to_all'        => 'nullable|boolean',
+            'questions'                => 'required|array|min:1',
+            'questions.*.type'         => 'required|in:multiple_choice,true_false,short_answer,long_answer',
+            'questions.*.question'     => 'required|string',
+            'questions.*.options'      => 'nullable|array',
+            'questions.*.options.*'    => 'nullable|string',
+            'questions.*.correct_answer' => 'nullable|string',
+            'questions.*.points'       => 'required|integer|min:1',
         ]);
 
-        $course = Course::findOrFail($data['course_id']);
-
-        $course->questionBankItems()->create([
-            'user_id'        => auth()->id(),
-            'type'           => $data['type'],
-            'question'       => $data['question'],
-            'options'        => $data['type'] === 'multiple_choice' ? array_values(array_filter($data['options'] ?? [])) : null,
-            'correct_answer' => $data['correct_answer'],
-            'points'         => $data['points'],
+        $bank = QuestionBank::create([
+            'name'              => $data['name'],
+            'user_id'           => auth()->id(),
+            'is_visible_to_all' => $request->boolean('is_visible_to_all'),
         ]);
 
+        if (!$bank->is_visible_to_all && !empty($data['course_ids'])) {
+            $bank->courses()->attach($data['course_ids']);
+        }
+
+        foreach ($data['questions'] as $q) {
+            $bank->items()->create([
+                'user_id'        => auth()->id(),
+                'type'           => $q['type'],
+                'question'       => $q['question'],
+                'options'        => $q['type'] === 'multiple_choice' ? array_values(array_filter($q['options'] ?? [])) : null,
+                'correct_answer' => $q['correct_answer'],
+                'points'         => $q['points'],
+            ]);
+        }
+
+        $count = count($data['questions']);
         return redirect()->route('admin.question-bank.index')
-            ->with('success', 'Question added to bank.');
+            ->with('success', "Bank \"{$bank->name}\" created with $count questions.");
     }
 
-    public function edit(QuestionBankItem $questionBankItem)
+    public function show(QuestionBank $questionBank)
     {
-        $courses = Course::orderBy('title')->get();
-        return view('admin.question-bank.edit', compact('questionBankItem', 'courses'));
+        $questionBank->load(['user', 'courses', 'items.user']);
+        return view('admin.question-bank.show', compact('questionBank'));
     }
 
-    public function update(Request $request, QuestionBankItem $questionBankItem)
+    public function edit(QuestionBank $questionBank)
+    {
+        $questionBank->load('items');
+        $courses = Course::orderBy('title')->get();
+        return view('admin.question-bank.edit', compact('questionBank', 'courses'));
+    }
+
+    public function update(Request $request, QuestionBank $questionBank)
     {
         $data = $request->validate([
-            'course_id'      => 'required|exists:courses,id',
-            'type'           => 'required|in:multiple_choice,true_false,short_answer,long_answer',
-            'question'       => 'required|string',
-            'options'        => 'nullable|array',
-            'options.*'      => 'nullable|string',
-            'correct_answer' => 'nullable|string',
-            'points'         => 'required|integer|min:1',
+            'name'                     => 'required|string|max:255',
+            'course_ids'               => 'nullable|array',
+            'course_ids.*'             => 'exists:courses,id',
+            'is_visible_to_all'        => 'nullable|boolean',
         ]);
 
-        $questionBankItem->update([
-            'course_id'      => $data['course_id'],
-            'type'           => $data['type'],
-            'question'       => $data['question'],
-            'options'        => $data['type'] === 'multiple_choice' ? array_values(array_filter($data['options'] ?? [])) : null,
-            'correct_answer' => $data['correct_answer'],
-            'points'         => $data['points'],
+        $questionBank->update([
+            'name'              => $data['name'],
+            'is_visible_to_all' => $request->boolean('is_visible_to_all'),
         ]);
+
+        if ($questionBank->is_visible_to_all) {
+            $questionBank->courses()->detach();
+        } else {
+            $questionBank->courses()->sync($data['course_ids'] ?? []);
+        }
 
         return redirect()->route('admin.question-bank.index')
-            ->with('success', 'Question updated.');
+            ->with('success', 'Bank updated.');
     }
 
-    public function destroy(QuestionBankItem $questionBankItem)
+    public function destroy(QuestionBank $questionBank)
     {
-        $questionBankItem->delete();
+        $questionBank->delete();
         return redirect()->route('admin.question-bank.index')
-            ->with('success', 'Question removed from bank.');
+            ->with('success', 'Bank deleted.');
     }
 }
