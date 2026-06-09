@@ -97,7 +97,7 @@
                 'live' => ['label' => __('Live'), 'icon' => 'M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z'],
                 'discussions' => ['label' => __('Discussions'), 'icon' => 'M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z'],
                 'attendance' => ['label' => __('Attendance'), 'icon' => 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z'],
-                'roster' => ['label' => __('Roster'), 'icon' => 'M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z'],
+                'students' => ['label' => __('Students'), 'icon' => 'M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z'],
                 'groups' => ['label' => __('Groups'), 'icon' => 'M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z'],
                 'grades' => ['label' => __('Grades'), 'icon' => 'M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z'],
             ];
@@ -168,14 +168,25 @@
                                     <p class="text-sm text-gray-600 px-3 py-2">{{ __('No lessons in this module.') }}</p>
                                 @endforelse
 
+                                {{-- Module file attachment --}}
+                                @if($module->file_path)
+                                    <a href="{{ Storage::url($module->file_path) }}" target="_blank"
+                                       class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-gray-400 hover:text-brand-400 hover:bg-surface-700 transition-colors">
+                                        <svg class="w-4 h-4 text-brand-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                                        <span class="truncate">{{ basename($module->file_path) }}</span>
+                                        <span class="text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-brand-500/10 text-brand-400 ml-auto">{{ __('Download') }}</span>
+                                    </a>
+                                @endif
+
                                 {{-- Module-level resources --}}
                                 @php
                                     $moduleQuizzes = $module->quizzes ?? collect();
                                     $moduleSessions = $module->liveSessions ?? collect();
                                     $moduleAssignments = $module->assignments ?? collect();
+                                    $moduleFiles = $module->moduleFiles ?? collect();
                                 @endphp
 
-                                @if($moduleQuizzes->isNotEmpty() || $moduleSessions->isNotEmpty() || $moduleAssignments->isNotEmpty())
+                                @if($moduleQuizzes->isNotEmpty() || $moduleSessions->isNotEmpty() || $moduleAssignments->isNotEmpty() || $moduleFiles->isNotEmpty())
                                     <div class="border-t border-surface-700 pt-2 mt-2 space-y-0.5">
                                         @foreach($moduleQuizzes as $resource)
                                             <a href="{{ route('courses.quizzes.show', [$course, $resource]) }}"
@@ -201,6 +212,15 @@
                                                 <svg class="w-4 h-4 text-blue-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
                                                 <span>{{ $resource->title }}</span>
                                                 <span class="text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-blue-500/10 text-blue-400 ml-auto">{{ __('Assignment') }}</span>
+                                            </a>
+                                        @endforeach
+
+                                        @foreach($moduleFiles as $resource)
+                                            <a href="{{ Storage::url($resource->file_path) }}" target="_blank"
+                                               class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-gray-400 hover:text-amber-400 hover:bg-surface-700 transition-colors">
+                                                <svg class="w-4 h-4 text-amber-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                                                <span>{{ $resource->title }}</span>
+                                                <span class="text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-amber-500/10 text-amber-400 ml-auto">{{ __('File') }}</span>
                                             </a>
                                         @endforeach
                                     </div>
@@ -398,14 +418,14 @@
             </div>
         @break
 
-        @case('roster')
+        @case('students')
             <div class="space-y-3">
                 @if($canManage)
                     <div class="flex justify-end mb-3">
                         <a href="{{ route('courses.roster', $course) }}"
                            class="flex items-center gap-1.5 text-sm bg-brand-500 hover:bg-brand-600 text-white px-4 py-2 rounded-lg transition-colors">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"/></svg>
-                            {{ __('Manage Roster') }}
+                            {{ __('Manage Students') }}
                         </a>
                     </div>
                 @endif
@@ -460,15 +480,54 @@
                 </div>
 
                 @if($canManage)
-                    <div class="bg-surface-800 border border-surface-700 rounded-xl p-5">
-                        <h3 class="text-sm font-semibold text-white mb-3">{{ __('Add Student') }}</h3>
-                        <form method="POST" action="{{ route('courses.roster.add', $course) }}" class="flex gap-2">
+                    @php $studentOptions = $availableStudents->map(fn($s) => ['id' => (string)$s->id, 'label' => $s->name . ' (' . $s->email . ')'])->values(); @endphp
+                    <div x-data="{
+                        search: '',
+                        open: false,
+                        selected: [],
+                        items: {{ json_encode($studentOptions) }},
+                        get filtered() {
+                            return this.items.filter(s => s.label.toLowerCase().includes(this.search.toLowerCase()));
+                        }
+                    }" class="bg-surface-800 border border-surface-700 rounded-xl p-5">
+                        <h3 class="text-sm font-semibold text-white mb-3">{{ __('Enroll Students') }}</h3>
+                        <form method="POST" action="{{ route('courses.roster.add', $course) }}">
                             @csrf
-                            <input type="email" name="email" placeholder="{{ __('Student email...') }}" required
-                                   class="flex-1 bg-surface-700 border border-surface-600 rounded-lg px-3 py-2 text-sm text-gray-200 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-brand-500/50 focus:border-brand-500/50 transition-colors">
-                            <button type="submit" class="text-sm bg-brand-500 hover:bg-brand-600 text-white font-medium px-4 py-2 rounded-lg transition-colors shrink-0">{{ __('Add Student') }}</button>
+                            <div class="relative mb-3">
+                                <input type="text" x-model="search" @click="open = true" @input="open = true"
+                                       placeholder="{{ __('Search students...') }}"
+                                       class="w-full bg-surface-700 border border-surface-600 rounded-lg px-3 py-2 text-sm text-gray-200 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-brand-500/50">
+                                <div x-show="open" @click.outside="open = false" x-cloak
+                                     class="absolute z-10 mt-1 w-full bg-surface-700 border border-surface-600 rounded-lg shadow-xl max-h-48 overflow-y-auto">
+                                    <template x-for="student in filtered" :key="student.id">
+                                        <label class="flex items-center gap-3 px-3 py-2 hover:bg-surface-600 cursor-pointer border-b border-surface-600 last:border-0">
+                                            <input type="checkbox" x-model="selected" :value="student.id"
+                                                   class="rounded bg-surface-600 border-surface-500 text-brand-500 focus:ring-brand-500/50">
+                                            <span class="text-sm text-gray-200" x-text="student.label"></span>
+                                        </label>
+                                    </template>
+                                    <p x-show="filtered.length === 0" class="text-sm text-gray-500 px-3 py-4 text-center">{{ __('No students found.') }}</p>
+                                </div>
+                            </div>
+                            <div class="flex flex-wrap gap-1 mb-3" x-show="selected.length > 0">
+                                <template x-for="id in selected" :key="id">
+                                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-brand-500/20 text-brand-400 text-xs">
+                                        <span x-text="items.find(s => s.id === id)?.label.split(' (')[0]"></span>
+                                        <button @click="selected = selected.filter(s => s !== id)" type="button" class="hover:text-white">&times;</button>
+                                    </span>
+                                </template>
+                            </div>
+                            <template x-for="id in selected" :key="id">
+                                <input type="hidden" name="student_ids[]" :value="id">
+                            </template>
+                            <div class="flex items-center gap-2">
+                                <button type="submit" :disabled="selected.length === 0"
+                                        class="text-sm bg-brand-500 hover:bg-brand-600 disabled:bg-surface-600 disabled:text-gray-500 text-white font-medium px-4 py-2 rounded-lg transition-colors">
+                                    <span x-text="`{{ __('Enroll') }} (${selected.length})`"></span>
+                                </button>
+                                <button type="button" @click="selected = []; search = ''" x-show="selected.length > 0" class="text-xs text-gray-400 hover:text-white transition-colors">{{ __('Clear') }}</button>
+                            </div>
                         </form>
-                        <p class="text-xs text-gray-500 mt-2">{{ __('Enter the email address of an existing student account.') }}</p>
                     </div>
                 @endif
             </div>

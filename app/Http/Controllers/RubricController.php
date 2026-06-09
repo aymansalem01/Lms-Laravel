@@ -11,19 +11,24 @@ class RubricController extends Controller
 {
     public function index(Course $course)
     {
-        $rubrics = $course->rubrics;
+        $user = auth()->user();
+        $rubrics = $course->rubrics()
+            ->when(!$user->isAdmin(), fn($q) => $q->where('instructor_id', $user->id))
+            ->get();
         return view('rubrics.index', compact('course', 'rubrics'));
     }
 
     public function create(Course $course)
     {
-        if (!auth()->user()->isInstructorOrAdmin()) { abort(403); }
+        $user = auth()->user();
+        if (!$user->isInstructorOrAdmin()) { abort(403); }
         return view('rubrics.create', compact('course'));
     }
 
     public function store(Request $request, Course $course)
     {
-        if (!auth()->user()->isInstructorOrAdmin()) { abort(403); }
+        $user = auth()->user();
+        if (!$user->isInstructorOrAdmin()) { abort(403); }
 
         $data = $request->validate([
             'title'    => 'required|string|max:255',
@@ -32,12 +37,13 @@ class RubricController extends Controller
             'cells'    => 'nullable|json',
         ]);
 
-        // Decode JSON strings so the model's json cast doesn't double-encode
         foreach (['criteria', 'levels', 'cells'] as $field) {
             if (isset($data[$field]) && is_string($data[$field])) {
                 $data[$field] = json_decode($data[$field], true);
             }
         }
+
+        $data['instructor_id'] = $user->id;
 
         $course->rubrics()->create($data);
 
@@ -47,13 +53,19 @@ class RubricController extends Controller
 
     public function edit(Course $course, Rubric $rubric)
     {
-        if (!auth()->user()->isInstructorOrAdmin()) { abort(403); }
+        $user = auth()->user();
+        if (!$user->isInstructorOrAdmin() || ($user->isInstructor() && $rubric->instructor_id !== $user->id)) {
+            abort(403);
+        }
         return view('rubrics.edit', compact('course', 'rubric'));
     }
 
     public function update(Request $request, Course $course, Rubric $rubric)
     {
-        if (!auth()->user()->isInstructorOrAdmin()) { abort(403); }
+        $user = auth()->user();
+        if (!$user->isInstructorOrAdmin() || ($user->isInstructor() && $rubric->instructor_id !== $user->id)) {
+            abort(403);
+        }
 
         $data = $request->validate([
             'title'    => 'required|string|max:255',
@@ -76,7 +88,10 @@ class RubricController extends Controller
 
     public function importXml(Request $request, Course $course)
     {
-        if (!auth()->user()->isInstructorOrAdmin()) { abort(403); }
+        $user = auth()->user();
+        if (!$user->isInstructorOrAdmin()) { abort(403); }
+
+        $base = ['instructor_id' => $user->id];
 
         if ($request->hasFile('xml_file')) {
             $request->validate([
@@ -88,7 +103,7 @@ class RubricController extends Controller
             $service = app(RubricImportService::class);
             $parsed = $service->importFromXML($xmlContent);
 
-            $course->rubrics()->create([
+            $course->rubrics()->create($base + [
                 'title' => $request->input('title'),
                 'criteria' => $parsed['criteria'],
                 'levels' => $parsed['levels'],
@@ -102,7 +117,7 @@ class RubricController extends Controller
                 'cells' => 'required|json',
             ]);
 
-            $course->rubrics()->create([
+            $course->rubrics()->create($base + [
                 'title' => $data['title'],
                 'criteria' => json_decode($data['criteria'], true),
                 'levels' => json_decode($data['levels'], true),
@@ -116,7 +131,10 @@ class RubricController extends Controller
 
     public function destroy(Course $course, Rubric $rubric)
     {
-        if (!auth()->user()->isInstructorOrAdmin()) { abort(403); }
+        $user = auth()->user();
+        if (!$user->isInstructorOrAdmin() || ($user->isInstructor() && $rubric->instructor_id !== $user->id)) {
+            abort(403);
+        }
         $rubric->delete();
 
         return redirect()->route('courses.rubrics.index', $course)

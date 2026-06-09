@@ -15,6 +15,9 @@
                     <div>
                         <h2 class="text-xl font-bold text-white">{{ $module->title }}</h2>
                         <p class="text-sm text-gray-400 mt-1">{{ $module->course->title ?? '—' }}</p>
+                        @if($module->description)
+                            <p class="text-sm text-gray-300 mt-2">{{ $module->description }}</p>
+                        @endif
                     </div>
                     <div class="flex gap-2">
                         <a href="{{ route('admin.modules.edit', $module) }}" class="text-xs text-gray-400 hover:text-white px-3 py-1.5 rounded-lg hover:bg-surface-700 transition-colors border border-white/10">Edit</a>
@@ -63,6 +66,16 @@
                 <h4 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">Order Index</h4>
                 <p class="text-white text-sm">{{ $module->order_index ?? '—' }}</p>
             </div>
+            @if($module->file_path)
+                <div class="bg-surface-800 border border-white/10 rounded-xl p-5">
+                    <h4 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">Attachment</h4>
+                    <a href="{{ Storage::url($module->file_path) }}" target="_blank"
+                       class="inline-flex items-center gap-2 text-sm text-brand-400 hover:text-brand-300 transition-colors">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                        {{ basename($module->file_path) }}
+                    </a>
+                </div>
+            @endif
         </div>
     </div>
 </x-layouts.dashboard>

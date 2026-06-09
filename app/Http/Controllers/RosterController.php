@@ -16,7 +16,13 @@ class RosterController extends Controller
 
         $course->load('students', 'coInstructors', 'instructor');
 
-        return view('courses.roster', compact('course'));
+        $enrolledIds = $course->students()->pluck('users.id');
+        $availableStudents = User::where('role', 'student')
+            ->whereNotIn('id', $enrolledIds)
+            ->orderBy('name')
+            ->get();
+
+        return view('courses.roster', compact('course', 'availableStudents'));
     }
 
     public function addCoInstructor(Request $request, Course $course)

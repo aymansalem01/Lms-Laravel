@@ -171,7 +171,7 @@
             @endif
         </div>
 
-        <div class="space-y-4">
+            <div class="space-y-4">
             <div class="bg-surface-800 border border-white/10 rounded-2xl p-5">
                 <h3 class="text-sm font-semibold text-white mb-3">{{ __('Details') }}</h3>
                 <div class="space-y-3 text-sm">
@@ -191,6 +191,16 @@
                         <span class="text-gray-500">{{ __('Status') }}</span>
                         <span class="{{ $isOverdue ? 'text-red-400' : 'text-green-400' }}">{{ $isOverdue ? __('Overdue') : __('Open') }}</span>
                     </div>
+                    @if($assignment->file_path)
+                        <div class="pt-3 border-t border-white/10">
+                            <span class="text-gray-500 text-xs block mb-2">{{ __('Attachment') }}</span>
+                            <a href="{{ Storage::url($assignment->file_path) }}" target="_blank"
+                               class="flex items-center gap-2 bg-surface-700 rounded-xl px-3 py-2.5 hover:bg-surface-600 transition-colors group">
+                                <svg class="w-5 h-5 text-brand-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                                <span class="text-sm text-gray-300 group-hover:text-white transition-colors truncate">{{ basename($assignment->file_path) }}</span>
+                            </a>
+                        </div>
+                    @endif
                 </div>
             </div>
 

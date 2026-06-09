@@ -8,6 +8,7 @@ use App\Models\LessonProgress;
 use App\Models\Grade;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class CourseController extends Controller
 {
@@ -26,15 +27,34 @@ class CourseController extends Controller
         return view('courses.index', compact('courses'));
     }
 
-    public function catalog()
+    public function catalog(Request $request)
     {
         $user = auth()->user();
         $enrolledIds = $user->enrolledCourses()->pluck('course_id');
 
         $courses = Course::with('instructor')
             ->where('is_published', true)
+            ->when($request->filled('search'), function ($q) use ($request) {
+                $search = $request->search;
+                $q->where(function ($q) use ($search) {
+                    $q->where('title', 'like', "%{$search}%")
+                      ->orWhere('description', 'like', "%{$search}%")
+                      ->orWhere('program', 'like', "%{$search}%")
+                      ->orWhereHas('instructor', function ($q) use ($search) {
+                          $q->where('name', 'like', "%{$search}%");
+                      });
+                });
+            })
+            ->when($request->filled('program'), function ($q) use ($request) {
+                $q->where('program', $request->program);
+            })
+            ->withCount('enrollments')
             ->latest()
             ->get();
+
+        if ($request->has('live')) {
+            return view('courses._catalog_results', compact('courses', 'enrolledIds'));
+        }
 
         return view('courses.catalog', compact('courses', 'enrolledIds'));
     }
@@ -49,6 +69,7 @@ class CourseController extends Controller
             'modules.quizzes',
             'modules.liveSessions',
             'modules.assignments',
+            'modules.moduleFiles',
             'assignments.submissions',
             'quizzes',
             'announcements.author',
@@ -82,7 +103,13 @@ class CourseController extends Controller
             });
         }
 
-        return view('courses.show', compact('course', 'discussions', 'attendance', 'assignments', 'quizzes', 'modules', 'liveSessions', 'isEnrolled', 'moduleProgress'));
+        $enrolledIds = $course->students()->pluck('users.id');
+        $availableStudents = User::where('role', 'student')
+            ->whereNotIn('id', $enrolledIds)
+            ->orderBy('name')
+            ->get();
+
+        return view('courses.show', compact('course', 'discussions', 'attendance', 'assignments', 'quizzes', 'modules', 'liveSessions', 'isEnrolled', 'moduleProgress', 'availableStudents'));
     }
 
     public function create()
@@ -97,11 +124,17 @@ class CourseController extends Controller
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
             'program' => 'nullable|string|max:255',
-            'cover_image_url' => 'nullable|url|max:2048',
+            'cover_image' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
             'course_type' => 'nullable|string|in:program,sae_core,university',
             'is_published' => 'boolean',
             'instructor_id' => 'required|exists:users,id',
         ]);
+
+        if ($request->hasFile('cover_image')) {
+            $data['cover_image_url'] = Storage::url($request->file('cover_image')->store('courses', 'public'));
+        }
+
+        unset($data['cover_image']);
 
         Course::create($data);
 
@@ -127,10 +160,26 @@ class CourseController extends Controller
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
             'program' => 'nullable|string|max:255',
-            'cover_image_url' => 'nullable|url|max:2048',
+            'cover_image' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
             'course_type' => 'nullable|string|in:program,sae_core,university',
-            'is_published' => 'boolean',
+            'status' => 'nullable|in:draft,published',
         ]);
+
+        if ($request->filled('status')) {
+            $data['is_published'] = $request->status === 'published';
+        }
+
+        if ($request->hasFile('cover_image')) {
+            if ($course->cover_image_url) {
+                $oldPath = str_replace(Storage::url(''), '', $course->cover_image_url);
+                if (Storage::disk('public')->exists($oldPath)) {
+                    Storage::disk('public')->delete($oldPath);
+                }
+            }
+            $data['cover_image_url'] = Storage::url($request->file('cover_image')->store('courses', 'public'));
+        }
+
+        unset($data['cover_image']);
 
         $course->update($data);
 
@@ -264,7 +313,7 @@ class CourseController extends Controller
             abort(403);
         }
 
-        $course->load('modules.lessons.topics', 'modules.quizzes', 'modules.liveSessions', 'modules.assignments');
+        $course->load('modules.lessons.topics', 'modules.quizzes', 'modules.liveSessions', 'modules.assignments', 'modules.moduleFiles');
 
         $newCourse = $course->replicate();
         $newCourse->title = $course->title . ' (Copy)';
@@ -366,30 +415,51 @@ class CourseController extends Controller
         }
 
         $request->validate([
-            'email' => 'required|email|exists:users,email',
+            'student_ids' => 'required|array',
+            'student_ids.*' => 'required|exists:users,id',
         ]);
 
-        $student = User::where('email', $request->email)->firstOrFail();
+        $enrolled = 0;
+        $skipped = 0;
 
-        if (!$student->isStudent()) {
-            return redirect()->back()->with('error', 'User is not a student.');
+        foreach ($request->student_ids as $id) {
+            $student = User::find($id);
+            if (!$student || !$student->isStudent()) {
+                $skipped++;
+                continue;
+            }
+
+            $exists = Enrollment::where('student_id', $id)
+                ->where('course_id', $course->id)
+                ->exists();
+
+            if ($exists) {
+                $skipped++;
+                continue;
+            }
+
+            Enrollment::create([
+                'student_id' => $id,
+                'course_id' => $course->id,
+                'enrolled_at' => now(),
+            ]);
+
+            $student->notifications()->create([
+                'type'    => 'enrollment',
+                'title'   => 'Enrolled: ' . $course->title,
+                'message' => 'You have been enrolled in ' . $course->title . '.',
+                'link'    => route('courses.show', $course),
+            ]);
+
+            $enrolled++;
         }
 
-        $exists = Enrollment::where('student_id', $student->id)
-            ->where('course_id', $course->id)
-            ->exists();
-
-        if ($exists) {
-            return redirect()->back()->with('error', 'Student is already enrolled.');
+        $msg = "$enrolled student(s) enrolled successfully.";
+        if ($skipped > 0) {
+            $msg .= " $skipped skipped (already enrolled or not a student).";
         }
 
-        Enrollment::create([
-            'student_id' => $student->id,
-            'course_id' => $course->id,
-            'enrolled_at' => now(),
-        ]);
-
-        return redirect()->back()->with('success', 'Student enrolled successfully.');
+        return redirect()->back()->with('success', $msg);
     }
 
     public function bulkEnrollCSV(Request $request, Course $course)

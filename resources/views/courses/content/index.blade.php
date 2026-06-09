@@ -26,7 +26,7 @@
     {{-- Add Module form (inline) --}}
     <div x-ref="addModuleForm" class="hidden bg-surface-800 border border-surface-700 rounded-xl p-5 mb-6 transition-all">
         <h3 class="text-sm font-semibold text-white mb-4">{{ __('New Module') }}</h3>
-             <form method="POST" action="{{ route('courses.content.store', $course) }}" class="space-y-4">
+             <form method="POST" action="{{ route('courses.content.store', $course) }}" enctype="multipart/form-data" class="space-y-4">
             @csrf
             <div>
                 <label for="module_title" class="block text-xs font-medium text-gray-400 mb-1">{{ __('Module Title') }}</label>
@@ -37,6 +37,16 @@
                 <label for="module_description" class="block text-xs font-medium text-gray-400 mb-1">{{ __('Description') }} <span class="text-gray-600">{{ __('(optional)') }}</span></label>
                 <input type="text" name="description" id="module_description" placeholder="{{ __('Brief description of this module...') }}"
                        class="w-full bg-surface-700 border border-surface-600 rounded-lg px-4 py-2 text-sm text-gray-200 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-brand-500/50 focus:border-brand-500/50 transition-colors">
+            </div>
+            <div>
+                <label class="block text-xs font-medium text-gray-400 mb-1">{{ __('Attachment') }} <span class="text-gray-600">{{ __('(optional)') }}</span></label>
+                <label class="flex items-center gap-2 bg-surface-700 border border-dashed border-surface-600 rounded-lg px-3 py-2 cursor-pointer hover:border-brand-500/50 transition-colors">
+                    <svg class="w-4 h-4 text-gray-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/></svg>
+                    <span class="text-xs text-gray-500">{{ __('Upload file...') }}</span>
+                    <input type="file" name="module_file"
+                           @change="const f = $event.target.files[0]; if (f) { $el.closest('label').querySelector('span').textContent = f.name; }"
+                           class="hidden">
+                </label>
             </div>
             <div class="flex items-center gap-2 justify-end">
                 <button type="button" @click="$refs.addModuleForm.classList.add('hidden')" class="text-sm text-gray-400 hover:text-white px-3 py-1.5 transition-colors">{{ __('Cancel') }}</button>
@@ -65,6 +75,13 @@
                         </div>
                     </div>
                     <div class="flex items-center gap-2 shrink-0">
+                        @if($module->file_path)
+                            <a href="{{ Storage::url($module->file_path) }}" target="_blank"
+                               class="text-xs text-brand-400 hover:text-brand-300 px-2 py-1 rounded hover:bg-brand-500/10 transition-colors flex items-center gap-1">
+                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                                {{ __('File') }}
+                            </a>
+                        @endif
                         <a href="{{ route('courses.content.edit', [$course, $module]) }}" class="text-xs text-gray-400 hover:text-white px-2 py-1 rounded hover:bg-surface-700 transition-colors">
                             {{ __('Edit') }}
                         </a>
@@ -141,7 +158,7 @@
                         <div class="flex items-center gap-2">
                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h7"/></svg>
                             <span>{{ __('Module Resources') }}</span>
-                            @php $resourceCount = $module->quizzes->count() + $module->liveSessions->count() + $module->assignments->count(); @endphp
+                            @php $resourceCount = $module->quizzes->count() + $module->liveSessions->count() + $module->assignments->count() + $module->moduleFiles->count(); @endphp
                             @if($resourceCount > 0)
                                 <span class="text-[10px] bg-brand-500/20 text-brand-400 px-1.5 py-0.5 rounded-full">{{ $resourceCount }}</span>
                             @endif
@@ -236,6 +253,56 @@
                                 @empty
                                     <p class="text-xs text-gray-600 px-2">{{ __('No assignments assigned.') }}</p>
                                 @endforelse
+                            </div>
+
+                            {{-- Files --}}
+                            <div class="bg-surface-700 border border-surface-700 rounded-lg p-3">
+                                <div class="flex items-center justify-between mb-2">
+                                    <span class="text-xs font-medium text-gray-300">{{ __('Files') }}</span>
+                                    <button x-data @click="$refs.addFileForm{{ $module->id }}.classList.toggle('hidden')"
+                                            class="flex items-center gap-1 text-xs text-brand-400 hover:text-brand-300 transition-colors">
+                                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                                        {{ __('Add') }}
+                                    </button>
+                                </div>
+                                @forelse($module->moduleFiles as $resource)
+                                    <div class="flex items-center justify-between px-2 py-1.5 rounded hover:bg-surface-700/50 transition-colors group/resource">
+                                        <div class="flex items-center gap-2 min-w-0">
+                                            <svg class="w-3.5 h-3.5 text-amber-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                                            <a href="{{ Storage::url($resource->file_path) }}" target="_blank" class="text-xs text-gray-400 hover:text-white truncate">{{ $resource->title }}</a>
+                                        </div>
+                                        <div class="flex items-center gap-1 opacity-0 group-hover/resource:opacity-100 transition-opacity">
+                                            <form method="POST" action="{{ route('courses.module-files.destroy', [$course, $module, $resource]) }}" class="inline" onsubmit="return confirm('{{ __('Delete this file?') }}')">
+                                                @csrf @method('DELETE')
+                                                <button type="submit" class="text-[10px] text-red-500 hover:text-red-400 px-1.5 py-0.5 rounded transition-colors">{{ __('Delete') }}</button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                @empty
+                                    <p class="text-xs text-gray-600 px-2">{{ __('No files uploaded.') }}</p>
+                                @endforelse
+
+                                {{-- Inline add file form --}}
+                                <div x-ref="addFileForm{{ $module->id }}" class="hidden bg-surface-800 rounded-lg p-3 mt-2 transition-all">
+                                    <form method="POST" action="{{ route('courses.module-files.store', [$course, $module]) }}" enctype="multipart/form-data">
+                                        @csrf
+                                        <div class="space-y-2">
+                                            <input type="text" name="title" required placeholder="{{ __('File title...') }}"
+                                                   class="w-full bg-surface-700 border border-surface-600 rounded-lg px-3 py-1.5 text-sm text-gray-200 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-brand-500/50 transition-colors">
+                                            <label class="flex items-center gap-2 bg-surface-700 border border-dashed border-surface-600 rounded-lg px-3 py-2 cursor-pointer hover:border-brand-500/50 transition-colors">
+                                                <svg class="w-4 h-4 text-gray-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/></svg>
+                                                <span class="text-xs text-gray-500">{{ __('Choose file...') }}</span>
+                                                <input type="file" name="file" required
+                                                       @change="const f = $event.target.files[0]; if (f) { $el.closest('label').querySelector('span').textContent = f.name; }"
+                                                       class="hidden">
+                                            </label>
+                                            <div class="flex items-center gap-2 justify-end">
+                                                <button type="button" @click="$refs.addFileForm{{ $module->id }}.classList.add('hidden')" class="text-xs text-gray-400 hover:text-white px-2 py-1 transition-colors">{{ __('Cancel') }}</button>
+                                                <button type="submit" class="text-xs bg-brand-500 hover:bg-brand-600 text-white font-medium px-3 py-1 rounded-lg transition-colors">{{ __('Upload') }}</button>
+                                            </div>
+                                        </div>
+                                    </form>
+                                </div>
                             </div>
                         </div>
                     </div>

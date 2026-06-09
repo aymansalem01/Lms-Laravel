@@ -6,6 +6,7 @@ use App\Models\Assignment;
 use App\Models\Course;
 use App\Models\Submission;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class AssignmentController extends Controller
 {
@@ -33,7 +34,9 @@ class AssignmentController extends Controller
         if (!auth()->user()->isInstructorOrAdmin()) {
             abort(403);
         }
-        $rubrics = $course->rubrics ?? collect();
+        $rubrics = $course->rubrics()
+            ->when(!auth()->user()->isAdmin(), fn($q) => $q->where('instructor_id', auth()->id()))
+            ->get();
         $modules = $course->modules ?? collect();
         return view('assignments.create', compact('course', 'rubrics', 'modules'));
     }
@@ -49,7 +52,12 @@ class AssignmentController extends Controller
             'max_score'   => 'nullable|integer|min:0',
             'rubric_ref'  => 'nullable|exists:rubrics,id',
             'module_id'   => 'nullable|exists:modules,id',
+            'attachment'  => 'nullable|file|mimes:pdf,doc,docx,zip,rar,7z,png,jpg,jpeg,ppt,pptx,xls,xlsx,txt|max:10240',
         ]);
+
+        if ($request->hasFile('attachment')) {
+            $data['file_path'] = $request->file('attachment')->store('assignments', 'public');
+        }
 
         $data['rubric'] = $request->input('rubric');
         $data['module_id'] = $request->filled('module_id') ? $data['module_id'] : null;
@@ -71,7 +79,9 @@ class AssignmentController extends Controller
     public function edit(Course $course, Assignment $assignment)
     {
         if (!auth()->user()->isInstructorOrAdmin()) { abort(403); }
-        $rubrics = $course->rubrics ?? collect();
+        $rubrics = $course->rubrics()
+            ->when(!auth()->user()->isAdmin(), fn($q) => $q->where('instructor_id', auth()->id()))
+            ->get();
         $modules = $course->modules ?? collect();
         return view('assignments.edit', compact('course', 'assignment', 'rubrics', 'modules'));
     }
@@ -87,7 +97,15 @@ class AssignmentController extends Controller
             'max_score'   => 'nullable|integer|min:0',
             'rubric_ref'  => 'nullable|exists:rubrics,id',
             'module_id'   => 'nullable|exists:modules,id',
+            'attachment'  => 'nullable|file|mimes:pdf,doc,docx,zip,rar,7z,png,jpg,jpeg,ppt,pptx,xls,xlsx,txt|max:10240',
         ]);
+
+        if ($request->hasFile('attachment')) {
+            if ($assignment->file_path) {
+                Storage::disk('public')->delete($assignment->file_path);
+            }
+            $data['file_path'] = $request->file('attachment')->store('assignments', 'public');
+        }
 
         $data['rubric'] = $request->input('rubric');
         $data['module_id'] = $request->filled('module_id') ? $data['module_id'] : null;

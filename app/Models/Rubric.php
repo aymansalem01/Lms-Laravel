@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Rubric extends Model
 {
-    protected $fillable = ['course_id', 'title', 'criteria', 'levels', 'cells'];
+    protected $fillable = ['course_id', 'instructor_id', 'title', 'criteria', 'levels', 'cells'];
 
     protected function casts(): array
     {
@@ -22,6 +22,11 @@ class Rubric extends Model
     public function course(): BelongsTo
     {
         return $this->belongsTo(Course::class);
+    }
+
+    public function instructor(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'instructor_id');
     }
 
     public function assignments(): HasMany

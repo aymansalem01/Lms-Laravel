@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Module extends Model
 {
-    protected $fillable = ['course_id', 'title', 'order_index'];
+    protected $fillable = ['course_id', 'title', 'description', 'file_path', 'order_index'];
 
     public function course(): BelongsTo
     {
@@ -33,5 +33,10 @@ class Module extends Model
     public function assignments(): HasMany
     {
         return $this->hasMany(Assignment::class);
+    }
+
+    public function moduleFiles(): HasMany
+    {
+        return $this->hasMany(ModuleFile::class)->orderBy('order_index');
     }
 }

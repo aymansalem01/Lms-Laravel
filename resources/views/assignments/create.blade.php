@@ -11,7 +11,7 @@
     </div>
 
     <div class="max-w-3xl">
-        <form method="POST" action="{{ route('courses.assignments.store', $course) }}" class="bg-surface-800 border border-white/10 rounded-2xl p-6 space-y-6">
+        <form method="POST" action="{{ route('courses.assignments.store', $course) }}" enctype="multipart/form-data" class="bg-surface-800 border border-white/10 rounded-2xl p-6 space-y-6">
             @csrf
             <div>
                 <label for="module_id" class="block text-sm font-medium text-gray-300 mb-1.5">{{ __('Module') }} <span class="text-gray-500">({{ __('optional') }})</span></label>
@@ -38,6 +38,20 @@
                           class="input-dashboard resize-none {{ $errors->has('description') ? 'border-red-500' : '' }}"
                           placeholder="{{ __('Describe the assignment requirements, instructions, and any resources...') }}">{{ old('description') }}</textarea>
                 @error('description') <p class="text-red-400 text-xs mt-1">{{ $message }}</p> @enderror
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-gray-300 mb-1.5">{{ __('Attachment') }} <span class="text-gray-500">({{ __('optional') }})</span></label>
+                <div class="flex items-center gap-3">
+                    <label class="relative flex items-center gap-3 bg-surface-700 border border-dashed border-surface-600 rounded-xl px-4 py-3 cursor-pointer hover:border-brand-500/50 transition-colors w-full">
+                        <svg class="w-5 h-5 text-gray-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/></svg>
+                        <span class="text-sm text-gray-400">{{ __('Upload a file (PDF, DOC, ZIP, etc.)') }}</span>
+                        <input type="file" name="attachment" accept=".pdf,.doc,.docx,.zip,.rar,.7z,.png,.jpg,.jpeg,.ppt,.pptx,.xls,.xlsx,.txt"
+                               @change="const f = $event.target.files[0]; if (f) { $el.closest('label').querySelector('span').textContent = f.name; }"
+                               class="hidden">
+                    </label>
+                </div>
+                @error('attachment') <p class="text-red-400 text-xs mt-1">{{ $message }}</p> @enderror
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">

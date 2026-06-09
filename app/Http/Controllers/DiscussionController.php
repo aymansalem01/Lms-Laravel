@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Course;
 use App\Models\Discussion;
 use App\Models\DiscussionReply;
+use App\Models\User;
 use Illuminate\Http\Request;
 
 class DiscussionController extends Controller
@@ -37,7 +38,31 @@ class DiscussionController extends Controller
         ]);
 
         $data['user_id'] = auth()->id();
-        $course->discussions()->create($data);
+        $discussion = $course->discussions()->create($data);
+
+        // Notify all enrolled students
+        $course->students()->each(function ($student) use ($course, $discussion) {
+            $student->notifications()->create([
+                'type'    => 'discussion',
+                'title'   => 'New Discussion: ' . $discussion->title,
+                'message' => 'A new discussion "' . $discussion->title . '" has been posted in ' . $course->title,
+                'link'    => route('courses.discussions.show', [$course, $discussion]),
+            ]);
+        });
+
+        // Notify instructors and co-instructors (skip the author)
+        $course->load('coInstructors');
+        $instructorIds = collect([$course->instructor_id])
+            ->merge($course->coInstructors->pluck('id'))
+            ->reject(fn($id) => $id === auth()->id());
+        User::whereIn('id', $instructorIds)->each(function ($instructor) use ($course, $discussion) {
+            $instructor->notifications()->create([
+                'type'    => 'discussion',
+                'title'   => 'New Discussion: ' . $discussion->title,
+                'message' => auth()->user()->name . ' posted "' . $discussion->title . '" in ' . $course->title,
+                'link'    => route('courses.discussions.show', [$course, $discussion]),
+            ]);
+        });
 
         return redirect()->route('courses.discussions.index', $course)
             ->with('success', 'Discussion topic created successfully.');
@@ -57,6 +82,30 @@ class DiscussionController extends Controller
             'user_id' => auth()->id(),
             'content' => $data['content'],
         ]);
+
+        // Notify the discussion author (if not the replier)
+        if ($discussion->user_id !== auth()->id()) {
+            $discussion->user->notifications()->create([
+                'type'    => 'discussion_reply',
+                'title'   => 'New Reply: ' . $discussion->title,
+                'message' => auth()->user()->name . ' replied to "' . $discussion->title . '" in ' . $course->title,
+                'link'    => route('courses.discussions.show', [$course, $discussion]),
+            ]);
+        }
+
+        // Notify instructors and co-instructors (skip the replier)
+        $course->load('coInstructors');
+        $instructorIds = collect([$course->instructor_id])
+            ->merge($course->coInstructors->pluck('id'))
+            ->reject(fn($id) => $id === auth()->id());
+        User::whereIn('id', $instructorIds)->each(function ($instructor) use ($course, $discussion) {
+            $instructor->notifications()->create([
+                'type'    => 'discussion_reply',
+                'title'   => 'New Reply: ' . $discussion->title,
+                'message' => auth()->user()->name . ' replied to "' . $discussion->title . '" in ' . $course->title,
+                'link'    => route('courses.discussions.show', [$course, $discussion]),
+            ]);
+        });
 
         return redirect()->route('courses.discussions.show', [$course, $discussion])
             ->with('success', 'Reply posted successfully.');

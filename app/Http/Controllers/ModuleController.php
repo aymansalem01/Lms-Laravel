@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Course;
 use App\Models\Module;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class ModuleController extends Controller
 {
@@ -15,6 +16,7 @@ class ModuleController extends Controller
             'modules.quizzes',
             'modules.liveSessions',
             'modules.assignments',
+            'modules.moduleFiles',
             'quizzes',
             'liveSessions',
             'assignments',
@@ -38,8 +40,14 @@ class ModuleController extends Controller
 
         $data = $request->validate([
             'title' => 'required|string|max:255',
+            'description' => 'nullable|string|max:1000',
             'order_index' => 'nullable|integer',
+            'module_file' => 'nullable|file|mimes:pdf,doc,docx,zip,rar,7z,png,jpg,jpeg,ppt,pptx,xls,xlsx,txt,mp4,mp3|max:20480',
         ]);
+
+        if ($request->hasFile('module_file')) {
+            $data['file_path'] = $request->file('module_file')->store('modules', 'public');
+        }
 
         $data['course_id'] = $course->id;
         if (!isset($data['order_index'])) {
@@ -63,8 +71,17 @@ class ModuleController extends Controller
 
         $data = $request->validate([
             'title' => 'required|string|max:255',
+            'description' => 'nullable|string|max:1000',
             'order_index' => 'nullable|integer',
+            'module_file' => 'nullable|file|mimes:pdf,doc,docx,zip,rar,7z,png,jpg,jpeg,ppt,pptx,xls,xlsx,txt,mp4,mp3|max:20480',
         ]);
+
+        if ($request->hasFile('module_file')) {
+            if ($module->file_path) {
+                Storage::disk('public')->delete($module->file_path);
+            }
+            $data['file_path'] = $request->file('module_file')->store('modules', 'public');
+        }
 
         $module->update($data);
 

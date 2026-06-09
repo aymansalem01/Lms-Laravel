@@ -46,6 +46,12 @@
                             </div>
                             <p class="text-sm text-gray-400 line-clamp-2 mb-3">{{ $assignment->description }}</p>
                             <div class="flex items-center gap-4 text-xs text-gray-500">
+                                @if($assignment->file_path)
+                                    <span class="flex items-center gap-1.5">
+                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/></svg>
+                                        <span class="text-gray-500">{{ __('Attachment') }}</span>
+                                    </span>
+                                @endif
                                 <span class="flex items-center gap-1.5">
                                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
                                     {{ $assignment->due_date ? $assignment->due_date->format('M d, Y h:i A') : __('No due date') }}

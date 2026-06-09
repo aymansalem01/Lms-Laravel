@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Module;
 use App\Models\Course;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class ModuleController extends Controller
 {
@@ -39,13 +40,25 @@ class ModuleController extends Controller
         return view('admin.modules.show', compact('module'));
     }
 
+    public function create()
+    {
+        $courses = Course::orderBy('title')->get(['id', 'title']);
+        return view('admin.modules.create', compact('courses'));
+    }
+
     public function store(Request $request)
     {
         $data = $request->validate([
             'course_id'   => ['required', 'exists:courses,id'],
             'title'       => ['required', 'string', 'max:255'],
+            'description' => ['nullable', 'string', 'max:1000'],
             'order_index' => ['nullable', 'integer', 'min:0'],
+            'module_file' => ['nullable', 'file', 'mimes:pdf,doc,docx,zip,rar,7z,png,jpg,jpeg,ppt,pptx,xls,xlsx,txt,mp4,mp3', 'max:20480'],
         ]);
+
+        if ($request->hasFile('module_file')) {
+            $data['file_path'] = $request->file('module_file')->store('modules', 'public');
+        }
 
         if (!isset($data['order_index'])) {
             $max = Module::where('course_id', $data['course_id'])->max('order_index');
@@ -54,19 +67,37 @@ class ModuleController extends Controller
 
         Module::create($data);
 
-        return back()->with('success', "Module \"{$data['title']}\" created.");
+        return redirect()->route('admin.modules.index')->with('success', "Module \"{$data['title']}\" created.");
+    }
+
+    public function edit(Module $module)
+    {
+        $module->load('course');
+        return view('admin.modules.edit', compact('module'));
     }
 
     public function update(Request $request, Module $module)
     {
         $data = $request->validate([
             'title'       => ['required', 'string', 'max:255'],
+            'description' => ['nullable', 'string', 'max:1000'],
             'order_index' => ['nullable', 'integer', 'min:0'],
+            'module_file' => ['nullable', 'file', 'mimes:pdf,doc,docx,zip,rar,7z,png,jpg,jpeg,ppt,pptx,xls,xlsx,txt,mp4,mp3', 'max:20480'],
         ]);
+
+        if ($request->hasFile('module_file')) {
+            if ($module->file_path) {
+                Storage::disk('public')->delete($module->file_path);
+            }
+            $data['file_path'] = $request->file('module_file')->store('modules', 'public');
+        } elseif ($request->boolean('remove_module_file') && $module->file_path) {
+            Storage::disk('public')->delete($module->file_path);
+            $data['file_path'] = null;
+        }
 
         $module->update($data);
 
-        return back()->with('success', "Module \"{$data['title']}\" updated.");
+        return redirect()->route('admin.modules.index')->with('success', "Module \"{$data['title']}\" updated.");
     }
 
     public function reorder(Request $request)

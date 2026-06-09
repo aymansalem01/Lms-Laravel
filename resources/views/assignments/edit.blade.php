@@ -11,7 +11,7 @@
     </div>
 
     <div class="max-w-3xl">
-        <form method="POST" action="{{ route('courses.assignments.update', [$course, $assignment]) }}" class="bg-surface-800 border border-white/10 rounded-2xl p-6 space-y-6">
+        <form method="POST" action="{{ route('courses.assignments.update', [$course, $assignment]) }}" enctype="multipart/form-data" class="bg-surface-800 border border-white/10 rounded-2xl p-6 space-y-6">
             @csrf
             @method('PUT')
 
@@ -55,6 +55,24 @@
                            class="input-dashboard {{ $errors->has('max_score') ? 'border-red-500' : '' }}">
                     @error('max_score') <p class="text-red-400 text-xs mt-1">{{ $message }}</p> @enderror
                 </div>
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-gray-300 mb-1.5">{{ __('Attachment') }} <span class="text-gray-500">({{ __('optional') }})</span></label>
+                <div class="flex items-center gap-3">
+                    <label class="relative flex items-center gap-3 bg-surface-700 border border-dashed border-surface-600 rounded-xl px-4 py-3 cursor-pointer hover:border-brand-500/50 transition-colors w-full">
+                        <svg class="w-5 h-5 text-gray-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/></svg>
+                        <span class="text-sm text-gray-400">{{ $assignment->file_path ? basename($assignment->file_path) : __('Upload a file (PDF, DOC, ZIP, etc.)') }}</span>
+                        <input type="file" name="attachment" accept=".pdf,.doc,.docx,.zip,.rar,.7z,.png,.jpg,.jpeg,.ppt,.pptx,.xls,.xlsx,.txt"
+                               @change="const f = $event.target.files[0]; if (f) { $el.closest('label').querySelector('span').textContent = f.name; }"
+                               class="hidden">
+                    </label>
+                    @if($assignment->file_path)
+                        <a href="{{ Storage::url($assignment->file_path) }}" target="_blank"
+                           class="text-xs text-brand-400 hover:text-brand-300 transition-colors shrink-0">{{ __('View') }}</a>
+                    @endif
+                </div>
+                @error('attachment') <p class="text-red-400 text-xs mt-1">{{ $message }}</p> @enderror
             </div>
 
             <div>

@@ -13,8 +13,10 @@ use App\Http\Controllers\AssignmentController;
 use App\Http\Controllers\SubmissionController;
 use App\Http\Controllers\GradingController;
 use App\Http\Controllers\QuizController;
+use App\Http\Controllers\Admin\ModuleController as AdminModuleController;
 use App\Http\Controllers\RubricController;
 use App\Http\Controllers\CourseFileController;
+use App\Http\Controllers\ModuleFileController;
 use App\Http\Controllers\DiscussionController;
 use App\Http\Controllers\TopicController;
 use App\Http\Controllers\LiveSessionController;
@@ -207,6 +209,11 @@ Route::post('/theme', [ViewController::class, 'theme'])->name('theme.switch');
             });
             Route::get('/{session}', [LiveSessionController::class, 'show'])->name('show');
         });
+        Route::middleware('role:instructor,admin')->prefix('modules/{module}/files')->name('module-files.')->group(function () {
+            Route::post('/', [ModuleFileController::class, 'store'])->name('store');
+            Route::delete('/{file}', [ModuleFileController::class, 'destroy'])->name('destroy');
+        });
+
         Route::middleware('role:instructor,admin')->prefix('attendance')->name('attendance.')->group(function () {
             Route::get('/', [\App\Http\Controllers\AttendanceController::class, 'index'])->name('index');
             Route::post('/', [\App\Http\Controllers\AttendanceController::class, 'store'])->name('store');
@@ -263,6 +270,16 @@ Route::post('/theme', [ViewController::class, 'theme'])->name('theme.switch');
         Route::get('/question-bank/{questionBankItem}/edit',    [\App\Http\Controllers\Admin\QuestionBankController::class, 'edit'])->name('question-bank.edit');
         Route::put('/question-bank/{questionBankItem}',         [\App\Http\Controllers\Admin\QuestionBankController::class, 'update'])->name('question-bank.update');
         Route::delete('/question-bank/{questionBankItem}',      [\App\Http\Controllers\Admin\QuestionBankController::class, 'destroy'])->name('question-bank.destroy');
+
+        // ── Modules ───────────────────────────────────────────────────────────
+        Route::get('/modules',                                [AdminModuleController::class, 'index'])->name('modules.index');
+        Route::get('/modules/create',                         [AdminModuleController::class, 'create'])->name('modules.create');
+        Route::post('/modules',                               [AdminModuleController::class, 'store'])->name('modules.store');
+        Route::get('/modules/{module}',                       [AdminModuleController::class, 'show'])->name('modules.show');
+        Route::get('/modules/{module}/edit',                  [AdminModuleController::class, 'edit'])->name('modules.edit');
+        Route::put('/modules/{module}',                       [AdminModuleController::class, 'update'])->name('modules.update');
+        Route::post('/modules/reorder',                       [AdminModuleController::class, 'reorder'])->name('modules.reorder');
+        Route::delete('/modules/{module}',                    [AdminModuleController::class, 'destroy'])->name('modules.destroy');
 
         // ── Programs ──────────────────────────────────────────────────────────
         Route::get('/programs',                             [ProgramController::class, 'index'])->name('programs.index');

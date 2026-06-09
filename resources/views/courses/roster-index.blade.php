@@ -1,9 +1,9 @@
 <x-layouts.dashboard>
-    <x-slot name="title">{{ __('Global Roster') }}</x-slot>
+    <x-slot name="title">{{ __('All Students') }}</x-slot>
 
     <div class="mb-6">
         <div>
-            <h1 class="text-2xl font-bold text-white">{{ __('Global Roster') }}</h1>
+            <h1 class="text-2xl font-bold text-white">{{ __('All Students') }}</h1>
             <p class="text-gray-400 text-sm mt-1">{{ __('All courses and their enrolled students.') }}</p>
         </div>
     </div>

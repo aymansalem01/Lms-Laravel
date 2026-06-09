@@ -7,7 +7,7 @@
             <p class="text-gray-400 text-sm mt-1">{{ __('Update course details and settings.') }}</p>
         </div>
 
-        <form method="POST" action="{{ route('courses.update', $course) }}" class="bg-surface-800 border border-surface-700 rounded-xl p-6 space-y-6">
+        <form method="POST" action="{{ route('courses.update', $course) }}" enctype="multipart/form-data" class="bg-surface-800 border border-surface-700 rounded-xl p-6 space-y-6">
             @csrf
             @method('PUT')
 
@@ -60,15 +60,61 @@
                 @enderror
             </div>
 
-            {{-- Cover image URL --}}
-            <div>
-                <label for="cover_image" class="block text-sm font-medium text-gray-300 mb-1.5">{{ __('Cover Image URL') }}</label>
-                <input type="url" name="cover_image" id="cover_image" value="{{ old('cover_image', $course->cover_image) }}"
-                       class="w-full bg-surface-700 border border-surface-600 rounded-lg px-4 py-2.5 text-sm text-gray-200 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-brand-500/50 focus:border-brand-500/50 transition-colors @error('cover_image') border-red-500/50 @enderror"
-                       placeholder="{{ __('https://example.com/image.jpg') }}">
-                <p class="mt-1 text-xs text-gray-500">{{ __('Leave empty to use a gradient placeholder.') }}</p>
+            {{-- Cover image upload --}}
+            <div x-data="{ preview: null }">
+                <label class="block text-sm font-medium text-gray-300 mb-2">{{ __('Cover Image') }}</label>
+
+                <div class="relative group">
+                    {{-- Drop zone --}}
+                    <label class="relative flex items-center justify-center w-full h-48 border-2 border-dashed border-surface-600 rounded-2xl cursor-pointer hover:border-brand-500/50 transition-all duration-200 bg-surface-700/30 overflow-hidden @error('cover_image') border-red-500/50 @enderror">
+                        {{-- Existing image --}}
+                        @if($course->cover_image_url)
+                            <img src="{{ $course->cover_image_url }}" class="absolute inset-0 w-full h-full object-cover" x-show="!preview">
+                            <div class="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200" x-show="!preview">
+                                <div class="flex flex-col items-center gap-1.5">
+                                    <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                                    <span class="text-xs text-white/80 font-medium">{{ __('Change Image') }}</span>
+                                </div>
+                            </div>
+                        @endif
+
+                        {{-- Upload prompt --}}
+                        <div x-show="!preview && {{ $course->cover_image_url ? 'false' : 'true' }}" class="flex flex-col items-center gap-2 px-6 text-center">
+                            <div class="w-14 h-14 rounded-2xl bg-surface-700 flex items-center justify-center">
+                                <svg class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                            </div>
+                            <div>
+                                <p class="text-sm text-gray-300 font-medium">{{ __('Upload cover image') }}</p>
+                                <p class="text-xs text-gray-500 mt-0.5">{{ __('PNG, JPG or WebP · 2MB max') }}</p>
+                            </div>
+                            <span class="text-[11px] font-medium text-brand-400 bg-brand-500/10 px-3 py-1 rounded-full">{{ __('Browse') }}</span>
+                        </div>
+
+                        {{-- New file preview --}}
+                        <template x-if="preview">
+                            <img :src="preview" class="absolute inset-0 w-full h-full object-cover">
+                        </template>
+
+                        <input type="file" name="cover_image" accept="image/jpeg,image/png,image/webp"
+                               @change="const f = $event.target.files[0]; if (f) { const r = new FileReader(); r.onload = e => preview = e.target.result; r.readAsDataURL(f); }"
+                               class="hidden">
+                    </label>
+
+                    {{-- Actions --}}
+                    <div class="flex items-center gap-2 mt-2.5">
+                        <template x-if="preview">
+                            <button type="button" @click="preview = null; $el.closest('[x-data]').querySelector('input[type=file]').value = ''"
+                                    class="text-xs text-red-400 hover:text-red-300 transition-colors flex items-center gap-1">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                                {{ __('Remove') }}
+                            </button>
+                        </template>
+                        <span x-show="!preview && {{ $course->cover_image_url ? 'true' : 'false' }}" class="text-xs text-gray-500">{{ __('Hover over the image to change it') }}</span>
+                    </div>
+                </div>
+
                 @error('cover_image')
-                    <p class="mt-1 text-xs text-red-400">{{ $message }}</p>
+                    <p class="mt-1.5 text-xs text-red-400">{{ $message }}</p>
                 @enderror
             </div>
 

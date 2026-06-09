@@ -1,9 +1,9 @@
 <x-layouts.dashboard>
-    <x-slot name="title">{{ __('Roster') }}</x-slot>
+    <x-slot name="title">{{ __('Students') }}</x-slot>
 
     <div class="mb-6">
         <div>
-            <h1 class="text-2xl font-bold text-white">{{ __('Roster') }}</h1>
+            <h1 class="text-2xl font-bold text-white">{{ __('Students') }}</h1>
             <p class="text-gray-400 text-sm mt-1">{{ __('All courses and their enrolled students.') }}</p>
         </div>
     </div>
@@ -16,7 +16,7 @@
                         <h2 class="text-lg font-semibold text-white">{{ $course->title }}</h2>
                         <p class="text-xs text-gray-500 mt-0.5">{{ $course->instructor->name ?? '—' }} &middot; {{ $course->students->count() }} {{ __('enrolled') }}</p>
                     </div>
-                    <a href="{{ route('courses.roster', $course) }}" class="text-xs text-brand-400 hover:text-brand-300 transition-colors">{{ __('View Roster') }} &rarr;</a>
+                    <a href="{{ route('courses.roster', $course) }}" class="text-xs text-brand-400 hover:text-brand-300 transition-colors">{{ __('View Students') }} &rarr;</a>
                 </div>
             </div>
             <div class="p-5">
