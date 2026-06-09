@@ -105,15 +105,17 @@
     </div>
 
     {{-- Assign Course Modal --}}
-    <div x-data="{ open: false, programId: null }" @assign-course.window="open = true; programId = $event.detail.programId" x-show="open" x-cloak class="fixed inset-0 z-50 flex items-center justify-center p-4">
-        <div class="fixed inset-0 bg-black/60" @click="open = false"></div>
-        <div class="relative bg-surface-800 border border-white/10 rounded-xl p-6 w-full max-w-md">
+    <div x-data="{ open: false, programId: null }" @assign-course.window="open = true; programId = $event.detail.programId" x-show="open" x-cloak
+         x-effect="open && $nextTick(() => $refs.assignCourse.focus())"
+         class="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div class="fixed inset-0 bg-black/60 backdrop-blur-sm" @click="open = false"></div>
+        <div class="relative bg-surface-800 border border-white/10 rounded-xl p-6 w-full max-w-md shadow-2xl">
             <h3 class="text-lg font-semibold text-white mb-4">Assign Course to Program</h3>
             <form method="POST" action="{{ route('admin.programs.courses.assign', $program) }}">
                 @csrf
                 <div class="mb-4">
                     <label for="assign_course_id" class="block text-sm font-medium text-gray-300 mb-1.5">Course</label>
-                    <select id="assign_course_id" name="course_id" class="w-full bg-surface-700 border border-white/20 text-white rounded-xl py-3 px-4 text-sm focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 transition-colors">
+                    <select id="assign_course_id" x-ref="assignCourse" name="course_id" class="w-full bg-surface-700 border border-white/20 text-white rounded-xl py-3 px-4 text-sm focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 transition-colors">
                         <option value="">Select course...</option>
                         @foreach($allCourses ?? [] as $course)
                             <option value="{{ $course->id }}">{{ $course->title }}</option>

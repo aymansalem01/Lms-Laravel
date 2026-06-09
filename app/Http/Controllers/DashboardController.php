@@ -101,7 +101,7 @@ class DashboardController extends Controller
                 ->sortBy('date')->take(20)->values();
         } else {
             $enrolledCourseIds = $user->enrollments()->pluck('course_id');
-            $data['enrolledCourses'] = Course::whereIn('id', $enrolledCourseIds)->with('instructor')->get();
+            $data['enrolledCourses'] = Course::whereIn('id', $enrolledCourseIds)->published()->with('instructor')->get();
             $studentAssignments = Assignment::with('course')
                 ->whereIn('course_id', $enrolledCourseIds)
                 ->where('due_date', '>=', now())

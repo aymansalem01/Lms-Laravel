@@ -123,8 +123,8 @@
                 <label for="status" class="block text-sm font-medium text-gray-300 mb-1.5">{{ __('Status') }}</label>
                 <select name="status" id="status"
                         class="w-full bg-surface-700 border border-surface-600 rounded-lg px-4 py-2.5 text-sm text-gray-200 focus:outline-none focus:ring-2 focus:ring-brand-500/50 focus:border-brand-500/50 transition-colors">
-                    <option value="draft" {{ old('status', $course->status) === 'draft' ? 'selected' : '' }}>{{ __('Draft') }}</option>
-                    <option value="published" {{ old('status', $course->status) === 'published' ? 'selected' : '' }}>{{ __('Published') }}</option>
+                    <option value="draft" {{ old('status', !$course->is_published ? 'draft' : '') === 'draft' ? 'selected' : '' }}>{{ __('Draft') }}</option>
+                    <option value="published" {{ old('status', $course->is_published ? 'published' : '') === 'published' ? 'selected' : '' }}>{{ __('Published') }}</option>
                 </select>
             </div>
 

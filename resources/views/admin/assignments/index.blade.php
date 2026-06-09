@@ -58,15 +58,17 @@
     {{ $assignments->links() }}
 
     {{-- Create Assignment Modal --}}
-    <div x-data="{ open: false }" @open-create-assignment.window="open = true" x-show="open" x-cloak class="fixed inset-0 z-50 flex items-center justify-center p-4">
-        <div class="fixed inset-0 bg-black/60" @click="open = false"></div>
-        <div class="relative bg-surface-800 border border-white/10 rounded-xl p-6 w-full max-w-lg">
+    <div x-data="{ open: false }" @open-create-assignment.window="open = true" x-show="open" x-cloak
+         x-effect="open && $nextTick(() => $refs.assignmentCourse.focus())"
+         class="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div class="fixed inset-0 bg-black/60 backdrop-blur-sm" @click="open = false"></div>
+        <div class="relative bg-surface-800 border border-white/10 rounded-xl p-6 w-full max-w-lg shadow-2xl">
             <h3 class="text-lg font-semibold text-white mb-4">Create Assignment</h3>
             <form method="POST" action="{{ route('admin.assignments.store') }}">
                 @csrf
                 <div class="mb-4">
                     <label for="assignment_course_id" class="block text-sm font-medium text-gray-300 mb-1.5">Course</label>
-                    <select id="assignment_course_id" name="course_id" class="input-dashboard">
+                    <select id="assignment_course_id" x-ref="assignmentCourse" name="course_id" class="input-dashboard">
                         <option value="">Select course...</option>
                         @foreach($courses ?? [] as $course)
                             <option value="{{ $course->id }}">{{ $course->title }}</option>

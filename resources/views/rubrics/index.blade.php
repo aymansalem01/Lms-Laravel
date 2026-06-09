@@ -20,7 +20,10 @@
         </div>
     </div>
 
-    <dialog x-ref="importModal" class="bg-transparent backdrop:bg-black/60 p-0 rounded-2xl max-w-2xl w-full">
+    <style>
+        dialog::backdrop { background: rgba(25, 25, 35, 0.92); }
+    </style>
+    <dialog x-ref="importModal" class="bg-transparent p-0 rounded-2xl max-w-2xl w-full mx-auto">
         <div class="bg-surface-800 border border-white/10 rounded-2xl p-6">
             <div class="flex items-center justify-between mb-4">
                 <h2 class="text-lg font-bold text-white">{{ __('Import Brightspace Rubric') }}</h2>

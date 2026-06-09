@@ -4,9 +4,7 @@ $user = auth()->user();
 if ($user->role === 'admin') {
     $courseIds = \App\Models\Course::pluck('id');
 } elseif ($user->role === 'instructor') {
-    $taughtIds = $user->taughtCourses()->pluck('id');
-    $coIds = $user->coInstructedCourses()->pluck('courses.id');
-    $courseIds = $taughtIds->merge($coIds)->unique();
+    $courseIds = $user->taughtCourses()->pluck('id');
 } else {
     $courseIds = $user->enrolledCourses()->pluck('courses.id');
 }

@@ -22,7 +22,7 @@ class CourseController extends Controller
         } elseif ($user->isInstructor()) {
             $courses = $user->taughtCourses()->with('instructor')->latest()->get();
         } else {
-            $courses = $user->enrolledCourses()->with('instructor')->latest()->get();
+            $courses = $user->enrolledCourses()->published()->with('instructor')->latest()->get();
         }
 
         return view('courses.index', compact('courses'));
@@ -64,6 +64,10 @@ class CourseController extends Controller
     {
         $user = auth()->user();
 
+        if (!$course->is_published && $user->isStudent()) {
+            abort(404);
+        }
+
         $course->loadMissing([
             'instructor',
             'modules.lessons',
@@ -76,7 +80,6 @@ class CourseController extends Controller
             'announcements.author',
             'attendance',
             'discussions.user',
-            'groups.students',
             'gradeRules',
         ]);
 

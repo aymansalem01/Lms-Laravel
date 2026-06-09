@@ -61,9 +61,17 @@
                             </div>
                         </div>
                         <div class="flex-1">
-                            <label for="avatar_url" class="block text-sm font-medium text-gray-300 mb-1.5">Avatar URL</label>
-                            <input id="avatar_url" name="avatar_url" type="url" value="{{ old('avatar_url', $user->avatar_url) }}" placeholder="https://example.com/avatar.jpg" class="input-dashboard">
+                            <label for="avatar" class="block text-sm font-medium text-gray-300 mb-1.5">Upload Avatar</label>
+                            <label class="flex items-center gap-2 bg-surface-700 border border-dashed border-surface-600 rounded-lg px-3 py-2.5 cursor-pointer hover:border-brand-500/50 transition-colors">
+                                <svg class="w-4 h-4 text-gray-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                                <span class="text-sm text-gray-500">Choose an image...</span>
+                                <input id="avatar" name="avatar" type="file" accept="image/jpeg,image/png,image/jpg,image/gif,image/webp"
+                                       @change="const f = $event.target.files[0]; if (f) { $el.closest('label').querySelector('span').textContent = f.name; }"
+                                       class="hidden">
+                            </label>
+                            @error('avatar')<p class="mt-1.5 text-xs text-red-400">{{ $message }}</p>@enderror
                             @error('avatar_url')<p class="mt-1.5 text-xs text-red-400">{{ $message }}</p>@enderror
+                            <p class="text-xs text-gray-500 mt-1">JPEG, PNG, GIF, WebP up to 2MB.</p>
                         </div>
                     </div>
                 </div>
@@ -124,6 +132,37 @@
 
                 <div class="flex justify-end pt-6">
                     <button type="submit" class="bg-brand-600 hover:bg-brand-500 text-white rounded-xl px-6 py-2.5 text-sm font-medium transition-colors">Save Changes</button>
+                </div>
+            </form>
+        </div>
+
+        {{-- Section: Change Password --}}
+        <div class="bg-surface-800 border border-white/10 rounded-xl p-6">
+            <h2 class="text-lg font-semibold text-white mb-6">Change Password</h2>
+            <form method="POST" action="{{ route('profile.password') }}">
+                @csrf
+                @method('PUT')
+
+                <div class="mb-4">
+                    <label for="current_password" class="block text-sm font-medium text-gray-300 mb-1.5">Current Password</label>
+                    <input id="current_password" name="current_password" type="password" class="input-dashboard">
+                    @error('current_password')<p class="mt-1.5 text-xs text-red-400">{{ $message }}</p>@enderror
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label for="password" class="block text-sm font-medium text-gray-300 mb-1.5">New Password</label>
+                        <input id="password" name="password" type="password" minlength="8" class="input-dashboard">
+                        @error('password')<p class="mt-1.5 text-xs text-red-400">{{ $message }}</p>@enderror
+                    </div>
+                    <div>
+                        <label for="password_confirmation" class="block text-sm font-medium text-gray-300 mb-1.5">Confirm New Password</label>
+                        <input id="password_confirmation" name="password_confirmation" type="password" minlength="8" class="input-dashboard">
+                    </div>
+                </div>
+
+                <div class="flex justify-end pt-6">
+                    <button type="submit" class="bg-amber-600 hover:bg-amber-500 text-white rounded-xl px-6 py-2.5 text-sm font-medium transition-colors">Change Password</button>
                 </div>
             </form>
         </div>

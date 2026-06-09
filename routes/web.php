@@ -26,7 +26,6 @@ use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\ViewController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\RosterController;
-use App\Http\Controllers\GroupController;
 use App\Http\Controllers\GradeRuleController;
 use App\Http\Controllers\Admin\AnalyticsController;
 use App\Http\Controllers\Admin\AdminCourseController;
@@ -67,6 +66,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::put('/profile/password', [ProfileController::class, 'updatePassword'])->name('profile.password');
     Route::post('/api/livekit-token', [LiveKitController::class, 'token'])->name('api.livekit.token');
     Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
     Route::post('/notifications/read-all', [NotificationController::class, 'markAllRead'])->name('notifications.read-all');
@@ -109,12 +109,6 @@ Route::post('/theme', [ViewController::class, 'theme'])->name('theme.switch');
         Route::get('/progress', [CourseController::class, 'progress'])->name('progress');
         Route::get('/roster', [RosterController::class, 'index'])->name('roster')->middleware('role:instructor,admin');
         Route::middleware('role:instructor,admin')->group(function () {
-            Route::get('/groups', [GroupController::class, 'index'])->name('groups.index');
-            Route::post('/groups', [GroupController::class, 'store'])->name('groups.store');
-            Route::put('/groups/{group}', [GroupController::class, 'update'])->name('groups.update');
-            Route::delete('/groups/{group}', [GroupController::class, 'destroy'])->name('groups.destroy');
-            Route::post('/groups/{group}/students', [GroupController::class, 'addStudent'])->name('groups.students.add');
-            Route::delete('/groups/{group}/students/{student}', [GroupController::class, 'removeStudent'])->name('groups.students.remove');
             Route::get('/grade-rules', [GradeRuleController::class, 'index'])->name('grade-rules.index');
             Route::post('/grade-rules', [GradeRuleController::class, 'update'])->name('grade-rules.update');
             Route::get('/edit', [CourseController::class, 'edit'])->name('edit');
@@ -218,10 +212,15 @@ Route::post('/theme', [ViewController::class, 'theme'])->name('theme.switch');
             Route::delete('/{file}', [ModuleFileController::class, 'destroy'])->name('destroy');
         });
 
-        Route::middleware('role:instructor,admin')->prefix('attendance')->name('attendance.')->group(function () {
-            Route::get('/', [\App\Http\Controllers\AttendanceController::class, 'index'])->name('index');
-            Route::post('/', [\App\Http\Controllers\AttendanceController::class, 'store'])->name('store');
-            Route::post('/bulk', [\App\Http\Controllers\AttendanceController::class, 'bulkStore'])->name('bulk');
+        Route::prefix('attendance')->name('attendance.')->group(function () {
+            Route::get('/my', [\App\Http\Controllers\AttendanceController::class, 'myAttendance'])->name('my');
+            Route::middleware('role:instructor,admin')->group(function () {
+                Route::get('/', [\App\Http\Controllers\AttendanceController::class, 'index'])->name('index');
+                Route::post('/', [\App\Http\Controllers\AttendanceController::class, 'store'])->name('store');
+                Route::post('/bulk', [\App\Http\Controllers\AttendanceController::class, 'bulkStore'])->name('bulk');
+                Route::get('/report', [\App\Http\Controllers\AttendanceController::class, 'report'])->name('report');
+                Route::post('/generate-warnings', [\App\Http\Controllers\AttendanceController::class, 'generateWarnings'])->name('warnings');
+            });
         });
 
         Route::middleware('role:instructor,admin')->prefix('rubrics')->name('rubrics.')->group(function () {

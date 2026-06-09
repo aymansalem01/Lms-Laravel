@@ -280,7 +280,7 @@ class QuizController extends Controller
             'is_draft'     => false,
         ]);
 
-        return redirect()->route('quizzes.results', [$course, $quiz, $attempt])
+        return redirect()->route('courses.quizzes.results', [$course, $quiz, $attempt])
             ->with('success', 'Quiz submitted successfully.');
     }
 

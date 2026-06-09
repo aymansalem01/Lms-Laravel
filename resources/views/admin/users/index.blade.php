@@ -1,7 +1,27 @@
 <x-layouts.dashboard>
     <x-slot name="title">{{ __('messages.user_management') }} — SAE LMS</x-slot>
 
-    <div x-data="{ addOpen: false, inviteOpen: false }" class="contents">
+    <div x-data="{
+            addOpen: false, inviteOpen: false,
+            search: '{{ request('search') }}',
+            role: '{{ request('role') }}',
+            program: '{{ request('program') }}',
+            submit() {
+                const params = new URLSearchParams();
+                if (this.search) params.set('search', this.search);
+                if (this.role) params.set('role', this.role);
+                if (this.program) params.set('program', this.program);
+                window.location = '{{ route('admin.users.index') }}?' + params.toString();
+            },
+            clearFilters() {
+                this.search = '';
+                this.role = '';
+                this.program = '';
+                this.submit();
+            }
+         }"
+         x-effect="addOpen && $nextTick(() => $refs.addName.focus()); inviteOpen && $nextTick(() => $refs.inviteEmail.focus())"
+         class="contents">
     <div class="flex items-center justify-between mb-6">
         <h1 class="text-2xl font-bold text-white">{{ __('messages.users') }}</h1>
         <div class="flex items-center gap-2">
@@ -16,18 +36,37 @@
         </div>
     </div>
 
-    {{-- Search --}}
-    <form method="GET" action="{{ route('admin.users.index') }}" class="relative mb-6 max-w-md">
-        <button type="submit" class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-white transition-colors">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+    {{-- Filters --}}
+    <div class="flex flex-col sm:flex-row items-start sm:items-center gap-3 mb-6">
+        {{-- Search --}}
+        <div class="relative flex-1 max-w-md w-full">
+            <div class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+            </div>
+            <input type="text" x-model="search" @input.debounce.500ms="submit()" placeholder="{{ __('messages.search_users') }}" class="w-full bg-surface-800 border border-white/10 text-white placeholder-gray-600 rounded-xl py-3 pl-12 pr-4 text-sm focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 transition-colors" autocomplete="off">
+        </div>
+
+        {{-- Role filter --}}
+        <select x-model="role" @change="submit()" class="w-full sm:w-44 bg-surface-800 border border-white/20 text-white rounded-xl py-3 px-4 text-sm focus:outline-none focus:border-brand-500 transition-colors" style="color-scheme:dark">
+            <option value="">{{ __('All Roles') }}</option>
+            <option value="student">{{ __('messages.role_student') }}</option>
+            <option value="instructor">{{ __('messages.role_instructor') }}</option>
+            <option value="admin">{{ __('messages.role_admin') }}</option>
+        </select>
+
+        {{-- Program filter --}}
+        <select x-model="program" @change="submit()" class="w-full sm:w-44 bg-surface-800 border border-white/20 text-white rounded-xl py-3 px-4 text-sm focus:outline-none focus:border-brand-500 transition-colors" style="color-scheme:dark">
+            <option value="">{{ __('All Programs') }}</option>
+            @foreach($programs ?? [] as $prog)
+                <option value="{{ $prog }}">{{ $prog }}</option>
+            @endforeach
+        </select>
+
+        {{-- Clear filters --}}
+        <button x-show="search || role || program" @click="clearFilters()" class="text-sm text-gray-400 hover:text-white transition-colors whitespace-nowrap px-3 py-2">
+            {{ __('Clear Filters') }}
         </button>
-        <input type="text" name="search" value="{{ request('search') }}" placeholder="{{ __('messages.search_users') }}" class="w-full bg-surface-800 border border-white/10 text-white placeholder-gray-600 rounded-xl py-3 pl-12 pr-12 text-sm focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 transition-colors" autocomplete="off">
-        @if(request('search'))
-            <a href="{{ route('admin.users.index') }}" class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-white transition-colors">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-            </a>
-        @endif
-    </form>
+    </div>
 
     {{-- Table --}}
     <div class="bg-surface-800 border border-white/10 rounded-xl overflow-hidden">
@@ -136,15 +175,15 @@
 
     {{-- Add User Modal --}}
     <div x-show="addOpen" x-cloak class="fixed inset-0 z-50 flex items-center justify-center p-4">
-        <div class="fixed inset-0 bg-black/85" @click="addOpen = false"></div>
-        <div class="relative bg-surface-800 border border-white/10 rounded-xl p-6 w-full max-w-lg" @click.away="addOpen = false">
+        <div class="fixed inset-0 bg-black/60 backdrop-blur-sm" @click="addOpen = false"></div>
+        <div class="relative bg-surface-800 border border-white/10 rounded-xl p-6 w-full max-w-lg shadow-2xl" @click.away="addOpen = false">
             <h3 class="text-lg font-semibold text-white mb-4">{{ __('messages.add_user') }}</h3>
             <form method="POST" action="{{ route('admin.users.store') }}">
                 @csrf
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                     <div>
                         <label for="add_name" class="block text-sm font-medium text-gray-300 mb-1.5">{{ __('messages.full_name') }}</label>
-                        <input id="add_name" name="name" type="text" placeholder="{{ __('messages.full_name') }}" class="w-full bg-surface-700 border border-white/10 text-white placeholder-gray-600 rounded-xl py-2.5 px-4 text-sm focus:outline-none focus:border-brand-500 transition-colors" required>
+                        <input id="add_name" x-ref="addName" name="name" type="text" placeholder="{{ __('messages.full_name') }}" class="w-full bg-surface-700 border border-white/10 text-white placeholder-gray-600 rounded-xl py-2.5 px-4 text-sm focus:outline-none focus:border-brand-500 transition-colors" required>
                     </div>
                     <div>
                         <label for="add_email" class="block text-sm font-medium text-gray-300 mb-1.5">{{ __('messages.email_address') }}</label>
@@ -183,14 +222,14 @@
 
     {{-- Invite User Modal --}}
     <div x-show="inviteOpen" x-cloak class="fixed inset-0 z-50 flex items-center justify-center p-4">
-        <div class="fixed inset-0 bg-black/85" @click="inviteOpen = false"></div>
-        <div class="relative bg-surface-800 border border-white/10 rounded-xl p-6 w-full max-w-md" @click.away="inviteOpen = false">
+        <div class="fixed inset-0 bg-black/60 backdrop-blur-sm" @click="inviteOpen = false"></div>
+        <div class="relative bg-surface-800 border border-white/10 rounded-xl p-6 w-full max-w-md shadow-2xl" @click.away="inviteOpen = false">
             <h3 class="text-lg font-semibold text-white mb-4">{{ __('messages.invite_user') }}</h3>
             <form method="POST" action="{{ route('admin.users.invite') }}">
                 @csrf
                 <div class="mb-4">
                     <label for="invite_email" class="block text-sm font-medium text-gray-300 mb-1.5">{{ __('messages.email_address') }}</label>
-                    <input id="invite_email" name="email" type="email" placeholder="user@example.com" class="input-dashboard">
+                    <input id="invite_email" x-ref="inviteEmail" name="email" type="email" placeholder="user@example.com" class="input-dashboard">
                 </div>
                 <div class="mb-4">
                     <label for="invite_role" class="block text-sm font-medium text-gray-300 mb-1.5">{{ __('messages.role') }}</label>

@@ -20,7 +20,7 @@
     <div x-show="open" x-cloak
          class="fixed inset-0 z-50 flex items-center justify-center p-4"
          @click.away="open = false">
-        <div class="fixed inset-0 bg-black/60"></div>
+        <div class="fixed inset-0 bg-surface-800/90"></div>
         <div class="relative bg-surface-800 border border-white/10 rounded-2xl p-6 max-w-3xl w-full max-h-[80vh] overflow-y-auto">
             <div class="flex items-center justify-between mb-4">
                 <h3 class="text-lg font-semibold text-white">{{ $rubric->title }}</h3>

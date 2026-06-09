@@ -11,6 +11,7 @@
     <style>
         body { font-family: {{ app()->getLocale() === 'ar' ? "'Cairo'" : "'Inter'" }}, sans-serif; }
         [x-cloak] { display: none !important; }
+        dialog::backdrop { background: rgba(25, 25, 35, 0.92); }
     </style>
     @stack('styles')
 </head>
@@ -21,7 +22,7 @@
         {{-- Sidebar (admin only) --}}
         @if(auth()->user()->role === 'admin')
             {{-- Mobile overlay --}}
-            <div x-show="sidebarOpen" x-cloak class="fixed inset-0 z-30 bg-black/50 lg:hidden" @click="sidebarOpen = false"></div>
+            <div x-show="sidebarOpen" x-cloak class="fixed inset-0 z-30 bg-surface-800/80 lg:hidden" @click="sidebarOpen = false"></div>
 
             {{-- Sidebar panel --}}
             <aside class="fixed inset-y-0 left-0 z-40 w-60 -translate-x-full transition-transform duration-200 ease-in-out lg:relative lg:translate-x-0 flex flex-col"

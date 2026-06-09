@@ -6,12 +6,11 @@ use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
-use Illuminate\Notifications\Notifiable;
 
 class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
-    use HasFactory, Notifiable;
+    use HasFactory;
 
     protected $fillable = [
         'name', 'email', 'password', 'avatar_url', 'bio', 'program', 'role',
@@ -71,6 +70,16 @@ class User extends Authenticatable
         return $this->hasMany(QuizAttempt::class, 'student_id');
     }
 
+    public function attendance(): HasMany
+    {
+        return $this->hasMany(CourseAttendance::class, 'student_id');
+    }
+
+    public function attendanceWarnings(): HasMany
+    {
+        return $this->hasMany(AttendanceWarning::class, 'student_id');
+    }
+
     public function portfolioItems(): HasMany
     {
         return $this->hasMany(PortfolioItem::class, 'student_id');
@@ -89,10 +98,5 @@ class User extends Authenticatable
     public function verifiedBy()
     {
         return $this->belongsTo(User::class, 'verified_by');
-    }
-
-    public function groups()
-    {
-        return $this->belongsToMany(Group::class, 'group_student', 'student_id', 'group_id');
     }
 }

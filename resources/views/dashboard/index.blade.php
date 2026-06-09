@@ -100,24 +100,6 @@
         @endforelse
     </div>
 
-    {{-- Upcoming Events (Moodle-style calendar) --}}
-    <section class="mb-10">
-        <div class="flex flex-col lg:flex-row gap-8 lg:gap-12 items-start">
-            <div class="flex-shrink-0 lg:w-64 xl:w-72 space-y-4">
-                <p class="section-label flex items-center gap-2">
-                    <span class="h-px w-8 bg-blue-500 inline-block"></span>
-                    {{ __('Upcoming') }}
-                </p>
-                <h2 class="text-5xl lg:text-6xl font-black text-white tracking-tight leading-[.9]">
-                    Upcoming<br><span class="gradient-text">Events.</span>
-                </h2>
-                <p class="text-sm font-mono text-gray-500">{{ ($upcomingEvents ?? collect())->count() }} events</p>
-            </div>
-            <div class="flex-1 min-w-0">
-                <x-upcoming-calendar :events="$upcomingEvents ?? collect()" />
-            </div>
-        </div>
-    </section>
     @endif
 
     {{-- ── INSTRUCTOR DASHBOARD ─────────────────────────────────── --}}

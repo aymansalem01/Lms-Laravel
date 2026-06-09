@@ -84,9 +84,19 @@ class Course extends Model
         return $this->hasMany(CourseAttendance::class);
     }
 
+    public function attendanceWarnings(): HasMany
+    {
+        return $this->hasMany(AttendanceWarning::class);
+    }
+
     public function discussions(): HasMany
     {
         return $this->hasMany(Discussion::class);
+    }
+
+    public function scopePublished($query)
+    {
+        return $query->where('is_published', true);
     }
 
     public function questionBanks(): BelongsToMany
@@ -97,11 +107,6 @@ class Course extends Model
     public function questionBankItems()
     {
         return QuestionBankItem::whereIn('question_bank_id', $this->questionBanks()->select('question_banks.id'));
-    }
-
-    public function groups(): HasMany
-    {
-        return $this->hasMany(Group::class);
     }
 
     public function gradeRules(): HasMany

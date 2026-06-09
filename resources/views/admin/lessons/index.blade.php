@@ -71,15 +71,17 @@
     {{ $lessons->links() }}
 
     {{-- Create Lesson Modal --}}
-    <div x-data="{ open: false }" @open-create-lesson.window="open = true" x-show="open" x-cloak class="fixed inset-0 z-50 flex items-center justify-center p-4">
-        <div class="fixed inset-0 bg-black/60" @click="open = false"></div>
-        <div class="relative bg-surface-800 border border-white/10 rounded-xl p-6 w-full max-w-lg">
+    <div x-data="{ open: false }" @open-create-lesson.window="open = true" x-show="open" x-cloak
+         x-effect="open && $nextTick(() => $refs.lessonModule.focus())"
+         class="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div class="fixed inset-0 bg-black/60 backdrop-blur-sm" @click="open = false"></div>
+        <div class="relative bg-surface-800 border border-white/10 rounded-xl p-6 w-full max-w-lg shadow-2xl">
             <h3 class="text-lg font-semibold text-white mb-4">Create Lesson</h3>
             <form method="POST" action="{{ route('admin.lessons.store') }}">
                 @csrf
                 <div class="mb-4">
                     <label for="lesson_module_id" class="block text-sm font-medium text-gray-300 mb-1.5">Module</label>
-                    <select id="lesson_module_id" name="module_id" class="input-dashboard">
+                    <select id="lesson_module_id" x-ref="lessonModule" name="module_id" class="input-dashboard">
                         <option value="">Select module...</option>
                         @foreach($modules ?? [] as $module)
                             <option value="{{ $module->id }}">{{ $module->title }} ({{ $module->course->title ?? '' }})</option>

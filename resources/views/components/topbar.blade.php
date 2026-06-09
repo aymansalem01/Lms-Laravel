@@ -52,7 +52,8 @@
 
         {{-- Notifications --}}
         <div class="relative">
-            <button @click="notifOpen = !notifOpen" class="relative p-2 rounded-lg text-gray-400 hover:text-white hover:bg-surface-700 transition-colors" title="{{ __('messages.notifications') }}">
+            <div x-show="notifOpen" x-cloak class="fixed inset-0 z-[99]" @click="notifOpen = false"></div>
+            <button @click="notifOpen = !notifOpen" :class="notifOpen ? 'bg-surface-700' : ''" class="relative p-2 rounded-lg text-gray-400 hover:text-white hover:bg-surface-700 transition-colors" title="{{ __('messages.notifications') }}">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
                 @php $unreadCount = auth()->user()->unreadNotifications->count(); @endphp
                 @if($unreadCount > 0)
@@ -65,7 +66,7 @@
                  x-transition:enter="transition ease-out duration-150"
                  x-transition:enter-start="opacity-0 scale-95"
                  x-transition:enter-end="opacity-100 scale-100"
-                 class="absolute right-0 mt-2 w-80 bg-surface-800 border border-white/10 rounded-xl shadow-xl overflow-hidden z-50"
+                 class="absolute right-0 mt-2 w-80 bg-surface-800/95 backdrop-blur-md border border-white/10 rounded-xl shadow-2xl overflow-hidden z-[100]"
                  style="max-height: 400px; overflow-y: auto;">
                 <div class="px-4 py-3 border-b border-white/5 flex items-center justify-between">
                     <span class="text-sm font-semibold text-white">{{ __('messages.notifications') }}</span>
@@ -93,9 +94,14 @@
 
         {{-- User dropdown --}}
         <div class="relative">
-            <button @click="userMenuOpen = !userMenuOpen" class="flex items-center gap-2 pl-2 pr-3 py-1.5 rounded-lg hover:bg-surface-700 transition-colors">
-                <div class="w-7 h-7 rounded-full gb flex items-center justify-center text-white text-xs font-bold shrink-0">
-                    {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
+            <div x-show="userMenuOpen" x-cloak class="fixed inset-0 z-[99]" @click="userMenuOpen = false"></div>
+            <button @click="userMenuOpen = !userMenuOpen" :class="userMenuOpen ? 'bg-surface-700' : ''" class="flex items-center gap-2 pl-2 pr-3 py-1.5 rounded-lg hover:bg-surface-700 transition-colors">
+                <div class="w-7 h-7 rounded-full bg-brand-500/30 flex items-center justify-center text-white text-xs font-bold shrink-0 overflow-hidden">
+                    @if(auth()->user()->avatar_url)
+                        <img src="{{ auth()->user()->avatar_url }}" alt="" class="w-full h-full object-cover">
+                    @else
+                        {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
+                    @endif
                 </div>
                 <span class="hidden sm:block text-sm font-medium text-gray-200 max-w-[120px] truncate">{{ auth()->user()->name }}</span>
                 <svg class="w-3 h-3 text-gray-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
@@ -106,7 +112,7 @@
                  x-transition:enter="transition ease-out duration-150"
                  x-transition:enter-start="opacity-0 scale-95"
                  x-transition:enter-end="opacity-100 scale-100"
-                 class="absolute right-0 mt-2 w-56 bg-surface-800 border border-white/10 rounded-xl shadow-xl overflow-hidden z-50">
+                 class="absolute right-0 mt-2 w-56 bg-surface-800/95 backdrop-blur-md border border-white/10 rounded-xl shadow-2xl overflow-hidden z-[100]">
                 <div class="px-4 py-3 border-b border-white/5">
                     <p class="text-sm font-semibold text-white truncate">{{ auth()->user()->name }}</p>
                     <p class="text-xs text-gray-500 truncate">{{ auth()->user()->email }}</p>

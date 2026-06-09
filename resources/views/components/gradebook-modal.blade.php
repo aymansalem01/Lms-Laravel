@@ -12,7 +12,7 @@
     <template x-if="open">
         <div class="fixed inset-0 z-50 flex items-center justify-center p-4"
              @keydown.escape.window="open = false">
-            <div class="fixed inset-0 bg-black/60" @click="open = false"></div>
+            <div class="fixed inset-0 bg-surface-800/90" @click="open = false"></div>
             <div class="relative bg-surface-800 border border-white/10 rounded-2xl p-6 max-w-2xl w-full max-h-[80vh] overflow-y-auto">
                 <div class="flex items-center justify-between mb-4">
                     <div>

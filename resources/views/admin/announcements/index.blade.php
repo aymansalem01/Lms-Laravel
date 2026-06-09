@@ -77,15 +77,17 @@
     {{ $announcements->links() }}
 
     {{-- Create Announcement Modal --}}
-    <div x-data="{ open: false }" @open-create-announcement.window="open = true" x-show="open" x-cloak class="fixed inset-0 z-50 flex items-center justify-center p-4">
-        <div class="fixed inset-0 bg-black/60" @click="open = false"></div>
-        <div class="relative bg-surface-800 border border-white/10 rounded-xl p-6 w-full max-w-lg">
+    <div x-data="{ open: false }" @open-create-announcement.window="open = true" x-show="open" x-cloak
+         x-effect="open && $nextTick(() => $refs.announcementTitle.focus())"
+         class="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div class="fixed inset-0 bg-black/60 backdrop-blur-sm" @click="open = false"></div>
+        <div class="relative bg-surface-800 border border-white/10 rounded-xl p-6 w-full max-w-lg shadow-2xl">
             <h3 class="text-lg font-semibold text-white mb-4">Create Announcement</h3>
             <form method="POST" action="{{ route('admin.announcements.store') }}">
                 @csrf
                 <div class="mb-4">
                     <label for="announcement_title" class="block text-sm font-medium text-gray-300 mb-1.5">Title</label>
-                    <input id="announcement_title" name="title" type="text" placeholder="Announcement title" class="input-dashboard">
+                    <input id="announcement_title" x-ref="announcementTitle" name="title" type="text" placeholder="Announcement title" class="input-dashboard">
                 </div>
                 <div class="mb-4">
                     <label for="announcement_content" class="block text-sm font-medium text-gray-300 mb-1.5">Content</label>
