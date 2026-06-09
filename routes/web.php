@@ -185,6 +185,7 @@ Route::post('/theme', [ViewController::class, 'theme'])->name('theme.switch');
                 Route::get('/{quiz}/edit', [QuizController::class, 'edit'])->name('edit');
                 Route::put('/{quiz}', [QuizController::class, 'update'])->name('update');
                 Route::delete('/{quiz}', [QuizController::class, 'destroy'])->name('destroy');
+                Route::get('/{quiz}/review', [QuizController::class, 'review'])->name('review');
                 Route::post('/{quiz}/release/{attempt}', [QuizController::class, 'releaseGrade'])->name('release');
             });
         });

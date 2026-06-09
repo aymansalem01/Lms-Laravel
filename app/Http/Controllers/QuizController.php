@@ -293,6 +293,24 @@ class QuizController extends Controller
         return view('quizzes.results', compact('course', 'quiz', 'attempt'));
     }
 
+    public function review(Course $course, Quiz $quiz)
+    {
+        if (!auth()->user()->isInstructorOrAdmin()) { abort(403); }
+
+        $quiz->loadCount('questions');
+
+        $students = $course->students()
+            ->with(['quizAttempts' => function ($q) use ($quiz) {
+                $q->where('quiz_id', $quiz->id);
+            }])
+            ->get();
+
+        $totalSubmissions = $students->filter(fn($s) => $s->quizAttempts->isNotEmpty())->count();
+        $gradedCount = $students->filter(fn($s) => $s->quizAttempts->first()?->released_at)->count();
+
+        return view('quizzes.review', compact('course', 'quiz', 'students', 'totalSubmissions', 'gradedCount'));
+    }
+
     public function releaseGrade(Course $course, Quiz $quiz, QuizAttempt $attempt)
     {
         if (!auth()->user()->isInstructorOrAdmin()) { abort(403); }

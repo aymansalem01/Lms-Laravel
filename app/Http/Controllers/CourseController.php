@@ -114,7 +114,11 @@ class CourseController extends Controller
             ->orderBy('name')
             ->get();
 
-        return view('courses.show', compact('course', 'discussions', 'attendance', 'assignments', 'quizzes', 'modules', 'liveSessions', 'isEnrolled', 'moduleProgress', 'availableStudents', 'questionBanks'));
+        $rubrics = $user->isInstructorOrAdmin()
+            ? $course->rubrics()->when(!$user->isAdmin(), fn($q) => $q->where('instructor_id', $user->id))->get()
+            : collect();
+
+        return view('courses.show', compact('course', 'discussions', 'attendance', 'assignments', 'quizzes', 'modules', 'liveSessions', 'isEnrolled', 'moduleProgress', 'availableStudents', 'questionBanks', 'rubrics'));
     }
 
     public function create()
