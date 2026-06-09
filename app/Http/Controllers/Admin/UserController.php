@@ -83,6 +83,10 @@ class UserController extends Controller
 
         $programs = ['Film Production', 'Digital Media', 'Game Design', 'Audio Engineering'];
 
+        if ($request->ajax()) {
+            return view('admin.users._table', compact('users'));
+        }
+
         return view('admin.users.index', compact(
             'users',
             'stats',
