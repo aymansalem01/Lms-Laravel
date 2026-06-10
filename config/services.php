@@ -44,7 +44,7 @@ return [
     'livekit' => [
         'api_key' => env('LIVEKIT_API_KEY'),
         'api_secret' => env('LIVEKIT_API_SECRET'),
-        'host' => env('LIVEKIT_HOST', 'https://your-livekit.cloud'),
+        'host' => env('LIVEKIT_HOST', env('LIVEKIT_URL')),
     ],
 
 ];

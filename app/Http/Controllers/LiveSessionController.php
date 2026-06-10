@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Course;
 use App\Models\LiveSession;
+use App\Services\LiveKitService;
 use Illuminate\Http\Request;
 
 class LiveSessionController extends Controller
@@ -12,7 +13,9 @@ class LiveSessionController extends Controller
     {
         $user = auth()->user();
 
-        if ($user->isInstructorOrAdmin()) {
+        if ($user->isAdmin()) {
+            $sessions = LiveSession::with('course')->orderBy('scheduled_at')->get();
+        } elseif ($user->isInstructor()) {
             $courseIds = $user->taughtCourses()->pluck('id');
             $sessions = LiveSession::whereIn('course_id', $courseIds)->with('course')->orderBy('scheduled_at')->get();
         } else {
@@ -73,6 +76,14 @@ class LiveSessionController extends Controller
             $data['room_url'] = 'https://whereby.com/' . strtolower(str_replace(' ', '-', $data['title'])) . '-' . uniqid();
         }
 
+        if ($data['provider'] === 'livekit') {
+            try {
+                app(LiveKitService::class)->createRoom($data['room_url']);
+            } catch (\Throwable $e) {
+                logger()->warning('Failed to create LiveKit room: ' . $e->getMessage());
+            }
+        }
+
         $course->liveSessions()->create($data);
 
         $course->students()->each(function ($student) use ($course, $data) {
@@ -104,6 +115,11 @@ class LiveSessionController extends Controller
 
         if ($data['provider'] === 'livekit') {
             $data['room_url'] = 'room-' . strtolower(str_replace(' ', '-', $data['title'])) . '-' . uniqid();
+            try {
+                app(LiveKitService::class)->createRoom($data['room_url']);
+            } catch (\Throwable $e) {
+                logger()->warning('Failed to create LiveKit room: ' . $e->getMessage());
+            }
         } elseif (empty($data['room_url'])) {
             $data['room_url'] = 'https://whereby.com/' . strtolower(str_replace(' ', '-', $data['title'])) . '-' . uniqid();
         }
@@ -121,5 +137,37 @@ class LiveSessionController extends Controller
         });
 
         return redirect()->route('live.index')->with('success', 'Live session created successfully.');
+    }
+
+    public function editStandalone(LiveSession $session)
+    {
+        $courses = auth()->user()->isAdmin()
+            ? Course::all()
+            : auth()->user()->taughtCourses()->get();
+        return view('live.edit', compact('session', 'courses'));
+    }
+
+    public function updateStandalone(Request $request, LiveSession $session)
+    {
+        $data = $request->validate([
+            'title'         => 'required|string|max:255',
+            'course_id'     => 'required|integer|exists:courses,id',
+            'scheduled_at'  => 'nullable|date',
+            'room_url'      => 'nullable|url|max:2048',
+            'recording_url' => 'nullable|url|max:2048',
+            'provider'      => 'nullable|string|in:livekit,whereby,external',
+            'mode'          => 'nullable|string|in:builtin,external',
+            'duration'      => 'nullable|integer|min:1|max:1440',
+        ]);
+
+        $session->update($data);
+
+        return redirect()->route('live.index')->with('success', 'Live session updated successfully.');
+    }
+
+    public function destroy(LiveSession $session)
+    {
+        $session->delete();
+        return redirect()->route('live.index')->with('success', 'Live session deleted successfully.');
     }
 }

@@ -42,9 +42,17 @@
                     <input id="modal_scheduled_at" name="scheduled_at" type="datetime-local" value="{{ old('scheduled_at') }}" class="input-dashboard [color-scheme:dark]">
                 </div>
                 <div class="mb-4">
+                    <label for="modal_provider" class="block text-sm font-medium text-gray-300 mb-1.5">{{ __('Provider') }}</label>
+                    <select id="modal_provider" name="provider" class="input-dashboard">
+                        <option value="whereby" {{ old('provider') === 'whereby' ? 'selected' : '' }}>Whereby</option>
+                        <option value="livekit" {{ old('provider') === 'livekit' ? 'selected' : '' }}>LiveKit</option>
+                        <option value="external" {{ old('provider') === 'external' ? 'selected' : '' }}>External</option>
+                    </select>
+                </div>
+                <div class="mb-4">
                     <label for="modal_room_url" class="block text-sm font-medium text-gray-300 mb-1.5">{{ __('Room URL (optional)') }}</label>
                     <input id="modal_room_url" name="room_url" type="url" value="{{ old('room_url') }}" placeholder="https://whereby.com/your-room" class="input-dashboard">
-                    <p class="mt-1 text-xs text-gray-500">{{ __('Leave blank to generate a default Whereby room.') }}</p>
+                    <p class="mt-1 text-xs text-gray-500">{{ __('Leave blank to auto-generate a room.') }}</p>
                 </div>
                 <div class="flex items-center justify-end gap-3 mt-6">
                     <button type="button" @click="$refs.createModal.close()" class="text-sm text-gray-400 hover:text-white transition-colors px-4 py-2.5">{{ __('Cancel') }}</button>
@@ -77,10 +85,25 @@
                                 <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-500/20 text-emerald-400">Upcoming</span>
                             </div>
                         </div>
-                        <a href="{{ isset($course) ? route('courses.live.show', [$course, $session]) : route('live.show', $session) }}" class="inline-flex items-center gap-2 bg-brand-600 hover:bg-brand-500 text-white rounded-xl px-5 py-2 text-sm font-medium transition-colors shrink-0">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
-                            Join
-                        </a>
+                        <div class="flex items-center gap-2 shrink-0">
+                            @if(auth()->user()->isInstructorOrAdmin())
+                                <a href="{{ route('live.edit', $session) }}" class="inline-flex items-center gap-1.5 bg-surface-600 hover:bg-surface-500 text-gray-300 rounded-xl px-3 py-2 text-sm font-medium transition-colors">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                                    Edit
+                                </a>
+                                <form method="POST" action="{{ route('live.destroy', $session) }}" onsubmit="return confirm('Delete this session?')" class="inline">
+                                    @csrf @method('DELETE')
+                                    <button type="submit" class="inline-flex items-center gap-1.5 bg-red-500/20 hover:bg-red-500/30 text-red-400 rounded-xl px-3 py-2 text-sm font-medium transition-colors">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                                        Delete
+                                    </button>
+                                </form>
+                            @endif
+                            <a href="{{ isset($course) ? route('courses.live.show', [$course, $session]) : route('live.show', $session) }}" class="inline-flex items-center gap-2 bg-brand-600 hover:bg-brand-500 text-white rounded-xl px-5 py-2 text-sm font-medium transition-colors">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                                Join
+                            </a>
+                        </div>
                     </div>
                 </div>
             @empty
@@ -109,14 +132,29 @@
                                 <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-500/20 text-gray-400">Past</span>
                             </div>
                         </div>
-                        @if($session->recording_url)
-                            <a href="{{ $session->recording_url }}" target="_blank" class="inline-flex items-center gap-2 bg-surface-600 hover:bg-surface-700 text-white rounded-xl px-5 py-2 text-sm font-medium transition-colors shrink-0">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                                View Recording
-                            </a>
-                        @else
-                            <span class="text-sm text-gray-600 shrink-0">No recording</span>
-                        @endif
+                        <div class="flex items-center gap-2 shrink-0">
+                            @if(auth()->user()->isInstructorOrAdmin())
+                                <a href="{{ route('live.edit', $session) }}" class="inline-flex items-center gap-1.5 bg-surface-600 hover:bg-surface-500 text-gray-300 rounded-xl px-3 py-2 text-sm font-medium transition-colors">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                                    Edit
+                                </a>
+                                <form method="POST" action="{{ route('live.destroy', $session) }}" onsubmit="return confirm('Delete this session?')" class="inline">
+                                    @csrf @method('DELETE')
+                                    <button type="submit" class="inline-flex items-center gap-1.5 bg-red-500/20 hover:bg-red-500/30 text-red-400 rounded-xl px-3 py-2 text-sm font-medium transition-colors">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                                        Delete
+                                    </button>
+                                </form>
+                            @endif
+                            @if($session->recording_url)
+                                <a href="{{ $session->recording_url }}" target="_blank" class="inline-flex items-center gap-2 bg-surface-600 hover:bg-surface-700 text-white rounded-xl px-5 py-2 text-sm font-medium transition-colors shrink-0">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                    View Recording
+                                </a>
+                            @else
+                                <span class="text-sm text-gray-600 shrink-0">No recording</span>
+                            @endif
+                        </div>
                     </div>
                 </div>
             @empty

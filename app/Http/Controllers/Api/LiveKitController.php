@@ -2,13 +2,42 @@
 
 namespace App\Http\Controllers\Api;
 
+use Agence104\LiveKit\AccessToken;
+use Agence104\LiveKit\AccessTokenOptions;
+use Agence104\LiveKit\VideoGrant;
 use App\Http\Controllers\Controller;
 use App\Models\LiveSession;
 use Firebase\JWT\JWT;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 
 class LiveKitController extends Controller
 {
+    public function getPublicToken(Request $request)
+    {
+        $room = $request->input('room', 'main-room');
+        $identity = 'guest-' . Str::random(8);
+
+        $tokenOptions = (new AccessTokenOptions())
+            ->setIdentity($identity);
+
+        $videoGrant = (new VideoGrant())
+            ->setRoomJoin()
+            ->setRoomCreate()
+            ->setRoomName($room);
+
+        $token = (new AccessToken())
+            ->init($tokenOptions)
+            ->setGrant($videoGrant)
+            ->toJwt();
+
+        return response()->json([
+            'token' => $token,
+            'identity' => $identity,
+            'apiHost' => config('services.livekit.host'),
+        ]);
+    }
+
     public function token(Request $request)
     {
         $data = $request->validate([
@@ -22,6 +51,7 @@ class LiveKitController extends Controller
         $videoGrants = [
             'room' => $roomName,
             'roomJoin' => true,
+            'roomCreate' => true,
             'canPublish' => true,
             'canSubscribe' => true,
             'canPublishData' => true,

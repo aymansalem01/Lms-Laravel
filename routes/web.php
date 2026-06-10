@@ -30,6 +30,7 @@ use App\Http\Controllers\GradeRuleController;
 use App\Http\Controllers\Admin\AnalyticsController;
 use App\Http\Controllers\Admin\AdminCourseController;
 use App\Http\Controllers\Admin\ProgramController;
+use App\Http\Controllers\Admin\LiveSessionController as AdminLiveSessionController;
 use App\Http\Controllers\LandingController;
 
 Route::get('/', [LandingController::class, 'index'])->name('landing');
@@ -62,6 +63,10 @@ Route::post('/locale', function(\Illuminate\Http\Request $req) {
     return back();
 })->name('locale.switch');
 
+Route::post('/api/livekit/public-token', [LiveKitController::class, 'getPublicToken'])->name('api.livekit.public-token');
+
+Route::get('/live/{session}', [LiveSessionController::class, 'showStandalone'])->name('live.show');
+
 Route::middleware('auth')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
@@ -77,8 +82,10 @@ Route::middleware('auth')->group(function () {
     Route::get('/portfolio/{user}', [PortfolioController::class, 'show'])->name('portfolio.show');
     Route::get('/assignments', [AssignmentController::class, 'studentIndex'])->name('assignments.index');
     Route::get('/live', [LiveSessionController::class, 'index'])->name('live.index');
-    Route::get('/live/{session}', [LiveSessionController::class, 'showStandalone'])->name('live.show');
     Route::post('/live', [LiveSessionController::class, 'storeStandalone'])->name('live.store')->middleware('role:instructor,admin');
+    Route::get('/live/{session}/edit', [LiveSessionController::class, 'editStandalone'])->name('live.edit')->middleware('role:instructor,admin');
+    Route::put('/live/{session}', [LiveSessionController::class, 'updateStandalone'])->name('live.update')->middleware('role:instructor,admin');
+    Route::delete('/live/{session}', [LiveSessionController::class, 'destroy'])->name('live.destroy')->middleware('role:instructor,admin');
 
     Route::post('/view/student', [ViewController::class, 'student'])->name('view.student');
     Route::post('/view/instructor', [ViewController::class, 'instructor'])->name('view.instructor');
@@ -298,5 +305,12 @@ Route::post('/theme', [ViewController::class, 'theme'])->name('theme.switch');
 
         // ── Analytics ─────────────────────────────────────────────────────────
         Route::get('/analytics',                            [AnalyticsController::class, 'index'])->name('analytics.index');
+
+        // ── Live Sessions ──────────────────────────────────────────────────────
+        Route::get('/live-sessions',                            [AdminLiveSessionController::class, 'index'])->name('live-sessions.index');
+        Route::get('/live-sessions/{liveSession}',              [AdminLiveSessionController::class, 'show'])->name('live-sessions.show');
+        Route::post('/live-sessions',                           [AdminLiveSessionController::class, 'store'])->name('live-sessions.store');
+        Route::post('/live-sessions/{liveSession}',             [AdminLiveSessionController::class, 'update'])->name('live-sessions.update');
+        Route::delete('/live-sessions/{liveSession}',           [AdminLiveSessionController::class, 'destroy'])->name('live-sessions.destroy');
     });
 });
