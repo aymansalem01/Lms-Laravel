@@ -69,7 +69,8 @@ class QuizController extends Controller
             'time_limit'        => 'nullable|integer|min:0',
             'is_published'      => 'nullable|boolean',
             'module_id'         => 'nullable|exists:modules,id',
-            'bank_random_count' => 'nullable|integer|min:0|max:1000',
+            'bank_pulls'        => 'nullable|array',
+            'bank_pulls.*'      => 'nullable|integer|min:0',
         ]);
 
         $data['module_id'] = $request->filled('module_id') ? $data['module_id'] : null;
@@ -111,27 +112,27 @@ class QuizController extends Controller
             }
         }
 
-        $bankRandomCount = (int) $request->input('bank_random_count', 0);
-        if ($bankRandomCount > 0) {
-            $bankIds = $course->questionBanks()->pluck('question_banks.id');
-            $globalBankIds = QuestionBank::where('is_visible_to_all', true)->pluck('id');
-            $allowedBankIds = $bankIds->merge($globalBankIds)->unique();
-            $randomItems = \App\Models\QuestionBankItem::whereIn('question_bank_id', $allowedBankIds)
-                ->whereNotIn('id', $importedBankIds)
-                ->inRandomOrder()
-                ->take($bankRandomCount)
-                ->get();
+        if ($request->has('bank_pulls')) {
             $order = $quiz->questions()->count();
-            foreach ($randomItems as $item) {
-                $quiz->questions()->create([
-                    'bank_item_id'   => $item->id,
-                    'type'           => $item->type,
-                    'question'       => $item->question,
-                    'options'        => $item->options,
-                    'correct_answer' => $item->correct_answer,
-                    'points'         => $item->points,
-                    'order_index'    => $order++,
-                ]);
+            foreach ($request->input('bank_pulls') as $bankId => $count) {
+                $count = (int) $count;
+                if ($count <= 0) continue;
+                $randomItems = \App\Models\QuestionBankItem::where('question_bank_id', $bankId)
+                    ->whereNotIn('id', $importedBankIds)
+                    ->inRandomOrder()
+                    ->take($count)
+                    ->get();
+                foreach ($randomItems as $item) {
+                    $quiz->questions()->create([
+                        'bank_item_id'   => $item->id,
+                        'type'           => $item->type,
+                        'question'       => $item->question,
+                        'options'        => $item->options,
+                        'correct_answer' => $item->correct_answer,
+                        'points'         => $item->points,
+                        'order_index'    => $order++,
+                    ]);
+                }
             }
         }
 
@@ -167,7 +168,8 @@ class QuizController extends Controller
             'time_limit'        => 'nullable|integer|min:0',
             'is_published'      => 'nullable|boolean',
             'module_id'         => 'nullable|exists:modules,id',
-            'bank_random_count' => 'nullable|integer|min:0|max:1000',
+            'bank_pulls'        => 'nullable|array',
+            'bank_pulls.*'      => 'nullable|integer|min:0',
         ]);
 
         $data['module_id'] = $request->filled('module_id') ? $data['module_id'] : null;
@@ -211,27 +213,27 @@ class QuizController extends Controller
             }
         }
 
-        $bankRandomCount = (int) $request->input('bank_random_count', 0);
-        if ($bankRandomCount > 0) {
-            $bankIds = $course->questionBanks()->pluck('question_banks.id');
-            $globalBankIds = QuestionBank::where('is_visible_to_all', true)->pluck('id');
-            $allowedBankIds = $bankIds->merge($globalBankIds)->unique();
-            $randomItems = \App\Models\QuestionBankItem::whereIn('question_bank_id', $allowedBankIds)
-                ->whereNotIn('id', $importedBankIds)
-                ->inRandomOrder()
-                ->take($bankRandomCount)
-                ->get();
+        if ($request->has('bank_pulls')) {
             $order = $quiz->questions()->count();
-            foreach ($randomItems as $item) {
-                $quiz->questions()->create([
-                    'bank_item_id'   => $item->id,
-                    'type'           => $item->type,
-                    'question'       => $item->question,
-                    'options'        => $item->options,
-                    'correct_answer' => $item->correct_answer,
-                    'points'         => $item->points,
-                    'order_index'    => $order++,
-                ]);
+            foreach ($request->input('bank_pulls') as $bankId => $count) {
+                $count = (int) $count;
+                if ($count <= 0) continue;
+                $randomItems = \App\Models\QuestionBankItem::where('question_bank_id', $bankId)
+                    ->whereNotIn('id', $importedBankIds)
+                    ->inRandomOrder()
+                    ->take($count)
+                    ->get();
+                foreach ($randomItems as $item) {
+                    $quiz->questions()->create([
+                        'bank_item_id'   => $item->id,
+                        'type'           => $item->type,
+                        'question'       => $item->question,
+                        'options'        => $item->options,
+                        'correct_answer' => $item->correct_answer,
+                        'points'         => $item->points,
+                        'order_index'    => $order++,
+                    ]);
+                }
             }
         }
 

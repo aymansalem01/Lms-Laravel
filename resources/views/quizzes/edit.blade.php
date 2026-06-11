@@ -153,90 +153,51 @@
                 </button>
             </div>
 
-            {{-- Import from Question Bank --}}
+            {{-- Import from Question Banks --}}
             <div class="bg-surface-800 border border-white/10 rounded-2xl p-6">
-                <h2 class="text-lg font-semibold text-white mb-4">{{ __('Import from Question Bank') }}</h2>
+                <h2 class="text-lg font-semibold text-white mb-4">{{ __('Import from Question Banks') }}</h2>
 
                 @php
                     $bankIds = $course->questionBanks()->pluck('question_banks.id');
-                    $ownItems = \App\Models\QuestionBankItem::whereIn('question_bank_id', $bankIds)->latest()->get();
+                    $ownBanks = \App\Models\QuestionBank::whereIn('id', $bankIds)->withCount('items')->get();
                     $globalBanks = \App\Models\QuestionBank::where('is_visible_to_all', true)
                         ->whereNotIn('id', $bankIds)
-                        ->with('items')
+                        ->withCount('items')
                         ->get();
-                    $globalItems = $globalBanks->flatMap->items;
-                    $bankTotal = $ownItems->count() + $globalItems->count();
                 @endphp
 
-                <div class="bg-surface-700 rounded-xl p-4 border border-white/5 mb-4">
-                    <label class="block text-sm font-medium text-gray-300 mb-1.5">{{ __('Randomly Pull from Bank') }}</label>
-                    <div class="flex items-center gap-3">
-                        <input type="number" name="bank_random_count" min="0" max="{{ $bankTotal }}" value="{{ old('bank_random_count', 0) }}"
-                               class="w-24 input-dashboard text-center" placeholder="0">
-                        <span class="text-sm text-gray-500">{{ __('of') }} {{ $bankTotal }} {{ __('available') }}</span>
-                    </div>
-                    @error('bank_random_count') <p class="text-red-400 text-xs mt-1">{{ $message }}</p> @enderror
-                </div>
-
-                <div class="flex items-center justify-between mb-3">
-                    <p class="text-sm text-gray-400">{{ __('Or manually select:') }}</p>
-                    <button type="button" onclick="document.getElementById('bank-import-section').classList.toggle('hidden'); this.classList.toggle('hidden')"
-                            class="text-sm text-brand-400 hover:text-brand-300 transition-colors">{{ __('Browse Bank') }}</button>
-                </div>
-                <div id="bank-import-section" class="hidden space-y-3 max-h-96 overflow-y-auto">
-                    @if($ownItems->isNotEmpty())
-                        <p class="text-xs font-medium text-gray-500 px-1 uppercase tracking-wider">{{ __('This Course') }}</p>
-                        @foreach($ownItems as $item)
-                        <label class="flex items-start gap-3 bg-surface-700 rounded-xl p-4 border border-white/5 cursor-pointer hover:border-brand-500/30 transition-colors">
-                            <input type="checkbox" name="bank_item_ids[]" value="{{ $item->id }}" class="mt-1 accent-brand-500">
-                            <div class="flex-1 min-w-0">
-                                <div class="flex items-center gap-2 mb-1">
-                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-mono uppercase tracking-wider
-                                        @switch($item->type)
-                                            @case('multiple_choice') bg-blue-500/20 text-blue-300 border border-blue-500/30 @break
-                                            @case('true_false') bg-purple-500/20 text-purple-300 border border-purple-500/30 @break
-                                            @case('short_answer') bg-amber-500/20 text-amber-300 border border-amber-500/30 @break
-                                            @case('long_answer') bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 @break
-                                        @endswitch">
-                                        {{ __(ucwords(str_replace('_', ' ', $item->type))) }}
-                                    </span>
-                                    <span class="text-xs text-gray-500">{{ $item->points }} pts</span>
-                                </div>
-                                <p class="text-sm text-white">{{ $item->question }}</p>
+                <p class="text-sm text-gray-400 mb-4">{{ __('Select a bank and enter how many random questions to pull:') }}</p>
+                <div class="space-y-2 max-h-96 overflow-y-auto pr-1">
+                    @foreach($ownBanks as $bank)
+                        <div class="bg-surface-700 rounded-xl p-4 border border-white/5 flex items-center justify-between gap-4">
+                            <div class="min-w-0 flex-1">
+                                <p class="text-sm font-medium text-white truncate">{{ $bank->name }}</p>
+                                <p class="text-xs text-gray-500">{{ $bank->items_count }} {{ __('questions') }}</p>
                             </div>
-                        </label>
-                        @endforeach
-                    @endif
+                            <div class="flex items-center gap-2 shrink-0">
+                                <input type="number" name="bank_pulls[{{ $bank->id }}]" value="0" min="0" max="{{ $bank->items_count }}"
+                                       class="w-20 input-dashboard text-center text-sm" placeholder="0">
+                                <span class="text-xs text-gray-500">{{ __('random') }}</span>
+                            </div>
+                        </div>
+                    @endforeach
 
-                    @if($globalItems->isNotEmpty())
-                        <p class="text-xs font-medium text-gray-500 px-1 uppercase tracking-wider mt-4">{{ __('Shared Banks') }}</p>
-                        @foreach($globalBanks as $bank)
-                            @foreach($bank->items as $item)
-                            <label class="flex items-start gap-3 bg-surface-700 rounded-xl p-4 border border-white/5 cursor-pointer hover:border-brand-500/30 transition-colors">
-                                <input type="checkbox" name="bank_item_ids[]" value="{{ $item->id }}" class="mt-1 accent-brand-500">
-                                <div class="flex-1 min-w-0">
-                                    <div class="flex items-center gap-2 mb-1">
-                                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-mono uppercase tracking-wider
-                                            @switch($item->type)
-                                                @case('multiple_choice') bg-blue-500/20 text-blue-300 border border-blue-500/30 @break
-                                                @case('true_false') bg-purple-500/20 text-purple-300 border border-purple-500/30 @break
-                                                @case('short_answer') bg-amber-500/20 text-amber-300 border border-amber-500/30 @break
-                                                @case('long_answer') bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 @break
-                                            @endswitch">
-                                            {{ __(ucwords(str_replace('_', ' ', $item->type))) }}
-                                        </span>
-                                        <span class="text-xs text-gray-500">{{ $item->points }} pts</span>
-                                    </div>
-                                    <p class="text-sm text-white">{{ $item->question }}</p>
-                                    <p class="text-xs text-gray-600 mt-0.5">{{ $bank->name }}</p>
-                                </div>
-                            </label>
-                            @endforeach
-                        @endforeach
-                    @endif
+                    @foreach($globalBanks as $bank)
+                        <div class="bg-surface-700/50 rounded-xl p-4 border border-white/5 flex items-center justify-between gap-4">
+                            <div class="min-w-0 flex-1">
+                                <p class="text-sm font-medium text-white truncate">{{ $bank->name }}</p>
+                                <p class="text-xs text-gray-500">{{ $bank->items_count }} {{ __('questions') }} &middot; {{ __('Shared') }}</p>
+                            </div>
+                            <div class="flex items-center gap-2 shrink-0">
+                                <input type="number" name="bank_pulls[{{ $bank->id }}]" value="0" min="0" max="{{ $bank->items_count }}"
+                                       class="w-20 input-dashboard text-center text-sm" placeholder="0">
+                                <span class="text-xs text-gray-500">{{ __('random') }}</span>
+                            </div>
+                        </div>
+                    @endforeach
 
-                    @if($ownItems->isEmpty() && $globalItems->isEmpty())
-                        <p class="text-sm text-gray-500 text-center py-4">{{ __('No questions in the bank yet.') }}</p>
+                    @if($ownBanks->isEmpty() && $globalBanks->isEmpty())
+                        <p class="text-sm text-gray-500 text-center py-4">{{ __('No question banks available.') }}</p>
                     @endif
                 </div>
             </div>
