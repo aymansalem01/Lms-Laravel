@@ -295,20 +295,21 @@ Route::post('/theme', [ViewController::class, 'theme'])->name('theme.switch');
         Route::put('/courses/{course}/instructor',          [AdminCourseController::class, 'reassignInstructor'])->name('courses.reassign');
         Route::post('/courses/bulk',                        [AdminCourseController::class, 'bulk'])->name('courses.bulk');
         Route::post('/courses/bulk-create',                 [AdminCourseController::class, 'bulkCreate'])->name('courses.bulk-create');
+        Route::get('/courses/bulk-create-example',          [AdminCourseController::class, 'downloadBulkExample'])->name('courses.bulk-create-example');
         Route::delete('/courses/{course}',                  [AdminCourseController::class, 'destroy'])->name('courses.destroy');
 
         // ── Question Bank ─────────────────────────────────────────────────────
         Route::get('/question-bank',                            [\App\Http\Controllers\Admin\QuestionBankController::class, 'index'])->name('question-bank.index');
         Route::get('/question-bank/create',                     [\App\Http\Controllers\Admin\QuestionBankController::class, 'create'])->name('question-bank.create');
         Route::post('/question-bank',                           [\App\Http\Controllers\Admin\QuestionBankController::class, 'store'])->name('question-bank.store');
+        Route::get('/question-bank/bulk-import-example', [\App\Http\Controllers\Admin\QuestionBankController::class, 'downloadBulkImportExample'])->name('question-bank.bulk-import-example');
+        Route::get('/question-bank-import-example',          [\App\Http\Controllers\Admin\QuestionBankController::class, 'downloadImportExample'])->name('question-bank.import-example');
         Route::get('/question-bank/{questionBank}',             [\App\Http\Controllers\Admin\QuestionBankController::class, 'show'])->name('question-bank.show');
         Route::get('/question-bank/{questionBank}/edit',        [\App\Http\Controllers\Admin\QuestionBankController::class, 'edit'])->name('question-bank.edit');
         Route::put('/question-bank/{questionBank}',             [\App\Http\Controllers\Admin\QuestionBankController::class, 'update'])->name('question-bank.update');
         Route::delete('/question-bank/{questionBank}',          [\App\Http\Controllers\Admin\QuestionBankController::class, 'destroy'])->name('question-bank.destroy');
         Route::post('/question-bank/{questionBank}/import', [\App\Http\Controllers\Admin\QuestionBankController::class, 'importQuestions'])->name('question-bank.import');
-        Route::get('/question-bank-import-example',          [\App\Http\Controllers\Admin\QuestionBankController::class, 'downloadImportExample'])->name('question-bank.import-example');
         Route::post('/question-bank/bulk-import', [\App\Http\Controllers\Admin\QuestionBankController::class, 'bulkImportBanks'])->name('question-bank.bulk-import');
-        Route::get('/question-bank/bulk-import-example', [\App\Http\Controllers\Admin\QuestionBankController::class, 'downloadBulkImportExample'])->name('question-bank.bulk-import-example');
 
         // ── Modules ───────────────────────────────────────────────────────────
         Route::get('/modules',                                [AdminModuleController::class, 'index'])->name('modules.index');
@@ -343,6 +344,7 @@ Route::post('/theme', [ViewController::class, 'theme'])->name('theme.switch');
         Route::get('/enrollments',                              [AdminEnrollmentController::class, 'index'])->name('enrollments.index');
         Route::post('/enrollments',                             [AdminEnrollmentController::class, 'store'])->name('enrollments.store');
         Route::post('/enrollments/bulk',                        [AdminEnrollmentController::class, 'bulkEnroll'])->name('enrollments.bulk');
+        Route::get('/enrollments/bulk-example',                 [AdminEnrollmentController::class, 'downloadBulkExample'])->name('enrollments.bulk-example');
         Route::delete('/enrollments/{enrollment}',              [AdminEnrollmentController::class, 'destroy'])->name('enrollments.destroy');
         Route::get('/enrollments-export',                       [AdminEnrollmentController::class, 'export'])->name('enrollments.export');
         Route::get('/enrollments-export-example',                [AdminEnrollmentController::class, 'downloadExample'])->name('enrollments.export-example');

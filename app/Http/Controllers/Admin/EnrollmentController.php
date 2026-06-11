@@ -82,24 +82,106 @@ class EnrollmentController extends Controller
 
     public function bulkEnroll(Request $request)
     {
-        $data = $request->validate([
-            'course_id'  => ['required', 'exists:courses,id'],
-            'student_ids' => ['required', 'array'],
-            'student_ids.*' => ['exists:users,id'],
+        $request->validate([
+            'course_ids' => ['required', 'array', 'min:1'],
+            'course_ids.*' => ['exists:courses,id'],
+            'csv_file' => ['required', 'file', 'mimes:csv,txt'],
         ]);
 
-        $added = 0;
-        foreach ($data['student_ids'] as $studentId) {
-            Enrollment::firstOrCreate([
-                'student_id' => $studentId,
-                'course_id'  => $data['course_id'],
-            ]);
-            $added++;
+        $file = $request->file('csv_file');
+        $handle = fopen($file->getRealPath(), 'r');
+
+        $bom = fread($handle, 3);
+        if ($bom !== "\xEF\xBB\xBF") {
+            rewind($handle);
         }
 
-        $course = Course::find($data['course_id']);
+        $header = fgetcsv($handle);
+        if (!$header) {
+            fclose($handle);
+            return back()->withErrors(['csv_file' => 'CSV file is empty or invalid.']);
+        }
 
-        return back()->with('success', "{$added} student(s) enrolled in {$course->title}.");
+        $header = array_map('trim', $header);
+        $emailColumn = null;
+        foreach (['email', 'student_email', 'Email', 'Student Email'] as $col) {
+            if (in_array($col, $header)) {
+                $emailColumn = $col;
+                break;
+            }
+        }
+
+        if (!$emailColumn) {
+            fclose($handle);
+            return back()->withErrors(['csv_file' => "CSV must have an 'email' column. Found: " . implode(', ', $header)]);
+        }
+
+        $emailIdx = array_search($emailColumn, $header);
+        $emails = [];
+        while (($line = fgetcsv($handle)) !== false) {
+            $email = trim($line[$emailIdx] ?? '');
+            if (!empty($email)) {
+                $emails[] = $email;
+            }
+        }
+        fclose($handle);
+
+        if (empty($emails)) {
+            return back()->withErrors(['csv_file' => 'No email addresses found in CSV.']);
+        }
+
+        $students = User::whereIn('email', $emails)
+            ->where(function ($q) {
+                $q->where('role', 'student');
+            })
+            ->get()
+            ->keyBy('email');
+
+        $notFound = array_diff($emails, $students->keys()->toArray());
+        $courseTitles = Course::whereIn('id', $request->course_ids)->pluck('title')->implode(', ');
+
+        $added = 0;
+        foreach ($students as $student) {
+            foreach ($request->course_ids as $courseId) {
+                Enrollment::firstOrCreate([
+                    'student_id' => $student->id,
+                    'course_id' => $courseId,
+                ]);
+                $added++;
+            }
+        }
+
+        $message = "{$added} enrollment(s) created in {$courseTitles}.";
+
+        if (!empty($notFound)) {
+            $message .= ' ' . count($notFound) . ' email(s) not found: ' . implode(', ', array_slice($notFound, 0, 10));
+            if (count($notFound) > 10) {
+                $message .= '...';
+            }
+            return back()->with('warning', $message)->with('import_errors', $notFound);
+        }
+
+        return back()->with('success', $message);
+    }
+
+    public function downloadBulkExample()
+    {
+        $headers = [
+            'Content-Type' => 'text/csv; charset=utf-8',
+            'Content-Disposition' => 'attachment; filename="enrollments-bulk-import-example.csv"',
+        ];
+
+        $callback = function () {
+            $handle = fopen('php://output', 'w');
+            fwrite($handle, "\xEF\xBB\xBF");
+            fputcsv($handle, ['email']);
+            fputcsv($handle, ['john@example.com']);
+            fputcsv($handle, ['jane@example.com']);
+            fputcsv($handle, ['bob@example.com']);
+            fclose($handle);
+        };
+
+        return new \Symfony\Component\HttpFoundation\StreamedResponse($callback, 200, $headers);
     }
 
     public function export(Request $request)

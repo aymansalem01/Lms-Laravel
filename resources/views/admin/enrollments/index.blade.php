@@ -89,34 +89,35 @@
 
     {{-- Bulk Enroll Modal --}}
     <div x-data="{ open: false }" @open-bulk-enroll.window="open = true" x-show="open" x-cloak
-         x-effect="open && $nextTick(() => $refs.bulkCourse.focus())"
          class="fixed inset-0 z-50 flex items-center justify-center p-4">
         <div class="fixed inset-0 bg-black/60 backdrop-blur-sm" @click="open = false"></div>
         <div class="relative bg-surface-800 border border-white/10 rounded-xl p-6 w-full max-w-lg shadow-2xl">
-            <h3 class="text-lg font-semibold text-white mb-4">Bulk Enroll</h3>
-            <form method="POST" action="{{ route('admin.enrollments.bulk') }}">
+            <h3 class="text-lg font-semibold text-white mb-4">Bulk Enroll by CSV</h3>
+            <form method="POST" action="{{ route('admin.enrollments.bulk') }}" enctype="multipart/form-data">
                 @csrf
                 <div class="mb-4">
-                    <label for="bulk_course_id" class="block text-sm font-medium text-gray-300 mb-1.5">Course</label>
-                    <select id="bulk_course_id" x-ref="bulkCourse" name="course_id" class="input-dashboard">
-                        <option value="">Select course...</option>
+                    <label class="block text-sm font-medium text-gray-300 mb-2">Courses to enroll into</label>
+                    <div class="max-h-40 overflow-y-auto space-y-1.5 bg-surface-700 rounded-xl p-3 border border-white/10">
                         @foreach($courses ?? [] as $course)
-                            <option value="{{ $course->id }}">{{ $course->title }}</option>
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="checkbox" name="course_ids[]" value="{{ $course->id }}"
+                                       class="w-4 h-4 rounded border-white/20 bg-surface-800 text-brand-500 focus:ring-brand-500">
+                                <span class="text-sm text-gray-300">{{ $course->title }}</span>
+                            </label>
                         @endforeach
-                    </select>
+                    </div>
                 </div>
                 <div class="mb-4">
-                    <label for="bulk_student_ids" class="block text-sm font-medium text-gray-300 mb-1.5">Students</label>
-                    <select id="bulk_student_ids" name="student_ids[]" multiple class="input-dashboard h-32">
-                        @foreach($students ?? [] as $student)
-                            <option value="{{ $student->id }}">{{ $student->name }} ({{ $student->email }})</option>
-                        @endforeach
-                    </select>
-                    <p class="text-xs text-gray-500 mt-1">Hold Ctrl/Cmd to select multiple students.</p>
+                    <label class="block text-sm font-medium text-gray-300 mb-2">CSV with student emails</label>
+                    <input type="file" name="csv_file" accept=".csv,.txt" class="input-dashboard w-full text-sm" required>
+                    <p class="text-xs text-gray-500 mt-1">CSV must have an <strong>email</strong> column with one student email per row.</p>
                 </div>
-                <div class="flex justify-end gap-3">
-                    <button type="button" @click="open = false" class="text-sm text-gray-400 hover:text-white transition-colors px-4 py-2.5">Cancel</button>
-                    <button type="submit" class="bg-brand-600 hover:bg-brand-500 text-white rounded-xl px-6 py-2.5 text-sm font-medium transition-colors">Enroll Selected</button>
+                <div class="flex items-center justify-between">
+                    <a href="{{ route('admin.enrollments.bulk-example') }}" class="text-xs text-brand-400 hover:text-brand-300">Download example CSV</a>
+                    <div class="flex items-center gap-2">
+                        <button type="button" @click="open = false" class="text-sm text-gray-400 hover:text-white px-4 py-2 rounded-xl transition-colors">Cancel</button>
+                        <button type="submit" class="bg-brand-600 hover:bg-brand-500 text-white rounded-xl px-6 py-2.5 text-sm font-medium transition-colors">Enroll</button>
+                    </div>
                 </div>
             </form>
         </div>

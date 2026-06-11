@@ -193,6 +193,8 @@ class QuestionBankController extends Controller
     {
         $request->validate([
             'csv_file' => 'required|file|mimes:csv,txt|max:2048',
+            'course_ids' => 'nullable|array',
+            'course_ids.*' => 'exists:courses,id',
         ]);
 
         $file = $request->file('csv_file');
@@ -227,6 +229,13 @@ class QuestionBankController extends Controller
             return back()->withErrors(['csv_file' => 'CSV file is empty.']);
         }
 
+        if ($request->filled('course_ids')) {
+            $selected = implode('|', $request->course_ids);
+            foreach ($rows as &$row) {
+                $row['course_ids'] = $selected;
+            }
+        }
+
         $results = app(QuestionBanksImport::class)->import($rows);
 
         $msg = "Imported {$results['succeeded']} questions across {$results['banks_created']} bank(s).";
@@ -248,12 +257,12 @@ class QuestionBankController extends Controller
         $callback = function () {
             $handle = fopen('php://output', 'w');
             fwrite($handle, "\xEF\xBB\xBF");
-            fputcsv($handle, ['bank_name', 'type', 'question', 'options', 'correct_answer', 'points', 'course_ids']);
-            fputcsv($handle, ['Math Quiz', 'multiple_choice', 'What is 2+2?', '1|2|3|4', '4', '1', '1|2']);
-            fputcsv($handle, ['Math Quiz', 'true_false', 'Is 10 greater than 5?', '', 'true', '1', '']);
-            fputcsv($handle, ['Math Quiz', 'short_answer', 'What is 5+3?', '', '8', '2', '']);
-            fputcsv($handle, ['Science Quiz', 'multiple_choice', 'Which planet is closest to the Sun?', 'Venus|Mercury|Earth|Mars', 'Mercury', '2', '3']);
-            fputcsv($handle, ['Science Quiz', 'true_false', 'Water boils at 100C.', '', 'true', '1', '']);
+            fputcsv($handle, ['bank_name', 'type', 'question', 'options', 'correct_answer', 'points']);
+            fputcsv($handle, ['Math Quiz', 'multiple_choice', 'What is 2+2?', '1|2|3|4', '4', '1']);
+            fputcsv($handle, ['Math Quiz', 'true_false', 'Is 10 greater than 5?', '', 'true', '1']);
+            fputcsv($handle, ['Math Quiz', 'short_answer', 'What is 5+3?', '', '8', '2']);
+            fputcsv($handle, ['Science Quiz', 'multiple_choice', 'Which planet is closest to the Sun?', 'Venus|Mercury|Earth|Mars', 'Mercury', '2']);
+            fputcsv($handle, ['Science Quiz', 'true_false', 'Water boils at 100C.', '', 'true', '1']);
             fclose($handle);
         };
 

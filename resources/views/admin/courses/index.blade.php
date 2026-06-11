@@ -94,7 +94,7 @@
         <div class="fixed inset-0 bg-black/60 backdrop-blur-sm" @click="bulkOpen = false"></div>
         <div class="relative bg-surface-800 border border-white/10 rounded-xl p-6 w-full max-w-lg shadow-2xl" @click.away="bulkOpen = false">
             <h3 class="text-lg font-semibold text-white mb-4">Bulk Create Courses</h3>
-            <p class="text-sm text-gray-400 mb-4">Upload a CSV file with course data. <a href="#" class="text-brand-400 hover:text-brand-300">Download example</a></p>
+            <p class="text-sm text-gray-400 mb-4">Upload a CSV file with course data. <a href="{{ route('admin.courses.bulk-create-example') }}" class="text-brand-400 hover:text-brand-300">Download example</a></p>
             <form method="POST" action="{{ route('admin.courses.bulk-create') }}" enctype="multipart/form-data">
                 @csrf
                 <div class="mb-4">

@@ -28,7 +28,19 @@
                 <div class="mb-4">
                     <label class="block text-sm font-medium text-gray-300 mb-2">CSV File</label>
                     <input type="file" name="csv_file" accept=".csv,.txt" class="input-dashboard w-full text-sm" required>
-                    <p class="text-xs text-gray-500 mt-1">Columns: bank_name, type, question, options, correct_answer, points, course_ids</p>
+                    <p class="text-xs text-gray-500 mt-1">Columns: bank_name, type, question, options, correct_answer, points</p>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-300 mb-2">Attach banks to courses (optional)</label>
+                    <div class="max-h-40 overflow-y-auto space-y-1.5 bg-surface-700 rounded-xl p-3 border border-white/10">
+                        @foreach($courses as $course)
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="checkbox" name="course_ids[]" value="{{ $course->id }}"
+                                       class="w-4 h-4 rounded border-white/20 bg-surface-800 text-brand-500 focus:ring-brand-500">
+                                <span class="text-sm text-gray-300">{{ $course->title }}</span>
+                            </label>
+                        @endforeach
+                    </div>
                 </div>
                 <div class="flex items-center justify-between">
                     <a href="{{ route('question-bank.bulk-import-example') }}" class="text-xs text-brand-400 hover:text-brand-300">Download example CSV</a>
