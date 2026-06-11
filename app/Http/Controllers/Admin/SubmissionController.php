@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Exports\SubmissionsExport;
 use App\Http\Controllers\Controller;
 use App\Models\Submission;
 use App\Models\Assignment;
@@ -70,5 +71,33 @@ class SubmissionController extends Controller
         $submission->delete();
 
         return back()->with('success', 'Submission deleted.');
+    }
+
+    public function export(Request $request)
+    {
+        return app(SubmissionsExport::class)->download(
+            $request->input('course_id'),
+            $request->input('status'),
+        );
+    }
+
+    public function downloadExample()
+    {
+        $headers = [
+            'Content-Type' => 'text/csv; charset=utf-8',
+            'Content-Disposition' => 'attachment; filename="submissions-import-example.csv"',
+        ];
+
+        $callback = function () {
+            $handle = fopen('php://output', 'w');
+            fwrite($handle, "\xEF\xBB\xBF");
+            fputcsv($handle, ['Student Name', 'Student Email', 'Course', 'Assignment', 'Status', 'Score', 'Feedback', 'Submitted At']);
+            fputcsv($handle, ['John Doe', 'john@example.com', 'Film 101', 'Week 1 Essay', 'graded', '85', 'Good work!', '2026-06-01 10:00:00']);
+            fputcsv($handle, ['Jane Smith', 'jane@example.com', 'Film 101', 'Week 1 Essay', 'submitted', '', '', '2026-06-02 14:30:00']);
+            fputcsv($handle, ['Bob Wilson', 'bob@example.com', 'Web Design', 'Final Project', 'graded', '92', 'Excellent!', '2026-06-03 09:15:00']);
+            fclose($handle);
+        };
+
+        return new \Symfony\Component\HttpFoundation\StreamedResponse($callback, 200, $headers);
     }
 }

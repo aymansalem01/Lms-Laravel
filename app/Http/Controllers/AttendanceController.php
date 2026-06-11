@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\AttendanceExport;
+use App\Imports\AttendanceImport;
 use App\Models\Course;
 use App\Models\CourseAttendance;
 use App\Models\AttendanceWarning;
@@ -150,5 +152,78 @@ class AttendanceController extends Controller
 
         return redirect()->route('courses.attendance.report', $course)
             ->with('success', "Warnings generated/updated for {$generated} entries.");
+    }
+
+    public function export(Course $course, Request $request)
+    {
+        return app(AttendanceExport::class)->download($course, $request->input('date'));
+    }
+
+    public function import(Request $request, Course $course)
+    {
+        $request->validate([
+            'csv_file' => 'required|file|mimes:csv,txt|max:2048',
+        ]);
+
+        $file = $request->file('csv_file');
+        $handle = fopen($file->getRealPath(), 'r');
+
+        $bom = fread($handle, 3);
+        if ($bom !== "\xEF\xBB\xBF") {
+            rewind($handle);
+        }
+
+        $header = fgetcsv($handle);
+
+        if (!$header || count(array_intersect(array_map('trim', $header), ['student_email', 'status'])) < 2) {
+            fclose($handle);
+            return back()->withErrors(['csv_file' => "CSV must have 'student_email', 'date', and 'status' columns. Found: " . implode(', ', $header ?? [])]);
+        }
+
+        $header = array_map('trim', $header);
+        $rows = [];
+
+        while (($line = fgetcsv($handle)) !== false) {
+            $row = [];
+            foreach ($header as $i => $col) {
+                $row[$col] = $line[$i] ?? '';
+            }
+            $rows[] = $row;
+        }
+
+        fclose($handle);
+
+        if (empty($rows)) {
+            return back()->withErrors(['csv_file' => 'CSV file is empty.']);
+        }
+
+        $results = app(AttendanceImport::class)->import($course, $rows);
+
+        if ($results['failed'] > 0) {
+            $message = "Imported {$results['succeeded']} attendance records. {$results['failed']} rows failed.";
+            return back()->with('warning', $message)->with('import_errors', $results['errors']);
+        }
+
+        return back()->with('success', "All {$results['succeeded']} attendance records imported successfully.");
+    }
+
+    public function downloadExample(Course $course)
+    {
+        $headers = [
+            'Content-Type' => 'text/csv; charset=utf-8',
+            'Content-Disposition' => 'attachment; filename="attendance-import-example.csv"',
+        ];
+
+        $callback = function () use ($course) {
+            $handle = fopen('php://output', 'w');
+            fwrite($handle, "\xEF\xBB\xBF");
+            fputcsv($handle, ['student_email', 'date', 'status']);
+            fputcsv($handle, ['student@example.com', now()->format('Y-m-d'), 'present']);
+            fputcsv($handle, ['another.student@example.com', now()->format('Y-m-d'), 'absent']);
+            fputcsv($handle, ['third@example.com', now()->format('Y-m-d'), 'late']);
+            fclose($handle);
+        };
+
+        return new \Symfony\Component\HttpFoundation\StreamedResponse($callback, 200, $headers);
     }
 }

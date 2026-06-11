@@ -10,6 +10,7 @@ use App\Models\Submission;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class GradingController extends Controller
 {
@@ -18,16 +19,166 @@ class GradingController extends Controller
         if (!auth()->user()->isInstructorOrAdmin()) { abort(403); }
 
         $user = auth()->user();
-        $submissions = Submission::whereHas('assignment.course', function ($q) use ($user) {
+        $courses = Course::where(function ($q) use ($user) {
                 if ($user->isInstructor()) {
                     $q->where('instructor_id', $user->id);
                 }
             })
-            ->with('assignment.course', 'student', 'grade')
-            ->latest()
+            ->withCount([
+                'assignments',
+                'assignments as total_submissions_count' => function ($q) {
+                    $q->whereHas('submissions');
+                },
+                'assignments as graded_submissions_count' => function ($q) {
+                    $q->whereHas('submissions', fn($sq) => $sq->where('status', 'graded'));
+                },
+            ])
+            ->orderBy('title')
             ->get();
 
-        return view('grading.index', compact('submissions'));
+        return view('grading.index', compact('courses'));
+    }
+
+    public function assignments(Course $course)
+    {
+        if (!auth()->user()->isInstructorOrAdmin()) { abort(403); }
+        if (auth()->user()->isInstructor() && $course->instructor_id !== auth()->id()) { abort(403); }
+
+        $assignments = $course->assignments()
+            ->withCount([
+                'submissions',
+                'submissions as graded_count' => fn($q) => $q->where('status', 'graded'),
+            ])
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        return view('grading.assignments', compact('course', 'assignments'));
+    }
+
+    public function students(Course $course, Assignment $assignment)
+    {
+        if (!auth()->user()->isInstructorOrAdmin()) { abort(403); }
+        if (auth()->user()->isInstructor() && $course->instructor_id !== auth()->id()) { abort(403); }
+        if ($assignment->course_id !== $course->id) { abort(404); }
+
+        $students = $course->students()
+            ->with(['submissions' => function ($q) use ($assignment) {
+                $q->where('assignment_id', $assignment->id);
+            }, 'submissions.grade'])
+            ->orderBy('name')
+            ->get();
+
+        $gradedCount = $students->filter(fn($s) => $s->submissions->first()?->grade)->count();
+        $averageScore = $students->filter(fn($s) => $s->submissions->first()?->grade)
+            ->avg(fn($s) => $s->submissions->first()->grade->score);
+
+        return view('grading.students', compact('course', 'assignment', 'students', 'gradedCount', 'averageScore'));
+    }
+
+    public function exportAssignment(Course $course, Assignment $assignment)
+    {
+        if (!auth()->user()->isInstructorOrAdmin()) { abort(403); }
+        if (auth()->user()->isInstructor() && $course->instructor_id !== auth()->id()) { abort(403); }
+        if ($assignment->course_id !== $course->id) { abort(404); }
+
+        $students = $course->students()
+            ->with(['submissions' => function ($q) use ($assignment) {
+                $q->where('assignment_id', $assignment->id);
+            }, 'submissions.grade'])
+            ->orderBy('name')
+            ->get();
+
+        $headers = [
+            'Content-Type' => 'text/csv; charset=utf-8',
+            'Content-Disposition' => 'attachment; filename="grades-' . str_replace(' ', '-', $assignment->title) . '-' . now()->format('Y-m-d') . '.csv"',
+        ];
+
+        $callback = function () use ($students, $course, $assignment) {
+            $handle = fopen('php://output', 'w');
+            fwrite($handle, "\xEF\xBB\xBF");
+            fputcsv($handle, ['Student Name', 'Student Email', 'Course', 'Assignment', 'Status', 'Score', 'Max Score', 'Feedback']);
+
+            foreach ($students as $student) {
+                $submission = $student->submissions->first();
+                $grade = $submission?->grade;
+                $status = match (true) {
+                    !$submission => 'not_submitted',
+                    (bool)$grade => 'graded',
+                    default => 'submitted',
+                };
+
+                fputcsv($handle, [
+                    $student->name,
+                    $student->email,
+                    $course->title,
+                    $assignment->title,
+                    $status,
+                    $grade?->score ?? '',
+                    $assignment->max_score ?? 100,
+                    $grade?->feedback ?? '',
+                ]);
+            }
+
+            fclose($handle);
+        };
+
+        return new StreamedResponse($callback, 200, $headers);
+    }
+
+    public function exportCourse(Course $course)
+    {
+        if (!auth()->user()->isInstructorOrAdmin()) { abort(403); }
+        if (auth()->user()->isInstructor() && $course->instructor_id !== auth()->id()) { abort(403); }
+
+        $assignments = $course->assignments()->orderBy('title')->get();
+        $students = $course->students()
+            ->with(['submissions' => function ($q) use ($assignments) {
+                $q->whereIn('assignment_id', $assignments->pluck('id'));
+            }, 'submissions.grade'])
+            ->orderBy('name')
+            ->get();
+
+        $headers = [
+            'Content-Type' => 'text/csv; charset=utf-8',
+            'Content-Disposition' => 'attachment; filename="all-grades-' . str_replace(' ', '-', $course->title) . '-' . now()->format('Y-m-d') . '.csv"',
+        ];
+
+        $callback = function () use ($students, $course, $assignments) {
+            $handle = fopen('php://output', 'w');
+            fwrite($handle, "\xEF\xBB\xBF");
+
+            $headerRow = ['Student Name', 'Student Email'];
+            foreach ($assignments as $a) {
+                $headerRow[] = $a->title . ' (Score)';
+                $headerRow[] = $a->title . ' (Status)';
+            }
+            fputcsv($handle, $headerRow);
+
+            foreach ($students as $student) {
+                $subsByAssignment = $student->submissions->keyBy('assignment_id');
+                $row = [$student->name, $student->email];
+
+                foreach ($assignments as $a) {
+                    $sub = $subsByAssignment->get($a->id);
+                    if ($sub?->grade) {
+                        $row[] = $sub->grade->score;
+                        $row[] = 'Graded';
+                    } elseif ($sub) {
+                        $row[] = '';
+                        $row[] = 'Submitted';
+                    } else {
+                        $row[] = '';
+                        $row[] = 'Not Submitted';
+                    }
+                }
+
+                fputcsv($handle, $row);
+            }
+
+            fclose($handle);
+        };
+
+        return new StreamedResponse($callback, 200, $headers);
     }
 
     public function show(Submission $submission)

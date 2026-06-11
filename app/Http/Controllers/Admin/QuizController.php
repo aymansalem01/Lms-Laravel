@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Exports\QuizAttemptsExport;
 use App\Http\Controllers\Controller;
 use App\Models\Quiz;
 use App\Models\Course;
@@ -104,5 +105,29 @@ class QuizController extends Controller
 
         return redirect()->route('admin.quizzes.index')
             ->with('success', "Quiz \"{$title}\" deleted.");
+    }
+
+    public function exportAttempts(Quiz $quiz)
+    {
+        return app(QuizAttemptsExport::class)->download($quiz);
+    }
+
+    public function downloadAttemptsExample()
+    {
+        $headers = [
+            'Content-Type' => 'text/csv; charset=utf-8',
+            'Content-Disposition' => 'attachment; filename="quiz-attempts-import-example.csv"',
+        ];
+
+        $callback = function () {
+            $handle = fopen('php://output', 'w');
+            fwrite($handle, "\xEF\xBB\xBF");
+            fputcsv($handle, ['Quiz', 'Course', 'Student Name', 'Student Email', 'Score', 'Max Score', 'Percentage', 'Is Draft', 'Submitted At', 'Released At']);
+            fputcsv($handle, ['Midterm Quiz', 'Film 101', 'John Doe', 'john@example.com', '18', '20', '90', 'No', '2026-06-01 10:00:00', '2026-06-02 14:00:00']);
+            fputcsv($handle, ['Midterm Quiz', 'Film 101', 'Jane Smith', 'jane@example.com', '15', '20', '75', 'No', '2026-06-01 10:30:00', '2026-06-02 14:00:00']);
+            fclose($handle);
+        };
+
+        return new \Symfony\Component\HttpFoundation\StreamedResponse($callback, 200, $headers);
     }
 }

@@ -1,8 +1,19 @@
 <x-layouts.dashboard>
     <x-slot name="title">Course Management — SAE LMS</x-slot>
 
+    <div x-data="{ bulkOpen: false }" class="contents">
     <div class="flex items-center justify-between mb-6">
         <h1 class="text-2xl font-bold text-white">Courses</h1>
+        <div class="flex items-center gap-2">
+            <button @click="bulkOpen = true" class="inline-flex items-center gap-2 bg-surface-600 hover:bg-surface-500 text-gray-300 rounded-xl px-6 py-2.5 text-sm font-medium transition-colors">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+                Bulk Create
+            </button>
+            <a href="{{ route('admin.courses.create') }}" class="inline-flex items-center gap-2 bg-brand-600 hover:bg-brand-500 text-white rounded-xl px-6 py-2.5 text-sm font-medium transition-colors">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                Create Course
+            </a>
+        </div>
     </div>
 
     {{-- Search & Filter --}}
@@ -77,4 +88,26 @@
     </div>
 
     {{ $courses->links() }}
+
+    {{-- Bulk Create Modal --}}
+    <div x-show="bulkOpen" x-cloak class="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div class="fixed inset-0 bg-black/60 backdrop-blur-sm" @click="bulkOpen = false"></div>
+        <div class="relative bg-surface-800 border border-white/10 rounded-xl p-6 w-full max-w-lg shadow-2xl" @click.away="bulkOpen = false">
+            <h3 class="text-lg font-semibold text-white mb-4">Bulk Create Courses</h3>
+            <p class="text-sm text-gray-400 mb-4">Upload a CSV file with course data. <a href="#" class="text-brand-400 hover:text-brand-300">Download example</a></p>
+            <form method="POST" action="{{ route('admin.courses.bulk-create') }}" enctype="multipart/form-data">
+                @csrf
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-300 mb-1.5">CSV File</label>
+                    <input type="file" name="csv_file" accept=".csv,.txt" required
+                           class="w-full bg-surface-700 border border-white/10 text-white rounded-xl py-2.5 px-4 text-sm focus:outline-none focus:border-brand-500 transition-colors file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-medium file:bg-brand-500/20 file:text-brand-400 hover:file:bg-brand-500/30">
+                </div>
+                <div class="flex justify-end gap-3">
+                    <button type="button" @click="bulkOpen = false" class="text-sm text-gray-400 hover:text-white transition-colors px-4 py-2.5">Cancel</button>
+                    <button type="submit" class="bg-brand-600 hover:bg-brand-500 text-white rounded-xl px-6 py-2.5 text-sm font-medium transition-colors">Upload &amp; Create</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    </div>
 </x-layouts.dashboard>

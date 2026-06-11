@@ -13,6 +13,7 @@
                     <p class="text-sm text-gray-400 mt-1">{{ $course->instructor->name ?? '—' }}</p>
                 </div>
                 <div class="flex items-center gap-2">
+                    <a href="{{ route('admin.courses.edit', $course) }}" class="text-xs text-gray-400 hover:text-white px-3 py-1.5 rounded-lg hover:bg-surface-700 transition-colors border border-white/10">Edit</a>
                     <form method="POST" action="{{ route('admin.courses.toggle-publish', $course) }}">
                         @csrf
                         <button type="submit" class="text-xs px-3 py-1.5 rounded-lg font-medium {{ $course->is_published ? 'bg-amber-500/20 text-amber-400' : 'bg-emerald-500/20 text-emerald-400' }} transition-colors">

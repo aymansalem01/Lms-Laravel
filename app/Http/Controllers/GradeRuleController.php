@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\GradeRulesExport;
 use App\Models\Course;
 use Illuminate\Http\Request;
 
@@ -47,5 +48,30 @@ class GradeRuleController extends Controller
         }
 
         return redirect()->route('courses.grade-rules.index', $course)->with('success', 'Grade rules updated.');
+    }
+
+    public function export(Course $course)
+    {
+        return app(GradeRulesExport::class)->download($course);
+    }
+
+    public function downloadExample()
+    {
+        $headers = [
+            'Content-Type' => 'text/csv; charset=utf-8',
+            'Content-Disposition' => 'attachment; filename="grade-rules-import-example.csv"',
+        ];
+
+        $callback = function () {
+            $handle = fopen('php://output', 'w');
+            fwrite($handle, "\xEF\xBB\xBF");
+            fputcsv($handle, ['Course', 'Category', 'Weight (%)']);
+            fputcsv($handle, ['Introduction to Film', 'Quiz', '30']);
+            fputcsv($handle, ['Introduction to Film', 'Assignment', '50']);
+            fputcsv($handle, ['Introduction to Film', 'Attendance', '20']);
+            fclose($handle);
+        };
+
+        return new \Symfony\Component\HttpFoundation\StreamedResponse($callback, 200, $headers);
     }
 }

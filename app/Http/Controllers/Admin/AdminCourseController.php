@@ -2,11 +2,13 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Imports\CoursesImport;
 use App\Http\Controllers\Controller;
 use App\Models\Course;
 use App\Models\User;
 use App\Models\Enrollment;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 
 /**
@@ -137,6 +139,79 @@ class AdminCourseController extends Controller
         ));
     }
 
+    // ── Create ─────────────────────────────────────────────────────────────────
+
+    public function create()
+    {
+        $instructors = User::where('role', 'instructor')->orderBy('name')->get(['id', 'name', 'email']);
+        return view('admin.courses.create', compact('instructors'));
+    }
+
+    public function store(Request $request)
+    {
+        $data = $request->validate([
+            'title'       => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'program'     => 'nullable|string|max:255',
+            'cover_image' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
+            'course_type'  => 'nullable|string|in:program,sae_core,university',
+            'is_published' => 'boolean',
+            'instructor_id' => 'required|exists:users,id',
+        ]);
+
+        if ($request->hasFile('cover_image')) {
+            $data['cover_image_url'] = Storage::url($request->file('cover_image')->store('courses', 'public'));
+        }
+
+        unset($data['cover_image']);
+
+        Course::create($data);
+
+        return redirect()->route('admin.courses.index')
+            ->with('success', 'Course created successfully.');
+    }
+
+    // ── Edit ───────────────────────────────────────────────────────────────────
+
+    public function edit(Course $course)
+    {
+        $instructors = User::where('role', 'instructor')->orderBy('name')->get(['id', 'name', 'email']);
+        return view('admin.courses.edit', compact('course', 'instructors'));
+    }
+
+    public function update(Request $request, Course $course)
+    {
+        $data = $request->validate([
+            'title'       => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'program'     => 'nullable|string|max:255',
+            'cover_image' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
+            'course_type'  => 'nullable|string|in:program,sae_core,university',
+            'status'      => 'nullable|in:draft,published',
+        ]);
+
+        if ($request->filled('status')) {
+            $data['is_published'] = $request->status === 'published';
+        }
+
+        if ($request->hasFile('cover_image')) {
+            if ($course->cover_image_url) {
+                $oldPath = str_replace(Storage::url(''), '', $course->cover_image_url);
+                if (Storage::disk('public')->exists($oldPath)) {
+                    Storage::disk('public')->delete($oldPath);
+                }
+            }
+            $data['cover_image_url'] = Storage::url($request->file('cover_image')->store('courses', 'public'));
+        }
+
+        unset($data['cover_image']);
+
+        $course->update($data);
+
+        return redirect()->route('admin.courses.show', $course)
+            ->with('success', 'Course updated successfully.');
+    }
+
     // ── Toggle Publish ────────────────────────────────────────────────────────
 
     /**
@@ -220,5 +295,29 @@ class AdminCourseController extends Controller
         $count = count($data['course_ids']);
 
         return back()->with('success', "{$count} course(s) {$data['action']}ed.");
+    }
+
+    public function bulkCreate(Request $request)
+    {
+        $request->validate([
+            'csv_file' => ['required', 'file', 'mimes:csv,txt'],
+        ]);
+
+        $rows = array_map('str_getcsv', file($request->file('csv_file')->getRealPath()));
+        $header = array_map('trim', array_shift($rows));
+        $data = array_map(fn($row) => array_combine($header, array_map('trim', $row)), $rows);
+
+        $results = app(CoursesImport::class)->import($data);
+
+        $total = $results['succeeded'] + $results['failed'];
+        $message = "{$results['succeeded']} of {$total} courses created.";
+
+        if ($results['failed'] > 0) {
+            return redirect()->route('admin.courses.index')
+                ->with('warning', $message)
+                ->with('import_errors', $results['errors']);
+        }
+
+        return redirect()->route('admin.courses.index')->with('success', $message);
     }
 }

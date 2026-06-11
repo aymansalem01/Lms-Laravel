@@ -1,9 +1,44 @@
 <x-layouts.dashboard>
     <x-slot name="title">{{ __('Question Banks') }}</x-slot>
 
-    <div class="mb-6">
-        <h1 class="text-2xl font-bold text-white">{{ __('Question Banks') }}</h1>
-        <p class="text-sm text-gray-400 mt-1">{{ __('Browse question banks shared across courses') }}</p>
+    <div class="mb-6 flex items-center justify-between">
+        <div>
+            <h1 class="text-2xl font-bold text-white">{{ __('Question Banks') }}</h1>
+            <p class="text-sm text-gray-400 mt-1">{{ __('Browse question banks shared across courses') }}</p>
+        </div>
+        <div class="flex items-center gap-2">
+            <button x-data @click="$dispatch('open-modal', 'bulkImportModal')" class="inline-flex items-center gap-1.5 text-xs text-gray-400 hover:text-white px-3 py-1.5 rounded-lg hover:bg-surface-700 transition-colors border border-white/10">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+                Bulk Import
+            </button>
+            <a href="{{ route('question-bank.import-example') }}" class="inline-flex items-center gap-1.5 text-xs text-gray-400 hover:text-white px-3 py-1.5 rounded-lg hover:bg-surface-700 transition-colors border border-white/10">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                Example CSV
+            </a>
+        </div>
+    </div>
+
+    {{-- Bulk Import Modal --}}
+    <div x-data="{ open: false }" x-cloak x-show="open" @open-modal.window="if ($event.detail === 'bulkImportModal') open = true" @keydown.escape="open = false" class="fixed inset-0 z-50 flex items-center justify-center">
+        <div class="fixed inset-0 bg-black/60" @click="open = false"></div>
+        <div class="relative bg-surface-800 border border-white/10 rounded-2xl p-6 w-full max-w-lg mx-4 shadow-2xl">
+            <h3 class="text-lg font-semibold text-white mb-4">Bulk Import Question Banks</h3>
+            <form method="POST" action="{{ route('question-bank.bulk-import') }}" enctype="multipart/form-data">
+                @csrf
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-300 mb-2">CSV File</label>
+                    <input type="file" name="csv_file" accept=".csv,.txt" class="input-dashboard w-full text-sm" required>
+                    <p class="text-xs text-gray-500 mt-1">Columns: bank_name, type, question, options, correct_answer, points, course_ids</p>
+                </div>
+                <div class="flex items-center justify-between">
+                    <a href="{{ route('question-bank.bulk-import-example') }}" class="text-xs text-brand-400 hover:text-brand-300">Download example CSV</a>
+                    <div class="flex items-center gap-2">
+                        <button type="button" @click="open = false" class="text-sm text-gray-400 hover:text-white px-4 py-2 rounded-xl transition-colors">Cancel</button>
+                        <button type="submit" class="text-sm bg-brand-600 hover:bg-brand-500 text-white font-semibold px-4 py-2 rounded-xl transition-colors">Import</button>
+                    </div>
+                </div>
+            </form>
+        </div>
     </div>
 
     <form method="GET" class="mb-6">

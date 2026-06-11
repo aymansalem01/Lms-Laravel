@@ -80,7 +80,19 @@
 
             {{-- Attempts --}}
             <div class="bg-surface-800 border border-white/10 rounded-xl p-6">
-                <h3 class="text-lg font-semibold text-white mb-4">Attempts ({{ $quiz->attempts->count() }})</h3>
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-semibold text-white">Attempts ({{ $quiz->attempts->count() }})</h3>
+                    <div class="flex items-center gap-2">
+                        <a href="{{ route('admin.quizzes.attempts-export', $quiz) }}" class="inline-flex items-center gap-1.5 text-xs text-gray-400 hover:text-white px-3 py-1.5 rounded-lg hover:bg-surface-700 transition-colors border border-white/10">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                            Export Attempts CSV
+                        </a>
+                        <a href="{{ route('admin.quizzes.attempts-export-example') }}" class="inline-flex items-center gap-1.5 text-xs text-gray-400 hover:text-white px-3 py-1.5 rounded-lg hover:bg-surface-700 transition-colors border border-white/10">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                            Example CSV
+                        </a>
+                    </div>
+                </div>
                 @forelse($quiz->attempts->sortByDesc('created_at') as $attempt)
                     <div class="flex items-center justify-between py-2.5 border-b border-white/5 last:border-0">
                         <div>

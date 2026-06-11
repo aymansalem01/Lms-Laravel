@@ -60,6 +60,21 @@
                         <p class="text-sm text-red-300">{{ session('error') }}</p>
                     </div>
                 @endif
+                @if(session('warning'))
+                    <div class="mb-6 bg-amber-500/10 border border-amber-500/20 rounded-xl px-5 py-3">
+                        <div class="flex items-center gap-3 mb-1">
+                            <svg class="w-5 h-5 text-amber-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                            <p class="text-sm text-amber-300">{{ session('warning') }}</p>
+                        </div>
+                        @if(session('import_errors'))
+                            <ul class="mt-2 space-y-0.5">
+                                @foreach(session('import_errors') as $err)
+                                    <li class="text-xs text-amber-400/80 ml-8">{{ $err }}</li>
+                                @endforeach
+                            </ul>
+                        @endif
+                    </div>
+                @endif
                 {{ $slot }}
             </main>
         </div>

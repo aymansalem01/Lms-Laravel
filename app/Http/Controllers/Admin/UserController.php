@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Exports\UsersExport;
+use App\Imports\UsersImport;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Models\Course;
@@ -345,5 +347,58 @@ class UserController extends Controller
 
         return redirect()->route('admin.users.index')
             ->with('success', "{$name} has been deleted.");
+    }
+
+    public function export(Request $request)
+    {
+        return app(UsersExport::class)->download(
+            $request->input('role'),
+            $request->input('program'),
+            $request->input('search'),
+        );
+    }
+
+    public function downloadExample()
+    {
+        $headers = [
+            'Content-Type' => 'text/csv; charset=utf-8',
+            'Content-Disposition' => 'attachment; filename="users-import-example.csv"',
+        ];
+
+        $callback = function () {
+            $handle = fopen('php://output', 'w');
+            fwrite($handle, "\xEF\xBB\xBF");
+            fputcsv($handle, ['Name', 'Email', 'Role', 'Program']);
+            fputcsv($handle, ['John Doe', 'john@example.com', 'student', 'Film Production']);
+            fputcsv($handle, ['Jane Smith', 'jane@example.com', 'instructor', 'Digital Media']);
+            fputcsv($handle, ['Admin User', 'admin@example.com', 'admin', 'Game Design']);
+            fclose($handle);
+        };
+
+        return new \Symfony\Component\HttpFoundation\StreamedResponse($callback, 200, $headers);
+    }
+
+    public function bulkCreate(Request $request)
+    {
+        $request->validate([
+            'csv_file' => ['required', 'file', 'mimes:csv,txt'],
+        ]);
+
+        $rows = array_map('str_getcsv', file($request->file('csv_file')->getRealPath()));
+        $header = array_map('trim', array_shift($rows));
+        $data = array_map(fn($row) => array_combine($header, array_map('trim', $row)), $rows);
+
+        $results = app(UsersImport::class)->import($data);
+
+        $total = $results['succeeded'] + $results['failed'];
+        $message = "{$results['succeeded']} of {$total} users created.";
+
+        if ($results['failed'] > 0) {
+            return redirect()->route('admin.users.index')
+                ->with('warning', $message)
+                ->with('import_errors', $results['errors']);
+        }
+
+        return redirect()->route('admin.users.index')->with('success', $message);
     }
 }

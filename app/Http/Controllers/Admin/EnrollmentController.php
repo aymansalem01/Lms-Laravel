@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Exports\EnrollmentsExport;
 use App\Http\Controllers\Controller;
 use App\Models\Enrollment;
 use App\Models\Course;
@@ -99,5 +100,33 @@ class EnrollmentController extends Controller
         $course = Course::find($data['course_id']);
 
         return back()->with('success', "{$added} student(s) enrolled in {$course->title}.");
+    }
+
+    public function export(Request $request)
+    {
+        return app(EnrollmentsExport::class)->download(
+            $request->input('course_id'),
+            $request->input('program'),
+            $request->input('search'),
+        );
+    }
+
+    public function downloadExample()
+    {
+        $headers = [
+            'Content-Type' => 'text/csv; charset=utf-8',
+            'Content-Disposition' => 'attachment; filename="enrollments-import-example.csv"',
+        ];
+
+        $callback = function () {
+            $handle = fopen('php://output', 'w');
+            fwrite($handle, "\xEF\xBB\xBF");
+            fputcsv($handle, ['Student Name', 'Student Email', 'Student Program', 'Course', 'Instructor', 'Enrolled At']);
+            fputcsv($handle, ['John Doe', 'john@example.com', 'Film Production', 'Introduction to Film', 'Dr. Smith', '2026-06-01 10:00:00']);
+            fputcsv($handle, ['Jane Smith', 'jane@example.com', 'Digital Media', 'Web Design Fundamentals', 'Prof. Johnson', '2026-06-02 14:30:00']);
+            fclose($handle);
+        };
+
+        return new \Symfony\Component\HttpFoundation\StreamedResponse($callback, 200, $headers);
     }
 }

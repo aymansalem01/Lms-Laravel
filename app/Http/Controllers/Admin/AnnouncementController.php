@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Exports\AnnouncementsExport;
 use App\Http\Controllers\Controller;
 use App\Models\Announcement;
 use App\Models\Course;
@@ -84,5 +85,29 @@ class AnnouncementController extends Controller
         $announcement->delete();
 
         return back()->with('success', 'Announcement deleted.');
+    }
+
+    public function export(Request $request)
+    {
+        return app(AnnouncementsExport::class)->download($request->input('course_id'));
+    }
+
+    public function downloadExample()
+    {
+        $headers = [
+            'Content-Type' => 'text/csv; charset=utf-8',
+            'Content-Disposition' => 'attachment; filename="announcements-import-example.csv"',
+        ];
+
+        $callback = function () {
+            $handle = fopen('php://output', 'w');
+            fwrite($handle, "\xEF\xBB\xBF");
+            fputcsv($handle, ['Title', 'Content', 'Priority', 'Course', 'Author', 'Created At']);
+            fputcsv($handle, ['Midterm Reminder', 'Midterm exams start next week.', 'urgent', 'Introduction to Film', 'Dr. Smith', '2026-06-01 10:00:00']);
+            fputcsv($handle, ['Guest Lecture', 'Prof. Johnson will give a talk on Friday.', 'normal', 'Web Design', 'Admin User', '2026-06-05 14:30:00']);
+            fclose($handle);
+        };
+
+        return new \Symfony\Component\HttpFoundation\StreamedResponse($callback, 200, $headers);
     }
 }

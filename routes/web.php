@@ -29,6 +29,8 @@ use App\Http\Controllers\RosterController;
 use App\Http\Controllers\GradeRuleController;
 use App\Http\Controllers\Admin\AnalyticsController;
 use App\Http\Controllers\Admin\AdminCourseController;
+use App\Http\Controllers\Admin\EnrollmentController as AdminEnrollmentController;
+use App\Http\Controllers\Admin\GradeController as AdminGradeController;
 use App\Http\Controllers\Admin\ProgramController;
 use App\Http\Controllers\Admin\LiveSessionController as AdminLiveSessionController;
 use App\Http\Controllers\LandingController;
@@ -94,12 +96,20 @@ Route::middleware('auth')->group(function () {
 Route::post('/theme', [ViewController::class, 'theme'])->name('theme.switch');
 
     Route::middleware('role:instructor,admin')->group(function () {
-        Route::get('/grading', [GradingController::class, 'index'])->name('grading.index');
-        Route::get('/grading/{submission}', [GradingController::class, 'show'])->name('grading.show');
-        Route::post('/grading/{submission}', [GradingController::class, 'store'])->name('grading.store');
+    Route::get('/grading', [GradingController::class, 'index'])->name('grading.index');
+    Route::get('/grading/courses/{course}/assignments', [GradingController::class, 'assignments'])->name('grading.assignments');
+    Route::get('/grading/courses/{course}/assignments/{assignment}/students', [GradingController::class, 'students'])->name('grading.students');
+    Route::get('/grading/courses/{course}/assignments/export', [GradingController::class, 'exportCourse'])->name('grading.export-course');
+    Route::get('/grading/courses/{course}/assignments/{assignment}/export', [GradingController::class, 'exportAssignment'])->name('grading.export-assignment');
+    Route::get('/grading/{submission}', [GradingController::class, 'show'])->name('grading.show');
+    Route::post('/grading/{submission}', [GradingController::class, 'store'])->name('grading.store');
         Route::post('/plagiarism/check/{submission}', [SubmissionController::class, 'checkPlagiarism'])->name('plagiarism.check');
         Route::get('/question-bank', [\App\Http\Controllers\QuestionBankController::class, 'globalIndex'])->name('question-bank.index');
         Route::post('/question-bank/{questionBank}/items', [\App\Http\Controllers\QuestionBankController::class, 'addItem'])->name('question-bank.add-item');
+        Route::post('/question-bank/{questionBank}/import', [\App\Http\Controllers\QuestionBankController::class, 'importQuestions'])->name('question-bank.import');
+        Route::get('/question-bank/import-example', [\App\Http\Controllers\QuestionBankController::class, 'downloadImportExample'])->name('question-bank.import-example');
+        Route::post('/question-bank/bulk-import', [\App\Http\Controllers\QuestionBankController::class, 'bulkImportBanks'])->name('question-bank.bulk-import');
+        Route::get('/question-bank/bulk-import-example', [\App\Http\Controllers\QuestionBankController::class, 'downloadBulkImportExample'])->name('question-bank.bulk-import-example');
     });
 
     Route::get('/courses', [CourseController::class, 'index'])->name('courses.index');
@@ -118,6 +128,8 @@ Route::post('/theme', [ViewController::class, 'theme'])->name('theme.switch');
         Route::middleware('role:instructor,admin')->group(function () {
             Route::get('/grade-rules', [GradeRuleController::class, 'index'])->name('grade-rules.index');
             Route::post('/grade-rules', [GradeRuleController::class, 'update'])->name('grade-rules.update');
+            Route::get('/grade-rules/export', [GradeRuleController::class, 'export'])->name('grade-rules.export');
+            Route::get('/grade-rules/export-example', [GradeRuleController::class, 'downloadExample'])->name('grade-rules.export-example');
             Route::get('/edit', [CourseController::class, 'edit'])->name('edit');
             Route::put('/', [CourseController::class, 'update'])->name('update');
             Route::delete('/', [CourseController::class, 'destroy'])->name('destroy');
@@ -228,6 +240,9 @@ Route::post('/theme', [ViewController::class, 'theme'])->name('theme.switch');
                 Route::post('/bulk', [\App\Http\Controllers\AttendanceController::class, 'bulkStore'])->name('bulk');
                 Route::get('/report', [\App\Http\Controllers\AttendanceController::class, 'report'])->name('report');
                 Route::post('/generate-warnings', [\App\Http\Controllers\AttendanceController::class, 'generateWarnings'])->name('warnings');
+                Route::get('/export', [\App\Http\Controllers\AttendanceController::class, 'export'])->name('export');
+                Route::post('/import', [\App\Http\Controllers\AttendanceController::class, 'import'])->name('import');
+                Route::get('/export-example', [\App\Http\Controllers\AttendanceController::class, 'downloadExample'])->name('export-example');
             });
         });
 
@@ -262,16 +277,24 @@ Route::post('/theme', [ViewController::class, 'theme'])->name('theme.switch');
         Route::post('/users/{user}/verify',                 [UserController::class, 'verifyInstructor'])->name('users.verify');
         Route::post('/users/{user}/revoke',                 [UserController::class, 'revokeVerification'])->name('users.revoke');
         Route::post('/users/invite',                        [UserController::class, 'invite'])->name('users.invite');
+        Route::post('/users/bulk-create',                   [UserController::class, 'bulkCreate'])->name('users.bulk-create');
         Route::post('/users/{user}/enroll',                 [UserController::class, 'enrollInCourse'])->name('users.enroll');
         Route::delete('/users/{user}/enroll/{course}',      [UserController::class, 'unenrollFromCourse'])->name('users.unenroll');
         Route::delete('/users/{user}',                      [UserController::class, 'destroy'])->name('users.destroy');
+        Route::get('/users-export',                         [UserController::class, 'export'])->name('users.export');
+        Route::get('/users-export-example',                  [UserController::class, 'downloadExample'])->name('users.export-example');
 
         // ── Courses ───────────────────────────────────────────────────────────
         Route::get('/courses',                              [AdminCourseController::class, 'index'])->name('courses.index');
+        Route::get('/courses/create',                       [AdminCourseController::class, 'create'])->name('courses.create');
+        Route::post('/courses',                             [AdminCourseController::class, 'store'])->name('courses.store');
         Route::get('/courses/{course}',                     [AdminCourseController::class, 'show'])->name('courses.show');
+        Route::get('/courses/{course}/edit',                [AdminCourseController::class, 'edit'])->name('courses.edit');
+        Route::put('/courses/{course}',                     [AdminCourseController::class, 'update'])->name('courses.update');
         Route::post('/courses/{course}/toggle-publish',     [AdminCourseController::class, 'togglePublish'])->name('courses.toggle-publish');
         Route::put('/courses/{course}/instructor',          [AdminCourseController::class, 'reassignInstructor'])->name('courses.reassign');
         Route::post('/courses/bulk',                        [AdminCourseController::class, 'bulk'])->name('courses.bulk');
+        Route::post('/courses/bulk-create',                 [AdminCourseController::class, 'bulkCreate'])->name('courses.bulk-create');
         Route::delete('/courses/{course}',                  [AdminCourseController::class, 'destroy'])->name('courses.destroy');
 
         // ── Question Bank ─────────────────────────────────────────────────────
@@ -282,6 +305,10 @@ Route::post('/theme', [ViewController::class, 'theme'])->name('theme.switch');
         Route::get('/question-bank/{questionBank}/edit',        [\App\Http\Controllers\Admin\QuestionBankController::class, 'edit'])->name('question-bank.edit');
         Route::put('/question-bank/{questionBank}',             [\App\Http\Controllers\Admin\QuestionBankController::class, 'update'])->name('question-bank.update');
         Route::delete('/question-bank/{questionBank}',          [\App\Http\Controllers\Admin\QuestionBankController::class, 'destroy'])->name('question-bank.destroy');
+        Route::post('/question-bank/{questionBank}/import', [\App\Http\Controllers\Admin\QuestionBankController::class, 'importQuestions'])->name('question-bank.import');
+        Route::get('/question-bank-import-example',          [\App\Http\Controllers\Admin\QuestionBankController::class, 'downloadImportExample'])->name('question-bank.import-example');
+        Route::post('/question-bank/bulk-import', [\App\Http\Controllers\Admin\QuestionBankController::class, 'bulkImportBanks'])->name('question-bank.bulk-import');
+        Route::get('/question-bank/bulk-import-example', [\App\Http\Controllers\Admin\QuestionBankController::class, 'downloadBulkImportExample'])->name('question-bank.bulk-import-example');
 
         // ── Modules ───────────────────────────────────────────────────────────
         Route::get('/modules',                                [AdminModuleController::class, 'index'])->name('modules.index');
@@ -302,6 +329,50 @@ Route::post('/theme', [ViewController::class, 'theme'])->name('theme.switch');
         Route::delete('/programs/{program}',                [ProgramController::class, 'destroy'])->name('programs.destroy');
         Route::post('/programs/{program}/courses',          [ProgramController::class, 'assignCourse'])->name('programs.courses.assign');
         Route::delete('/programs/{program}/courses/{course}',[ProgramController::class, 'unassignCourse'])->name('programs.courses.unassign');
+
+        // ── Grades ────────────────────────────────────────────────────────────
+        Route::get('/grades',                               [AdminGradeController::class, 'index'])->name('grades.index');
+        Route::get('/grades/{grade}',                       [AdminGradeController::class, 'show'])->name('grades.show');
+        Route::put('/grades/{grade}',                       [AdminGradeController::class, 'update'])->name('grades.update');
+        Route::delete('/grades/{grade}',                    [AdminGradeController::class, 'destroy'])->name('grades.destroy');
+        Route::get('/grades-export',                        [AdminGradeController::class, 'export'])->name('grades.export');
+        Route::post('/grades-import',                       [AdminGradeController::class, 'import'])->name('grades.import');
+        Route::get('/grades-import-example',                 [AdminGradeController::class, 'downloadExample'])->name('grades.import-example');
+
+        // ── Enrollments ───────────────────────────────────────────────────────
+        Route::get('/enrollments',                              [AdminEnrollmentController::class, 'index'])->name('enrollments.index');
+        Route::post('/enrollments',                             [AdminEnrollmentController::class, 'store'])->name('enrollments.store');
+        Route::post('/enrollments/bulk',                        [AdminEnrollmentController::class, 'bulkEnroll'])->name('enrollments.bulk');
+        Route::delete('/enrollments/{enrollment}',              [AdminEnrollmentController::class, 'destroy'])->name('enrollments.destroy');
+        Route::get('/enrollments-export',                       [AdminEnrollmentController::class, 'export'])->name('enrollments.export');
+        Route::get('/enrollments-export-example',                [AdminEnrollmentController::class, 'downloadExample'])->name('enrollments.export-example');
+
+        // ── Announcements ──────────────────────────────────────────────────────
+        Route::get('/announcements',                            [\App\Http\Controllers\Admin\AnnouncementController::class, 'index'])->name('announcements.index');
+        Route::post('/announcements',                           [\App\Http\Controllers\Admin\AnnouncementController::class, 'store'])->name('announcements.store');
+        Route::get('/announcements/{announcement}',             [\App\Http\Controllers\Admin\AnnouncementController::class, 'show'])->name('announcements.show');
+        Route::delete('/announcements/{announcement}',          [\App\Http\Controllers\Admin\AnnouncementController::class, 'destroy'])->name('announcements.destroy');
+        Route::get('/announcements-export',                     [\App\Http\Controllers\Admin\AnnouncementController::class, 'export'])->name('announcements.export');
+        Route::get('/announcements-export-example',              [\App\Http\Controllers\Admin\AnnouncementController::class, 'downloadExample'])->name('announcements.export-example');
+
+        // ── Grading ────────────────────────────────────────────────────────────
+        Route::get('/grading',                                  [\App\Http\Controllers\Admin\GradingController::class, 'index'])->name('grading.index');
+        Route::get('/grading/{course}',                         [\App\Http\Controllers\Admin\GradingController::class, 'assignments'])->name('grading.assignments');
+        Route::get('/grading/{course}/{assignment}',             [\App\Http\Controllers\Admin\GradingController::class, 'submissions'])->name('grading.submissions');
+
+        // ── Submissions ────────────────────────────────────────────────────────
+        Route::get('/submissions',                              [\App\Http\Controllers\Admin\SubmissionController::class, 'index'])->name('submissions.index');
+        Route::get('/submissions/{submission}',                 [\App\Http\Controllers\Admin\SubmissionController::class, 'show'])->name('submissions.show');
+        Route::delete('/submissions/{submission}',              [\App\Http\Controllers\Admin\SubmissionController::class, 'destroy'])->name('submissions.destroy');
+        Route::get('/submissions-export',                       [\App\Http\Controllers\Admin\SubmissionController::class, 'export'])->name('submissions.export');
+        Route::get('/submissions-export-example',                [\App\Http\Controllers\Admin\SubmissionController::class, 'downloadExample'])->name('submissions.export-example');
+
+        // ── Quizzes ────────────────────────────────────────────────────────────
+        Route::get('/quizzes',                                  [\App\Http\Controllers\Admin\QuizController::class, 'index'])->name('quizzes.index');
+        Route::get('/quizzes/{quiz}',                           [\App\Http\Controllers\Admin\QuizController::class, 'show'])->name('quizzes.show');
+        Route::delete('/quizzes/{quiz}',                        [\App\Http\Controllers\Admin\QuizController::class, 'destroy'])->name('quizzes.destroy');
+        Route::get('/quizzes/{quiz}/attempts-export',           [\App\Http\Controllers\Admin\QuizController::class, 'exportAttempts'])->name('quizzes.attempts-export');
+        Route::get('/quizzes-attempts-export-example',          [\App\Http\Controllers\Admin\QuizController::class, 'downloadAttemptsExample'])->name('quizzes.attempts-export-example');
 
         // ── Analytics ─────────────────────────────────────────────────────────
         Route::get('/analytics',                            [AnalyticsController::class, 'index'])->name('analytics.index');
