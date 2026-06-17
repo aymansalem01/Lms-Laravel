@@ -384,11 +384,31 @@ class UserController extends Controller
             'csv_file' => ['required', 'file', 'mimes:csv,txt'],
         ]);
 
-        $rows = array_map('str_getcsv', file($request->file('csv_file')->getRealPath()));
-        $header = array_map('trim', array_shift($rows));
-        $data = array_map(fn($row) => array_combine($header, array_map('trim', $row)), $rows);
+        $file = $request->file('csv_file');
+        $handle = fopen($file->getRealPath(), 'r');
 
-        $results = app(UsersImport::class)->import($data);
+        $bom = fread($handle, 3);
+        if ($bom !== "\xEF\xBB\xBF") {
+            rewind($handle);
+        }
+
+        $header = fgetcsv($handle);
+        if (!$header) {
+            fclose($handle);
+            return back()->withErrors(['csv_file' => 'CSV file is empty or invalid.']);
+        }
+
+        $header = array_map(fn($h) => strtolower(trim($h)), $header);
+        $rows = [];
+        while (($line = fgetcsv($handle)) !== false) {
+            $row = array_combine($header, array_map('trim', $line));
+            if (!empty(array_filter($row))) {
+                $rows[] = $row;
+            }
+        }
+        fclose($handle);
+
+        $results = app(UsersImport::class)->import($rows);
 
         $total = $results['succeeded'] + $results['failed'];
         $message = "{$results['succeeded']} of {$total} users created.";
