@@ -308,6 +308,7 @@ Route::post('/theme', [ViewController::class, 'theme'])->name('theme.switch');
         Route::get('/question-bank/{questionBank}/edit',        [\App\Http\Controllers\Admin\QuestionBankController::class, 'edit'])->name('question-bank.edit');
         Route::put('/question-bank/{questionBank}',             [\App\Http\Controllers\Admin\QuestionBankController::class, 'update'])->name('question-bank.update');
         Route::delete('/question-bank/{questionBank}',          [\App\Http\Controllers\Admin\QuestionBankController::class, 'destroy'])->name('question-bank.destroy');
+        Route::post('/question-bank/{questionBank}/items', [\App\Http\Controllers\Admin\QuestionBankController::class, 'addItem'])->name('question-bank.add-item');
         Route::post('/question-bank/{questionBank}/import', [\App\Http\Controllers\Admin\QuestionBankController::class, 'importQuestions'])->name('question-bank.import');
         Route::post('/question-bank/bulk-import', [\App\Http\Controllers\Admin\QuestionBankController::class, 'bulkImportBanks'])->name('question-bank.bulk-import');
 

@@ -74,6 +74,30 @@ class QuestionBankController extends Controller
             ->with('success', "Bank \"{$bank->name}\" created with $count questions.");
     }
 
+    public function addItem(Request $request, QuestionBank $questionBank)
+    {
+        $data = $request->validate([
+            'type'             => 'required|in:multiple_choice,true_false,short_answer,long_answer',
+            'question'         => 'required|string',
+            'options'          => 'nullable|array',
+            'options.*'        => 'nullable|string',
+            'correct_answer'   => 'nullable|string',
+            'points'           => 'required|integer|min:1',
+        ]);
+
+        $questionBank->items()->create([
+            'user_id'        => auth()->id(),
+            'type'           => $data['type'],
+            'question'       => $data['question'],
+            'options'        => $data['type'] === 'multiple_choice' ? array_values(array_filter($data['options'] ?? [])) : null,
+            'correct_answer' => $data['correct_answer'],
+            'points'         => $data['points'],
+        ]);
+
+        return redirect()->route('admin.question-bank.index')
+            ->with('success', 'Question added to "' . $questionBank->name . '".');
+    }
+
     public function show(QuestionBank $questionBank)
     {
         $questionBank->load(['user', 'courses', 'items.user']);

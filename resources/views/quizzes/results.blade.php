@@ -17,43 +17,55 @@
     </div>
 
     <div class="bg-surface-800 border border-white/10 rounded-2xl p-8 mb-6">
-        <div class="flex flex-col items-center text-center">
-            <div class="w-24 h-24 rounded-2xl gb flex items-center justify-center mb-4">
-                <span class="text-3xl font-bold text-white">{{ number_format($attempt->score, 1) }}</span>
-            </div>
-            <p class="text-lg text-gray-400 mb-1">{{ __('out of') }} {{ $totalPoints }} {{ __('points') }}</p>
-
-            <div class="w-full max-w-md mt-4">
-                <div class="flex items-center justify-between mb-1.5">
-                    <span class="text-sm text-gray-500">{{ __('Score') }}</span>
-                    <span class="text-sm font-semibold text-white">{{ number_format($percentage, 0) }}%</span>
+        @if($quiz->show_results || auth()->user()->isInstructorOrAdmin())
+            <div class="flex flex-col items-center text-center">
+                <div class="w-24 h-24 rounded-2xl gb flex items-center justify-center mb-4">
+                    <span class="text-3xl font-bold text-white">{{ number_format($attempt->score, 1) }}</span>
                 </div>
-                <div class="w-full bg-surface-700 rounded-full h-2.5">
-                    <div class="h-2.5 rounded-full {{ $passed ? 'bg-green-500' : 'bg-red-500' }}" style="width: {{ $percentage }}%"></div>
-                </div>
-            </div>
+                <p class="text-lg text-gray-400 mb-1">{{ __('out of') }} {{ $totalPoints }} {{ __('points') }}</p>
 
-            <div class="mt-4">
-                @if($passed)
-                    <span class="inline-flex items-center gap-1.5 text-sm font-semibold text-green-400 bg-green-500/10 px-4 py-1.5 rounded-full">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                        {{ __('Passed') }}
-                    </span>
-                @else
-                    <span class="inline-flex items-center gap-1.5 text-sm font-semibold text-red-400 bg-red-500/10 px-4 py-1.5 rounded-full">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                        {{ __('Failed') }}
-                    </span>
+                <div class="w-full max-w-md mt-4">
+                    <div class="flex items-center justify-between mb-1.5">
+                        <span class="text-sm text-gray-500">{{ __('Score') }}</span>
+                        <span class="text-sm font-semibold text-white">{{ number_format($percentage, 0) }}%</span>
+                    </div>
+                    <div class="w-full bg-surface-700 rounded-full h-2.5">
+                        <div class="h-2.5 rounded-full {{ $passed ? 'bg-green-500' : 'bg-red-500' }}" style="width: {{ $percentage }}%"></div>
+                    </div>
+                </div>
+
+                <div class="mt-4">
+                    @if($passed)
+                        <span class="inline-flex items-center gap-1.5 text-sm font-semibold text-green-400 bg-green-500/10 px-4 py-1.5 rounded-full">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                            {{ __('Passed') }}
+                        </span>
+                    @else
+                        <span class="inline-flex items-center gap-1.5 text-sm font-semibold text-red-400 bg-red-500/10 px-4 py-1.5 rounded-full">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                            {{ __('Failed') }}
+                        </span>
+                    @endif
+                </div>
+
+                @if($attempt->created_at)
+                    <p class="text-xs text-gray-500 mt-4">{{ __('Submitted') }} {{ $attempt->created_at->diffForHumans() }}</p>
                 @endif
             </div>
-
-            @if($attempt->created_at)
-                <p class="text-xs text-gray-500 mt-4">{{ __('Submitted') }} {{ $attempt->created_at->diffForHumans() }}</p>
-            @endif
-        </div>
+        @else
+            <div class="flex flex-col items-center text-center py-6">
+                <svg class="w-16 h-16 text-gray-500 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                <p class="text-lg text-gray-300">{{ __('Quiz Submitted') }}</p>
+                <p class="text-sm text-gray-500 mt-2">{{ __('Your results are not yet available. Please check back later.') }}</p>
+                @if($attempt->created_at)
+                    <p class="text-xs text-gray-500 mt-4">{{ __('Submitted') }} {{ $attempt->created_at->diffForHumans() }}</p>
+                @endif
+            </div>
+        @endif
     </div>
 
     {{-- Questions Breakdown --}}
+    @if($quiz->show_results || auth()->user()->isInstructorOrAdmin())
     <div class="space-y-4">
         @foreach($quiz->questions as $index => $question)
             @php
@@ -145,9 +157,10 @@
             </div>
         @endforeach
     </div>
+    @endif
 
     @auth
-            @if(auth()->user()->role !== 'instructor' && $quiz->max_attempts > 0 && $quiz->attempts->where('student_id', auth()->id())->count() < $quiz->max_attempts)
+            @if(auth()->user()->role !== 'instructor' && !is_null($quiz->max_attempts) && $quiz->attempts->where('student_id', auth()->id())->count() < $quiz->max_attempts)
             <div class="mt-6 text-center">
                 <a href="{{ route('courses.quizzes.show', [$course, $quiz]) }}"
                    class="inline-flex items-center gap-2 bg-surface-700 hover:bg-surface-600 text-white font-medium rounded-xl px-6 py-2.5 transition-colors duration-200">

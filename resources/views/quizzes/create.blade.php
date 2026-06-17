@@ -70,6 +70,13 @@
                         @error('is_published') <p class="text-red-400 text-xs mt-1">{{ $message }}</p> @enderror
                     </div>
                 </div>
+
+                <div class="flex items-center gap-2">
+                    <input type="hidden" name="show_results" value="0">
+                    <input type="checkbox" name="show_results" id="show_results" value="1" {{ old('show_results', true) ? 'checked' : '' }}
+                           class="w-4 h-4 rounded border-white/20 bg-surface-700 text-brand-500 focus:ring-brand-500">
+                    <label for="show_results" class="text-sm text-gray-300">{{ __('Show students their results after submission') }}</label>
+                </div>
             </div>
 
             {{-- Questions Section --}}

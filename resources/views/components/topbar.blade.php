@@ -78,7 +78,9 @@
                     @endif
                 </div>
                 @forelse(auth()->user()->notifications->take(5) as $notification)
-                    <a href="{{ $notification->link ?? '#' }}" class="flex items-start gap-3 px-4 py-3 hover:bg-surface-700 transition-colors {{ $loop->first ? '' : 'border-t border-white/5' }}">
+                    <a href="{{ $notification->link ?? '#' }}"
+                       @click.prevent="fetch('{{ route('notifications.read', $notification) }}', { method: 'POST', headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' } }).then(() => { window.location.href = '{{ $notification->link ?? '#' }}'; })"
+                       class="flex items-start gap-3 px-4 py-3 hover:bg-surface-700 transition-colors {{ $loop->first ? '' : 'border-t border-white/5' }}">
                         <div class="w-2 h-2 rounded-full {{ $notification->is_read ? 'bg-surface-600' : 'bg-brand-500' }} mt-1.5 shrink-0"></div>
                         <div class="min-w-0">
                             <p class="text-sm text-gray-200 truncate">{{ $notification->title ?? __('messages.notification') }}</p>

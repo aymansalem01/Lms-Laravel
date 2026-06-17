@@ -17,18 +17,18 @@
     </div>
 
     {{-- Search & Filter --}}
-    <div class="flex flex-col sm:flex-row items-start sm:items-center gap-3 mb-6">
+    <form method="GET" action="{{ route('admin.courses.index') }}" class="flex flex-col sm:flex-row items-start sm:items-center gap-3 mb-6">
         <div class="relative flex-1 max-w-md">
             <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-            <input type="text" placeholder="Search courses..." class="w-full bg-surface-700 border border-white/20 text-white placeholder-gray-500 rounded-xl py-3 pl-10 pr-4 text-sm focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 transition-colors">
+            <input type="text" name="search" placeholder="Search courses..." value="{{ request('search') }}" class="w-full bg-surface-700 border border-white/20 text-white placeholder-gray-500 rounded-xl py-3 pl-10 pr-4 text-sm focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 transition-colors">
         </div>
-        <select class="bg-surface-700 border border-white/20 text-white rounded-xl py-3 px-4 text-sm focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 transition-colors" style="color-scheme:dark">
+        <select name="program" onchange="this.form.submit()" class="bg-surface-700 border border-white/20 text-white rounded-xl py-3 px-4 text-sm focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 transition-colors" style="color-scheme:dark">
             <option value="">All Programs</option>
             @foreach($programs ?? [] as $program)
-                <option value="{{ $program }}">{{ $program }}</option>
+                <option value="{{ $program }}" {{ request('program') === $program ? 'selected' : '' }}>{{ $program }}</option>
             @endforeach
         </select>
-    </div>
+    </form>
 
     {{-- Table --}}
     <div class="bg-surface-800 border border-white/10 rounded-xl overflow-hidden">
@@ -48,7 +48,7 @@
                     @forelse($courses as $course)
                         <tr class="hover:bg-surface-700/50 transition-colors">
                             <td class="px-4 py-3">
-                                <p class="text-white font-medium">{{ $course->title }}</p>
+                                <a href="{{ route('admin.courses.show', $course) }}" class="text-white font-medium hover:text-brand-400 transition-colors">{{ $course->title }}</a>
                             </td>
                             <td class="px-4 py-3 text-gray-400">{{ $course->instructor->name ?? '—' }}</td>
                             <td class="px-4 py-3 text-gray-400">{{ $course->program ?? '—' }}</td>
@@ -62,6 +62,7 @@
                             </td>
                             <td class="px-4 py-3 text-right">
                                 <div class="flex items-center justify-end gap-2">
+                                    <a href="{{ route('admin.courses.edit', $course) }}" class="text-xs text-gray-400 hover:text-white px-2 py-1 rounded-lg hover:bg-surface-600 transition-colors">Edit</a>
                                     {{-- Toggle Publish --}}
                                     <form method="POST" action="{{ route('admin.courses.toggle-publish', $course) }}">
                                         @csrf

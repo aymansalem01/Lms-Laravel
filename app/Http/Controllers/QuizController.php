@@ -71,8 +71,10 @@ class QuizController extends Controller
             'module_id'         => 'nullable|exists:modules,id',
             'bank_pulls'        => 'nullable|array',
             'bank_pulls.*'      => 'nullable|integer|min:0',
+            'show_results'      => 'nullable|boolean',
         ]);
 
+        $data['show_results'] = $request->boolean('show_results');
         $data['module_id'] = $request->filled('module_id') ? $data['module_id'] : null;
         $quiz = $course->quizzes()->create($data);
 
@@ -170,8 +172,10 @@ class QuizController extends Controller
             'module_id'         => 'nullable|exists:modules,id',
             'bank_pulls'        => 'nullable|array',
             'bank_pulls.*'      => 'nullable|integer|min:0',
+            'show_results'      => 'nullable|boolean',
         ]);
 
+        $data['show_results'] = $request->boolean('show_results');
         $data['module_id'] = $request->filled('module_id') ? $data['module_id'] : null;
         $quiz->update($data);
 
@@ -255,7 +259,7 @@ class QuizController extends Controller
         $user = auth()->user();
 
         $existingAttempts = $quiz->attempts()->where('student_id', $user->id)->count();
-        abort_if($existingAttempts >= $quiz->max_attempts, 403, 'Max attempts reached.');
+        abort_if(!is_null($quiz->max_attempts) && $existingAttempts >= $quiz->max_attempts, 403, 'Max attempts reached.');
 
         $questions = $quiz->randomize_questions ? $quiz->questions->shuffle() : $quiz->questions;
         $answers = $request->input('answers', []);
@@ -282,14 +286,24 @@ class QuizController extends Controller
             'is_draft'     => false,
         ]);
 
-        return redirect()->route('courses.quizzes.results', [$course, $quiz, $attempt])
-            ->with('success', 'Quiz submitted successfully.');
+        if ($quiz->show_results) {
+            return redirect()->route('courses.quizzes.results', [$course, $quiz, $attempt])
+                ->with('success', 'Quiz submitted successfully.');
+        }
+
+        return redirect()->route('courses.quizzes.show', [$course, $quiz])
+            ->with('success', 'Quiz submitted successfully. Your instructor will review your results.');
     }
 
     public function results(Course $course, Quiz $quiz, QuizAttempt $attempt)
     {
         $user = auth()->user();
         abort_if($attempt->student_id !== $user->id && $user->isStudent(), 403);
+
+        if (!$quiz->show_results && $user->isStudent()) {
+            return redirect()->route('courses.quizzes.show', [$course, $quiz])
+                ->with('info', 'Your results are not yet available.');
+        }
 
         $attempt->load('quiz.questions');
         return view('quizzes.results', compact('course', 'quiz', 'attempt'));

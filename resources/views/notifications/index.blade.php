@@ -14,6 +14,7 @@
     @forelse($notifications as $notification)
         @php $isUnread = !$notification->is_read; @endphp
         <a href="{{ $notification->link ?? '#' }}"
+           @click.prevent="if('{{ $notification->link }}' !== '') { fetch('{{ route('notifications.read', $notification) }}', { method: 'POST', headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' } }).then(() => { window.location.href = '{{ $notification->link }}'; }) }"
            class="block bg-surface-800 border border-white/10 rounded-xl p-5 mb-2 hover:border-white/20 transition-colors {{ !$isUnread ? 'opacity-60' : '' }}">
             <div class="flex items-start gap-4">
                 <div class="mt-0.5">

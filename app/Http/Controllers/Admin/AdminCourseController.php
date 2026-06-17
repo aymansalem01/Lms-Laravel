@@ -7,6 +7,13 @@ use App\Http\Controllers\Controller;
 use App\Models\Course;
 use App\Models\User;
 use App\Models\Enrollment;
+use App\Models\Quiz;
+use App\Models\Assignment;
+use App\Models\LiveSession;
+use App\Models\Discussion;
+use App\Models\Attendance;
+use App\Models\GradeRule;
+use App\Models\Rubric;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
@@ -106,9 +113,15 @@ class AdminCourseController extends Controller
             'enrollments.student',
             'assignments.submissions.grade',
             'liveSessions',
+            'quizzes',
+            'discussions.user',
+            'attendance',
+            'gradeRules',
+            'questionBanks.items',
+            'students',
         ]);
 
-        $course->loadCount(['enrollments', 'assignments', 'liveSessions']);
+        $course->loadCount(['enrollments', 'assignments', 'liveSessions', 'quizzes', 'modules']);
 
         // Submission stats
         $totalSubmissions = $course->assignments
@@ -130,12 +143,39 @@ class AdminCourseController extends Controller
             ->orderBy('name')
             ->get(['id', 'name']);
 
+        // Available students for enrollment
+        $enrolledIds = $course->students()->pluck('users.id');
+        $availableStudents = User::where('role', 'student')
+            ->whereNotIn('id', $enrolledIds)
+            ->orderBy('name')
+            ->get(['id', 'name', 'email']);
+
+        // Rubrics (all for admin)
+        $rubrics = $course->rubrics()->get();
+
+        $discussions = $course->discussions()->with('user')->withCount('replies')->latest()->get();
+        $attendance = $course->attendance()->with('student')->latest()->take(50)->get();
+        $assignments = $course->assignments;
+        $quizzes = $course->quizzes;
+        $modules = $course->modules;
+        $questionBanks = $course->questionBanks()->with('items', 'items.user')->latest()->get();
+        $liveSessions = $course->liveSessions;
+
         return view('admin.courses.show', compact(
             'course',
             'totalSubmissions',
             'gradedSubmissions',
             'avgScore',
             'instructors',
+            'availableStudents',
+            'rubrics',
+            'discussions',
+            'attendance',
+            'assignments',
+            'quizzes',
+            'modules',
+            'questionBanks',
+            'liveSessions',
         ));
     }
 

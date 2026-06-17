@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class Quiz extends Model
 {
     protected $fillable = [
-        'course_id', 'module_id', 'title', 'description', 'max_attempts', 'is_published', 'time_limit', 'randomize_questions',
+        'course_id', 'module_id', 'title', 'description', 'max_attempts', 'is_published', 'time_limit', 'randomize_questions', 'show_results',
     ];
 
     protected function casts(): array
@@ -19,6 +19,7 @@ class Quiz extends Model
             'max_attempts' => 'integer',
             'time_limit' => 'integer',
             'randomize_questions' => 'boolean',
+            'show_results' => 'boolean',
         ];
     }
 

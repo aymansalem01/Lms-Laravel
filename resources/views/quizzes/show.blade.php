@@ -5,7 +5,7 @@
         $isInstructor = auth()->user()->role === 'instructor';
         $attempts = $quiz->attempts->where('student_id', auth()->id());
         $bestAttempt = $attempts->sortByDesc('score')->first();
-        $canAttempt = !$isInstructor && ($quiz->max_attempts === 0 || $attempts->count() < $quiz->max_attempts);
+        $canAttempt = !$isInstructor && (is_null($quiz->max_attempts) || $attempts->count() < $quiz->max_attempts);
     @endphp
 
     <div class="mb-6">
