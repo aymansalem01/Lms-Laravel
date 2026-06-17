@@ -15,7 +15,7 @@ use Illuminate\Http\Request;
  *                  components/admin/ProgramsClient.tsx
  *
  * Responsibilities:
- *  - List all SAE programs with student/course counts
+ *  - List all Luminus programs with student/course counts
  *  - Create new programs
  *  - Edit program name/description
  *  - Delete programs (with safety check)

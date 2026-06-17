@@ -1,5 +1,5 @@
 <x-layouts.dashboard>
-    <x-slot name="title">Edit Program — SAE LMS</x-slot>
+    <x-slot name="title">Edit Program — Luminus LMS</x-slot>
 
     <div class="mb-6">
         <a href="{{ route('admin.programs.index') }}" class="text-sm text-gray-400 hover:text-white transition-colors inline-flex items-center gap-1">

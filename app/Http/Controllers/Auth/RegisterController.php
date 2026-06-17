@@ -63,7 +63,7 @@ class RegisterController extends Controller
         Auth::login($user);
         $request->session()->regenerate();
 
-        return redirect()->route('dashboard')->with('success', 'Welcome to SAE LMS!');
+        return redirect()->route('dashboard')->with('success', 'Welcome to Luminus LMS!');
     }
 
     /** POST /signup/instructor */

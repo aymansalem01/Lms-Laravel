@@ -1,5 +1,5 @@
 <x-layouts.dashboard>
-    <x-slot name="title">{{ __('messages.user_management') }} — SAE LMS</x-slot>
+    <x-slot name="title">{{ __('messages.user_management') }} — Luminus LMS</x-slot>
 
     <div x-data="{
             addOpen: false, inviteOpen: false, bulkOpen: false,

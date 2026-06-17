@@ -1,5 +1,5 @@
 <x-layouts.auth>
-    <x-slot name="title">{{ __('messages.sign_in') }} — SAE Creative LMS</x-slot>
+    <x-slot name="title">{{ __('messages.sign_in') }} — Luminus Digital Creative Technology</x-slot>
 
     {{-- Heading --}}
     <div class="mb-8 text-center">

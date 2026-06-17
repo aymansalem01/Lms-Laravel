@@ -1,5 +1,5 @@
 <x-layouts.auth>
-    <x-slot name="title">Set New Password — SAE LMS</x-slot>
+    <x-slot name="title">Set New Password — Luminus LMS</x-slot>
 
     <div class="mb-8">
         <h1 class="text-2xl font-black text-white tracking-tight">Set new password</h1>

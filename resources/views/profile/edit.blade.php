@@ -1,5 +1,5 @@
 <x-layouts.dashboard>
-    <x-slot name="title">Edit Profile — SAE LMS</x-slot>
+    <x-slot name="title">Edit Profile — Luminus LMS</x-slot>
 
     <div class="max-w-3xl mx-auto space-y-6">
         {{-- Section: Basic Info --}}

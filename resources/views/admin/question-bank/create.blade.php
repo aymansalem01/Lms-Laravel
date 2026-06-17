@@ -1,5 +1,5 @@
 <x-layouts.dashboard>
-    <x-slot name="title">Create Question Bank &mdash; SAE LMS</x-slot>
+    <x-slot name="title">Create Question Bank &mdash; Luminus LMS</x-slot>
 
     <div class="mb-6">
         <a href="{{ route('admin.question-bank.index') }}" class="text-sm text-gray-400 hover:text-white transition-colors flex items-center gap-1 mb-4">

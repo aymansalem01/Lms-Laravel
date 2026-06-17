@@ -1,5 +1,5 @@
 <x-layouts.dashboard>
-    <x-slot name="title">{{ $announcement->title }} — SAE LMS</x-slot>
+    <x-slot name="title">{{ $announcement->title }} — Luminus LMS</x-slot>
 
     <div class="mb-6">
         <a href="{{ route('admin.announcements.index') }}" class="text-sm text-gray-400 hover:text-white transition-colors inline-flex items-center gap-1">

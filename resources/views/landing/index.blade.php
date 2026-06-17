@@ -1,4 +1,4 @@
-<x-layouts.landing title="SAE Creative LMS — School of Creative Media">
+<x-layouts.landing title="Luminus Digital Creative Technology — School of Creative Media">
 
     @php
     // ── DATA ────────────────────────────────────────────────
@@ -67,7 +67,7 @@
     ];
 
     $faq = [
-        ['q' => 'What programs does SAE Jordan offer?',               'a' => 'We offer bachelor\'s degrees in Film & Television, Audio Engineering, Digital Media, and Game Design, plus diplomas in Game Art and Esports Management. All programs are accredited by the Ministry of Higher Education.'],
+        ['q' => 'What programs does Luminus Jordan offer?',               'a' => 'We offer bachelor\'s degrees in Film & Television, Audio Engineering, Digital Media, and Game Design, plus diplomas in Game Art and Esports Management. All programs are accredited by the Ministry of Higher Education.'],
         ['q' => 'Is the platform available in Arabic?',                'a' => 'Yes — the entire LMS is bilingual in English and Arabic with full RTL support, Arabic typography, and locale-aware content. You can switch at any time.'],
         ['q' => 'How do I apply for admissions?',                      'a' => 'Applications are open year-round. You can apply online through our portal, submit your portfolio or audition, and receive a decision within two weeks.'],
         ['q' => 'Can I try the platform before enrolling?',            'a' => 'Absolutely — you can explore the student experience by signing up for a demo account. Talk to our admissions team to schedule a guided tour.'],
@@ -111,7 +111,7 @@
                     <svg class="w-[18px] h-[18px] text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z"/></svg>
                 </div>
                 <div class="leading-tight">
-                    <p class="font-bold text-sm text-white">SAE</p>
+                    <p class="font-bold text-sm text-white">Luminus</p>
                     <p class="text-[10px] text-gray-500 mt-0.5">Creative Media</p>
                 </div>
             </a>
@@ -432,7 +432,7 @@
                             <svg class="w-[22px] h-[22px] text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z"/></svg>
                         </div>
                         <div>
-                            <p class="text-xl font-bold text-white">SAE Creative LMS</p>
+                            <p class="text-xl font-bold text-white">Luminus Digital Creative Technology</p>
                             <p class="text-xs text-gray-400">{{ __('messages.built_for_creative') }}</p>
                         </div>
                     </div>
@@ -709,7 +709,7 @@
                             <svg class="w-[18px] h-[18px] text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z"/></svg>
                         </div>
                         <div>
-                            <p class="font-bold text-sm text-white">SAE</p>
+                            <p class="font-bold text-sm text-white">Luminus</p>
                             <p class="text-[10px] text-gray-500 mt-0.5">Creative Media</p>
                         </div>
                     </a>
@@ -720,7 +720,7 @@
                     </address>
                     <div class="space-y-1.5 text-sm font-mono text-gray-500">
                         <p class="latin">+962 6 580 0000</p>
-                        <p class="latin">info@saejordan.com</p>
+                        <p class="latin">info@luminus.jo</p>
                     </div>
                     <div class="flex gap-2 pt-2">
                         @foreach([['instagram','M','bg-gradient-to-br from-purple-500 to-pink-500'],['youtube','▶','bg-red-600'],['linkedin','in','bg-blue-600'],['github','G','bg-gray-600']] as [$s,$l,$bg])

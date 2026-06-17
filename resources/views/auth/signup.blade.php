@@ -1,8 +1,8 @@
 <x-layouts.auth>
-    <x-slot name="title">Create Account — SAE LMS</x-slot>
+    <x-slot name="title">Create Account — Luminus LMS</x-slot>
 
     <div class="mb-8">
-        <h1 class="text-3xl font-bold text-white mb-2">Join SAE Creative</h1>
+        <h1 class="text-3xl font-bold text-white mb-2">Join Luminus Digital Creative Technology</h1>
         <p class="text-gray-400">Choose how you want to get started</p>
     </div>
 

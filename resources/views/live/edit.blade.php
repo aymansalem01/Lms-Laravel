@@ -1,5 +1,5 @@
 <x-layouts.dashboard>
-    <x-slot name="title">Edit Live Session — SAE LMS</x-slot>
+    <x-slot name="title">Edit Live Session — Luminus LMS</x-slot>
 
     <div class="mb-6">
         <a href="{{ route('live.index') }}" class="text-sm text-gray-400 hover:text-white transition-colors inline-flex items-center gap-1">

@@ -1,5 +1,5 @@
 <x-layouts.auth>
-    <x-slot name="title">Reset Password — SAE LMS</x-slot>
+    <x-slot name="title">Reset Password — Luminus LMS</x-slot>
 
     @if (session('status'))
         {{-- ── Sent state — mirrors Next.js "sent" UI ── --}}
@@ -28,7 +28,7 @@
 
             <div>
                 <label class="block text-sm font-medium text-gray-300 mb-1.5">Email address</label>
-                <input type="email" name="email" value="{{ old('email') }}" placeholder="you@saejordan.com"
+                <input type="email" name="email" value="{{ old('email') }}" placeholder="you@luminus.jo"
                     autofocus required
                     class="input-field {{ $errors->has('email') ? 'border-red-500/60' : '' }}">
                 @error('email')

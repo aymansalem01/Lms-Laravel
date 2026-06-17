@@ -1,5 +1,5 @@
 <x-layouts.dashboard>
-    <x-slot name="title">Question Banks — SAE LMS</x-slot>
+    <x-slot name="title">Question Banks — Luminus LMS</x-slot>
 
     <div class="mb-6 flex items-center justify-between">
         <div>

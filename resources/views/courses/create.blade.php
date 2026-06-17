@@ -38,7 +38,7 @@
                 <select name="course_type" id="course_type"
                         class="w-full bg-surface-700 border border-surface-600 rounded-lg px-4 py-2.5 text-sm text-gray-200 focus:outline-none focus:ring-2 focus:ring-brand-500/50 focus:border-brand-500/50 transition-colors @error('course_type') border-red-500/50 @enderror">
                     <option value="program" {{ old('course_type') === 'program' ? 'selected' : '' }}>{{ __('Program') }}</option>
-                    <option value="sae_core" {{ old('course_type') === 'sae_core' ? 'selected' : '' }}>{{ __('SAE Core') }}</option>
+                    <option value="sae_core" {{ old('course_type') === 'sae_core' ? 'selected' : '' }}>{{ __('Luminus Core') }}</option>
                     <option value="university" {{ old('course_type') === 'university' ? 'selected' : '' }}>{{ __('University') }}</option>
                 </select>
                 @error('course_type')

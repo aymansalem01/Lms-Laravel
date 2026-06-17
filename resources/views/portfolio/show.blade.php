@@ -1,5 +1,5 @@
 <x-layouts.dashboard>
-    <x-slot name="title">{{ $user->name }}'s Portfolio — SAE LMS</x-slot>
+    <x-slot name="title">{{ $user->name }}'s Portfolio — Luminus LMS</x-slot>
 
     {{-- Profile Hero --}}
     <div class="bg-surface-800 border border-white/10 rounded-xl p-8 mb-8 relative overflow-hidden">

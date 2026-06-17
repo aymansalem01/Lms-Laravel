@@ -1,4 +1,4 @@
-<x-slot name="title">{{ $session->title }} — SAE LMS</x-slot>
+<x-slot name="title">{{ $session->title }} — Luminus LMS</x-slot>
 
 <div class="max-w-5xl mx-auto p-4 sm:p-6">
     <div class="mb-6">

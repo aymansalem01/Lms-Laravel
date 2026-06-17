@@ -1,5 +1,5 @@
 <x-layouts.dashboard>
-    <x-slot name="title">Analytics — SAE LMS</x-slot>
+    <x-slot name="title">Analytics — Luminus LMS</x-slot>
 
     <h1 class="text-2xl font-bold text-white mb-6">Analytics Dashboard</h1>
 

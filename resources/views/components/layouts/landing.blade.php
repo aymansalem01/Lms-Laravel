@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>{{ $title ?? 'SAE Creative LMS — School of Creative Media' }}</title>
+    <title>{{ $title ?? 'Luminus Digital Creative Technology — School of Creative Media' }}</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
     tailwind.config = { darkMode:'class', theme:{ extend:{

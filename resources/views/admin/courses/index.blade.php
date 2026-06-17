@@ -1,5 +1,5 @@
 <x-layouts.dashboard>
-    <x-slot name="title">Course Management — SAE LMS</x-slot>
+    <x-slot name="title">Course Management — Luminus LMS</x-slot>
 
     <div x-data="{ bulkOpen: false }" class="contents">
     <div class="flex items-center justify-between mb-6">

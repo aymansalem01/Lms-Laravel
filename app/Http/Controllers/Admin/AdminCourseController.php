@@ -332,10 +332,10 @@ class AdminCourseController extends Controller
             $handle = fopen('php://output', 'w');
             fwrite($handle, "\xEF\xBB\xBF");
             fputcsv($handle, ['title', 'description', 'program', 'course_type', 'instructor_email', 'is_published']);
-            fputcsv($handle, ['Introduction to Film', 'A beginner course in film production.', 'Film Production', 'program', 'instructor@saejordan.com', '1']);
-            fputcsv($handle, ['Digital Media Design', 'Principles of digital media and design.', 'Digital Media', 'program', 'instructor@saejordan.com', '1']);
-            fputcsv($handle, ['Game Development 101', 'Learn the basics of game development.', 'Game Design', 'sae_core', 'instructor@saejordan.com', '0']);
-            fputcsv($handle, ['Audio Mixing', 'Advanced audio mixing techniques.', 'Audio Engineering', 'university', 'instructor@saejordan.com', '1']);
+            fputcsv($handle, ['Introduction to Film', 'A beginner course in film production.', 'Film Production', 'program', 'instructor@luminus.jo', '1']);
+            fputcsv($handle, ['Digital Media Design', 'Principles of digital media and design.', 'Digital Media', 'program', 'instructor@luminus.jo', '1']);
+            fputcsv($handle, ['Game Development 101', 'Learn the basics of game development.', 'Game Design', 'sae_core', 'instructor@luminus.jo', '0']);
+            fputcsv($handle, ['Audio Mixing', 'Advanced audio mixing techniques.', 'Audio Engineering', 'university', 'instructor@luminus.jo', '1']);
             fclose($handle);
         };
 

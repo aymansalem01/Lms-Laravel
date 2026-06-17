@@ -1,5 +1,5 @@
 <x-layouts.dashboard>
-    <x-slot name="title">Discussions — {{ $course->title }} — SAE LMS</x-slot>
+    <x-slot name="title">Discussions — {{ $course->title }} — Luminus LMS</x-slot>
 
     <div class="flex items-center justify-between mb-6">
         <div>

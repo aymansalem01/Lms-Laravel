@@ -1,5 +1,5 @@
 <x-layouts.dashboard>
-    <x-slot name="title">Submission Management — SAE LMS</x-slot>
+    <x-slot name="title">Submission Management — Luminus LMS</x-slot>
 
     <div class="flex items-center justify-between mb-6">
         <h1 class="text-2xl font-bold text-white">Submissions</h1>

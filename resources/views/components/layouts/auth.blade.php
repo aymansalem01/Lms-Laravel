@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>{{ $title ?? 'SAE LMS' }}</title>
+    <title>{{ $title ?? 'Luminus LMS' }}</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
     tailwind.config = { darkMode:'class', theme:{ extend:{

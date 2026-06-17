@@ -1,5 +1,5 @@
 <x-layouts.dashboard>
-    <x-slot name="title">Notifications — SAE LMS</x-slot>
+    <x-slot name="title">Notifications — Luminus LMS</x-slot>
 
     <div class="flex items-center justify-between mb-6">
         <h1 class="text-2xl font-bold text-white">Notifications</h1>
