@@ -51,7 +51,11 @@ class Course extends Model
 
     public function quizzes(): HasMany
     {
-        return $this->hasMany(Quiz::class);
+        $query = $this->hasMany(Quiz::class);
+        if (auth()->check() && auth()->user()->isStudent()) {
+            $query->where('is_published', true);
+        }
+        return $query;
     }
 
     public function rubrics(): HasMany

@@ -22,6 +22,11 @@ class SubmissionController extends Controller
             abort(403);
         }
 
+        if ($assignment->due_date && now()->gt($assignment->due_date)) {
+            return redirect()->route('courses.assignments.show', [$course, $assignment])
+                ->with('error', 'The due date for this assignment has passed. Submissions are closed.');
+        }
+
         $data = $request->validate([
             'file_url'  => 'nullable|url|max:2048',
             'video_url' => 'nullable|url|max:2048',
@@ -68,6 +73,12 @@ class SubmissionController extends Controller
     {
         $user = auth()->user();
         abort_if($submission->student_id !== $user->id, 403);
+
+        $assignment = $submission->assignment;
+        if ($assignment->due_date && now()->gt($assignment->due_date)) {
+            return redirect()->route('courses.assignments.show', [$assignment->course_id, $assignment])
+                ->with('error', 'The due date for this assignment has passed. Updates are closed.');
+        }
 
         $data = $request->validate([
             'file_url'  => 'nullable|url|max:2048',

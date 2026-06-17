@@ -206,6 +206,7 @@ Route::post('/theme', [ViewController::class, 'theme'])->name('theme.switch');
                 Route::delete('/{quiz}', [QuizController::class, 'destroy'])->name('destroy');
                 Route::get('/{quiz}/review', [QuizController::class, 'review'])->name('review');
                 Route::post('/{quiz}/release/{attempt}', [QuizController::class, 'releaseGrade'])->name('release');
+                Route::post('/{quiz}/grade-manual/{attempt}', [QuizController::class, 'gradeManual'])->name('grade-manual');
             });
         });
         Route::prefix('discussions')->name('discussions.')->group(function () {

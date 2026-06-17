@@ -5,6 +5,8 @@
         $totalPoints = $quiz->questions->sum('points');
         $percentage = $totalPoints > 0 ? ($attempt->score / $totalPoints) * 100 : 0;
         $passed = $percentage >= 60;
+        $manualSum = $attempt->manualScoreSum();
+        $autoScore = (float) $attempt->score - $manualSum;
     @endphp
 
     <div class="mb-6">
@@ -23,6 +25,14 @@
                     <span class="text-3xl font-bold text-white">{{ number_format($attempt->score, 1) }}</span>
                 </div>
                 <p class="text-lg text-gray-400 mb-1">{{ __('out of') }} {{ $totalPoints }} {{ __('points') }}</p>
+
+                @if($manualSum > 0)
+                    <div class="flex items-center gap-4 mt-2 text-xs text-gray-500">
+                        <span>{{ __('Auto') }}: {{ number_format(max($autoScore, 0), 1) }}</span>
+                        <span class="text-gray-600">|</span>
+                        <span>{{ __('Manual') }}: {{ number_format($manualSum, 1) }}</span>
+                    </div>
+                @endif
 
                 <div class="w-full max-w-md mt-4">
                     <div class="flex items-center justify-between mb-1.5">

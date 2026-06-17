@@ -52,14 +52,9 @@
             </div>
 
             @if(!$isInstructor)
-                @if(!$submission)
+                @if(!$submission && !$isOverdue)
                     <div class="bg-surface-800 border border-white/10 rounded-2xl p-6">
                         <h2 class="text-lg font-semibold text-white mb-4">{{ __('Submit Your Work') }}</h2>
-                        @if($isOverdue)
-                            <div class="bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-3 mb-4">
-                                <p class="text-sm text-red-400 font-medium">{{ __('This assignment is past due.') }}</p>
-                            </div>
-                        @endif
                         <form method="POST" action="{{ route('courses.assignments.submit', [$course, $assignment]) }}" enctype="multipart/form-data" class="space-y-4">
                             @csrf
                             <div>
@@ -82,6 +77,13 @@
                                 {{ __('Submit Assignment') }}
                             </button>
                         </form>
+                    </div>
+                @elseif(!$submission && $isOverdue)
+                    <div class="bg-surface-800 border border-white/10 rounded-2xl p-6">
+                        <h2 class="text-lg font-semibold text-white mb-4">{{ __('Submit Your Work') }}</h2>
+                        <div class="bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-6 text-center">
+                            <p class="text-sm text-red-400 font-medium">{{ __('This assignment is past due. Submissions are closed.') }}</p>
+                        </div>
                     </div>
                 @else
                     <div class="bg-surface-800 border border-white/10 rounded-2xl p-6">

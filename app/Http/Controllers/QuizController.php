@@ -15,7 +15,11 @@ class QuizController extends Controller
 {
     public function index(Course $course)
     {
-        $quizzes = $course->quizzes()->withCount('questions')->get();
+        $query = $course->quizzes()->withCount('questions');
+        if (auth()->user()->isStudent()) {
+            $query->where('is_published', true);
+        }
+        $quizzes = $query->get();
         return view('quizzes.index', compact('course', 'quizzes'));
     }
 
@@ -24,6 +28,9 @@ class QuizController extends Controller
         $user = auth()->user();
 
         if ($user->isStudent()) {
+            if (!$quiz->is_published) {
+                abort(404);
+            }
             $attempts = $quiz->attempts()->where('student_id', $user->id)->get();
             $canAttempt = is_null($quiz->max_attempts) || $attempts->count() < $quiz->max_attempts;
             return view('quizzes.show', compact('course', 'quiz', 'attempts', 'canAttempt'));
@@ -38,8 +45,17 @@ class QuizController extends Controller
     {
         $user = auth()->user();
 
+        if ($user->isStudent() && !$quiz->is_published) {
+            abort(404);
+        }
+
         $existingAttempts = $quiz->attempts()->where('student_id', $user->id)->count();
         abort_if(!is_null($quiz->max_attempts) && $existingAttempts >= $quiz->max_attempts, 403, 'Max attempts reached.');
+
+        if ($user->isStudent() && $existingAttempts > 0) {
+            return redirect()->route('courses.quizzes.show', [$course, $quiz])
+                ->with('info', 'You have already submitted this quiz. Check your results below.');
+        }
 
         $quiz->load('questions');
 
@@ -48,7 +64,10 @@ class QuizController extends Controller
                 ->with('error', 'This quiz has no questions yet.');
         }
 
-        return view('quizzes.take', compact('course', 'quiz'));
+        return response()->view('quizzes.take', compact('course', 'quiz'))
+            ->header('Cache-Control', 'no-cache, no-store, must-revalidate')
+            ->header('Pragma', 'no-cache')
+            ->header('Expires', '0');
     }
 
     public function create(Course $course)
@@ -319,6 +338,9 @@ class QuizController extends Controller
         if (!auth()->user()->isInstructorOrAdmin()) { abort(403); }
 
         $quiz->loadCount('questions');
+        $quiz->load('questions');
+
+        $hasManualQuestions = $quiz->questions->contains(fn($q) => in_array($q->type, ['long_answer', 'short_answer']));
 
         $students = $course->students()
             ->with(['quizAttempts' => function ($q) use ($quiz) {
@@ -329,7 +351,38 @@ class QuizController extends Controller
         $totalSubmissions = $students->filter(fn($s) => $s->quizAttempts->isNotEmpty())->count();
         $gradedCount = $students->filter(fn($s) => $s->quizAttempts->first()?->released_at)->count();
 
-        return view('quizzes.review', compact('course', 'quiz', 'students', 'totalSubmissions', 'gradedCount'));
+        return view('quizzes.review', compact('course', 'quiz', 'students', 'totalSubmissions', 'gradedCount', 'hasManualQuestions'));
+    }
+
+    public function gradeManual(Request $request, Course $course, Quiz $quiz, QuizAttempt $attempt)
+    {
+        if (!auth()->user()->isInstructorOrAdmin()) { abort(403); }
+
+        $data = $request->validate([
+            'scores' => 'required|array',
+            'scores.*' => 'nullable|numeric|min:0',
+        ]);
+
+        $quiz->load('questions');
+        $maxPoints = $quiz->questions->keyBy('id');
+
+        $manualScores = [];
+        foreach ($data['scores'] as $questionId => $score) {
+            $question = $maxPoints->get($questionId);
+            if ($question && in_array($question->type, ['long_answer', 'short_answer'])) {
+                $manualScores[$questionId] = min((float) ($score ?? 0), (float) $question->points);
+            }
+        }
+
+        $totalManual = array_sum($manualScores);
+        $autoScore = (float) $attempt->score;
+        $attempt->update([
+            'manual_scores' => $manualScores,
+            'score' => $autoScore + $totalManual,
+        ]);
+
+        return redirect()->route('courses.quizzes.review', [$course, $quiz])
+            ->with('success', 'Manual grades saved.');
     }
 
     public function releaseGrade(Course $course, Quiz $quiz, QuizAttempt $attempt)
