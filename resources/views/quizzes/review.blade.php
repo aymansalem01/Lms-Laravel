@@ -170,13 +170,17 @@
     </div>
 
     @push('scripts')
-    <script>
-        const manualQuestions = @json($manualQuestions->map(fn($q) => ['id' => $q->id, 'question' => $q->question, 'points' => $q->points, 'type' => $q->type]));
-        const allAttempts = @json($students->pluck('quizAttempts')->flatten()->keyBy('id')->map(fn($a) => [
+    @php
+        $manualQuestionsJson = $manualQuestions->map(fn($q) => ['id' => $q->id, 'question' => $q->question, 'points' => $q->points, 'type' => $q->type])->values();
+        $attemptsJson = $students->pluck('quizAttempts')->flatten()->keyBy('id')->map(fn($a) => [
             'id' => $a->id,
             'answers' => $a->answers,
             'manual_scores' => $a->manual_scores,
-        ]));
+        ]);
+    @endphp
+    <script>
+        const manualQuestions = @json($manualQuestionsJson);
+        const allAttempts = @json($attemptsJson);
 
         function openManualGrading(attemptId) {
             const attempt = allAttempts[attemptId];
