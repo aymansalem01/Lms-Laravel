@@ -77,6 +77,18 @@
                            class="w-4 h-4 rounded border-white/20 bg-surface-700 text-brand-500 focus:ring-brand-500">
                     <label for="show_results" class="text-sm text-gray-300">{{ __('Show students their results after submission') }}</label>
                 </div>
+
+                <div>
+                    <label for="grading_method" class="block text-sm font-medium text-gray-300 mb-1.5">{{ __('Grading Method') }}</label>
+                    <select name="grading_method" id="grading_method" class="input-dashboard">
+                        <option value="max" {{ old('grading_method', 'max') === 'max' ? 'selected' : '' }}>{{ __('Highest attempt') }}</option>
+                        <option value="min" {{ old('grading_method') === 'min' ? 'selected' : '' }}>{{ __('Lowest attempt') }}</option>
+                        <option value="last" {{ old('grading_method') === 'last' ? 'selected' : '' }}>{{ __('Last attempt') }}</option>
+                        <option value="first" {{ old('grading_method') === 'first' ? 'selected' : '' }}>{{ __('First attempt') }}</option>
+                        <option value="avg" {{ old('grading_method') === 'avg' ? 'selected' : '' }}>{{ __('Average of all attempts') }}</option>
+                    </select>
+                    <p class="text-xs text-gray-500 mt-1">{{ __('Determines how the final grade is calculated when multiple attempts are allowed.') }}</p>
+                </div>
             </div>
 
             {{-- Questions Section --}}
@@ -134,11 +146,11 @@
                             <label class="block text-xs font-medium text-gray-500 mb-1">{{ __('Correct Answer') }}</label>
                             <div class="flex items-center gap-4">
                                 <label class="flex items-center gap-2 text-sm text-gray-300">
-                                    <input type="radio" name="questions[0][correct_answer]" value="true" class="accent-brand-500">
+                                    <input type="radio" name="questions[0][correct_answer]" value="true" class="accent-brand-500" disabled>
                                     {{ __('True') }}
                                 </label>
                                 <label class="flex items-center gap-2 text-sm text-gray-300">
-                                    <input type="radio" name="questions[0][correct_answer]" value="false" class="accent-brand-500">
+                                    <input type="radio" name="questions[0][correct_answer]" value="false" class="accent-brand-500" disabled>
                                     {{ __('False') }}
                                 </label>
                             </div>
@@ -147,7 +159,7 @@
                             <label class="block text-xs font-medium text-gray-500 mb-1">{{ __('Correct Answer') }}</label>
                             <input type="text" name="questions[0][correct_answer]"
                                    class="w-full bg-surface-800 border border-white/10 text-white rounded-xl py-2.5 px-3 text-sm focus:outline-none focus:border-brand-500"
-                                   placeholder="{{ __('Expected answer...') }}">
+                                   placeholder="{{ __('Expected answer...') }}" disabled>
                         </div>
                     </div>
                 </div>
@@ -274,11 +286,11 @@
                     <label class="block text-xs font-medium text-gray-500 mb-1">{{ __('Correct Answer') }}</label>
                     <div class="flex items-center gap-4">
                         <label class="flex items-center gap-2 text-sm text-gray-300">
-                            <input type="radio" name="questions[${idx}][correct_answer]" value="true" class="accent-brand-500">
+                            <input type="radio" name="questions[${idx}][correct_answer]" value="true" class="accent-brand-500" disabled>
                             {{ __('True') }}
                         </label>
                         <label class="flex items-center gap-2 text-sm text-gray-300">
-                            <input type="radio" name="questions[${idx}][correct_answer]" value="false" class="accent-brand-500">
+                            <input type="radio" name="questions[${idx}][correct_answer]" value="false" class="accent-brand-500" disabled>
                             {{ __('False') }}
                         </label>
                     </div>
@@ -287,7 +299,7 @@
                     <label class="block text-xs font-medium text-gray-500 mb-1">{{ __('Correct Answer') }}</label>
                     <input type="text" name="questions[${idx}][correct_answer]"
                            class="w-full bg-surface-800 border border-white/10 text-white rounded-xl py-2.5 px-3 text-sm focus:outline-none focus:border-brand-500"
-                           placeholder="{{ __('Expected answer...') }}">
+                           placeholder="{{ __('Expected answer...') }}" disabled>
                 </div>
             </div>`;
             container.insertAdjacentHTML('beforeend', template);
@@ -298,9 +310,19 @@
             const optionsContainer = item.querySelector('.options-container');
             const tfContainer = item.querySelector('.true-false-container');
             const saContainer = item.querySelector('.short-answer-container');
+
+            [optionsContainer, tfContainer, saContainer].forEach(c => {
+                c.querySelectorAll('input[name$="[correct_answer]"]').forEach(el => el.disabled = true);
+            });
+
             optionsContainer.classList.toggle('hidden', select.value !== 'multiple_choice');
             tfContainer.classList.toggle('hidden', select.value !== 'true_false');
             saContainer.classList.toggle('hidden', select.value !== 'short_answer');
+
+            const active = { multiple_choice: optionsContainer, true_false: tfContainer, short_answer: saContainer }[select.value];
+            if (active) {
+                active.querySelectorAll('input[name$="[correct_answer]"]').forEach(el => el.disabled = false);
+            }
         }
 
         function updateQuestionNumbers() {

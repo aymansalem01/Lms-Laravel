@@ -4,9 +4,34 @@
     @php
         $isInstructor = auth()->user()->role === 'instructor';
         $attempts = $quiz->attempts->where('student_id', auth()->id());
-        $bestAttempt = $attempts->sortByDesc('score')->first();
+        $grade = $quiz->computedGrade();
+        $bestAttempt = $quiz->gradedAttempt();
         $canAttempt = !$isInstructor && (is_null($quiz->max_attempts) || $attempts->count() < $quiz->max_attempts);
+        $methodLabels = [
+            'max' => __('Highest score'),
+            'min' => __('Lowest score'),
+            'last' => __('Last attempt'),
+            'first' => __('First attempt'),
+            'avg' => __('Average score'),
+        ];
     @endphp
+
+    @if(session('success'))
+        <div class="mb-4 p-3 bg-emerald-500/10 border border-emerald-500/20 rounded-xl text-emerald-400 text-sm flex items-center gap-2">
+            <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            <span>{{ session('success') }}</span>
+            @if(session('last_submitted_at'))
+                <span class="ml-auto text-xs text-gray-500">Submitted {{ session('last_submitted_at') }}</span>
+            @endif
+        </div>
+    @endif
+
+    @if(session('info'))
+        <div class="mb-4 p-3 bg-blue-500/10 border border-blue-500/20 rounded-xl text-blue-400 text-sm flex items-center gap-2">
+            <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            <span>{{ session('info') }}</span>
+        </div>
+    @endif
 
     <div class="mb-6">
         <a href="{{ route('courses.quizzes.index', $course) }}" class="text-sm text-gray-400 hover:text-brand-300 transition-colors flex items-center gap-1.5 mb-4">
@@ -63,15 +88,45 @@
                     @else
                         <div class="space-y-3">
                             @foreach($quiz->questions as $index => $question)
-                                <div class="bg-surface-700 rounded-xl px-4 py-3 flex items-center justify-between">
-                                    <div class="min-w-0 flex-1">
-                                        <div class="flex items-center gap-2">
-                                            <span class="text-xs text-gray-500 font-mono">Q{{ $index + 1 }}</span>
-                                            <span class="text-[11px] font-medium px-2 py-0.5 rounded-md bg-brand-500/10 text-brand-400">{{ __(ucwords(str_replace('_', ' ', $question->type))) }}</span>
+                                <div class="bg-surface-700 rounded-xl p-4">
+                                    <div class="flex items-start justify-between gap-4">
+                                        <div class="min-w-0 flex-1">
+                                            <div class="flex items-center gap-2 mb-2">
+                                                <span class="text-xs text-gray-500 font-mono">Q{{ $index + 1 }}</span>
+                                                <span class="text-[11px] font-medium px-2 py-0.5 rounded-md bg-brand-500/10 text-brand-400">{{ __(ucwords(str_replace('_', ' ', $question->type))) }}</span>
+                                            </div>
+                                            <p class="text-sm text-gray-300">{{ $question->question }}</p>
                                         </div>
-                                        <p class="text-sm text-gray-300 mt-1 truncate">{{ $question->question }}</p>
+                                        <span class="text-xs text-gray-500 shrink-0">{{ $question->points }} {{ __('pts') }}</span>
                                     </div>
-                                    <span class="text-xs text-gray-500 shrink-0 ml-3">{{ $question->points }} {{ __('pts') }}</span>
+                                    @if($question->type === 'multiple_choice' && $question->options)
+                                        <div class="mt-2 space-y-1.5">
+                                            @foreach($question->options as $optIndex => $option)
+                                                <div class="flex items-center gap-2 text-sm {{ (string)$question->correct_answer === (string)$optIndex ? 'text-green-400 bg-green-500/10 px-3 py-1 rounded-lg' : 'text-gray-400 px-3' }}">
+                                                    @if((string)$question->correct_answer === (string)$optIndex)
+                                                        <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                                    @else
+                                                        <span class="w-4 h-4 shrink-0 flex items-center justify-center text-xs">{{ chr(65 + $optIndex) }}.</span>
+                                                    @endif
+                                                    {{ $option }}
+                                                </div>
+                                            @endforeach
+                                        </div>
+                                    @elseif($question->type === 'true_false')
+                                        <div class="mt-2 flex items-center gap-4 text-sm">
+                                            <span class="{{ $question->correct_answer === 'true' ? 'text-green-400 bg-green-500/10 px-3 py-1 rounded-lg font-medium' : 'text-gray-500' }}">
+                                                {{ __('True') }} {{ $question->correct_answer === 'true' ? '✓' : '' }}
+                                            </span>
+                                            <span class="{{ $question->correct_answer === 'false' ? 'text-green-400 bg-green-500/10 px-3 py-1 rounded-lg font-medium' : 'text-gray-500' }}">
+                                                {{ __('False') }} {{ $question->correct_answer === 'false' ? '✓' : '' }}
+                                            </span>
+                                        </div>
+                                    @elseif($question->type === 'short_answer')
+                                        <div class="mt-2 text-sm">
+                                            <span class="text-gray-500">{{ __('Answer') }}: </span>
+                                            <span class="text-gray-300">{{ $question->correct_answer ?: '—' }}</span>
+                                        </div>
+                                    @endif
                                 </div>
                             @endforeach
                         </div>
@@ -79,23 +134,25 @@
                 </div>
             @else
                 {{-- Student View --}}
-                @if($bestAttempt)
+                @if($grade)
                     <div class="bg-surface-800 border border-white/10 rounded-2xl p-6">
                         <div class="flex items-center justify-between mb-4">
                             <h2 class="text-lg font-semibold text-white">{{ __('Your Results') }}</h2>
-                            <a href="{{ route('courses.quizzes.results', [$course, $quiz]) }}"
-                               class="text-sm text-brand-400 hover:text-brand-300 transition-colors flex items-center gap-1.5">
-                                {{ __('View Full Results') }}
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
-                            </a>
+                            @if($quiz->show_results && $bestAttempt)
+                                <a href="{{ route('courses.quizzes.results', [$course, $quiz, $bestAttempt]) }}"
+                                   class="text-sm text-brand-400 hover:text-brand-300 transition-colors flex items-center gap-1.5">
+                                    {{ __('View Full Results') }}
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                                </a>
+                            @endif
                         </div>
                         <div class="flex items-center gap-4">
                             <div class="w-16 h-16 rounded-2xl gb flex items-center justify-center">
-                                <span class="text-xl font-bold text-white">{{ number_format($bestAttempt->score, 1) }}</span>
+                                <span class="text-xl font-bold text-white">{{ number_format($grade->score, 1) }}</span>
                             </div>
                             <div>
-                                <p class="text-sm text-gray-400">{{ __('Best score out of') }} {{ $quiz->questions->sum('points') }}</p>
-                                <p class="text-xs text-gray-500">{{ $attempts->count() }}/{{ $quiz->max_attempts ?: '∞' }} {{ __('attempts used') }}</p>
+                                <p class="text-sm text-gray-400">{{ $methodLabels[$quiz->grading_method] ?? __('Score') }} {{ __('out of') }} {{ $quiz->questions->sum('points') }}</p>
+                                <p class="text-xs text-gray-500">{{ $grade->attempts_count }}/{{ $quiz->max_attempts ?: '∞' }} {{ __('attempts used') }}</p>
                             </div>
                         </div>
                     </div>
@@ -107,7 +164,7 @@
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                         {{ __('Start Quiz') }}
                     </a>
-                @elseif(!$bestAttempt)
+                @elseif(!$grade)
                     <div class="bg-yellow-500/10 border border-yellow-500/20 rounded-xl px-4 py-3">
                         <p class="text-sm text-yellow-400 font-medium">{{ __('You have used all your attempts for this quiz.') }}</p>
                     </div>
@@ -151,7 +208,11 @@
                         @foreach($attempts->sortByDesc('created_at') as $attempt)
                             <div class="flex items-center justify-between py-2 {{ !$loop->first ? 'border-t border-white/10' : '' }}">
                                 <span class="text-xs text-gray-500">{{ $attempt->created_at->format('M d, Y') }}</span>
-                                <span class="text-sm font-medium {{ $attempt->score >= $quiz->questions->sum('points') * 0.6 ? 'text-green-400' : 'text-red-400' }}">{{ number_format($attempt->score, 1) }}</span>
+                                @if($quiz->show_results)
+                                    <span class="text-sm font-medium {{ $attempt->score >= $quiz->questions->sum('points') * 0.6 ? 'text-green-400' : 'text-red-400' }}">{{ number_format($attempt->score, 1) }}</span>
+                                @else
+                                    <span class="text-xs text-gray-500">{{ __('Submitted') }}</span>
+                                @endif
                             </div>
                         @endforeach
                     </div>

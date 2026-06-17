@@ -72,9 +72,11 @@ class QuizController extends Controller
             'bank_pulls'        => 'nullable|array',
             'bank_pulls.*'      => 'nullable|integer|min:0',
             'show_results'      => 'nullable|boolean',
+            'grading_method'    => 'nullable|string|in:max,min,last,first,avg',
         ]);
 
         $data['show_results'] = $request->boolean('show_results');
+        $data['grading_method'] = $request->input('grading_method', 'max');
         $data['module_id'] = $request->filled('module_id') ? $data['module_id'] : null;
         $quiz = $course->quizzes()->create($data);
 
@@ -173,9 +175,11 @@ class QuizController extends Controller
             'bank_pulls'        => 'nullable|array',
             'bank_pulls.*'      => 'nullable|integer|min:0',
             'show_results'      => 'nullable|boolean',
+            'grading_method'    => 'nullable|string|in:max,min,last,first,avg',
         ]);
 
         $data['show_results'] = $request->boolean('show_results');
+        $data['grading_method'] = $request->input('grading_method', 'max');
         $data['module_id'] = $request->filled('module_id') ? $data['module_id'] : null;
         $quiz->update($data);
 
@@ -266,8 +270,8 @@ class QuizController extends Controller
         $totalScore = 0;
         $maxScore = $questions->sum('points');
 
-        foreach ($questions as $qIndex => $question) {
-            $userAnswer = $answers[$qIndex] ?? null;
+        foreach ($questions as $question) {
+            $userAnswer = $answers[$question->id] ?? null;
 
             if (in_array($question->type, ['multiple_choice', 'true_false'])) {
                 $isCorrect = strtolower((string) $userAnswer) === strtolower((string) $question->correct_answer);
@@ -292,7 +296,8 @@ class QuizController extends Controller
         }
 
         return redirect()->route('courses.quizzes.show', [$course, $quiz])
-            ->with('success', 'Quiz submitted successfully. Your instructor will review your results.');
+            ->with('success', 'Quiz submitted successfully. Your instructor will review your results.')
+            ->with('last_submitted_at', $attempt->submitted_at->format('M d, Y g:i A'));
     }
 
     public function results(Course $course, Quiz $quiz, QuizAttempt $attempt)

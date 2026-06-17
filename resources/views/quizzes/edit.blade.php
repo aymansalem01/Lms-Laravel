@@ -76,6 +76,18 @@
                            class="w-4 h-4 rounded border-white/20 bg-surface-700 text-brand-500 focus:ring-brand-500">
                     <label for="show_results" class="text-sm text-gray-300">{{ __('Show students their results after submission') }}</label>
                 </div>
+
+                <div>
+                    <label for="grading_method" class="block text-sm font-medium text-gray-300 mb-1.5">{{ __('Grading Method') }}</label>
+                    <select name="grading_method" id="grading_method" class="input-dashboard">
+                        <option value="max" {{ old('grading_method', $quiz->grading_method) === 'max' ? 'selected' : '' }}>{{ __('Highest attempt') }}</option>
+                        <option value="min" {{ old('grading_method', $quiz->grading_method) === 'min' ? 'selected' : '' }}>{{ __('Lowest attempt') }}</option>
+                        <option value="last" {{ old('grading_method', $quiz->grading_method) === 'last' ? 'selected' : '' }}>{{ __('Last attempt') }}</option>
+                        <option value="first" {{ old('grading_method', $quiz->grading_method) === 'first' ? 'selected' : '' }}>{{ __('First attempt') }}</option>
+                        <option value="avg" {{ old('grading_method', $quiz->grading_method) === 'avg' ? 'selected' : '' }}>{{ __('Average of all attempts') }}</option>
+                    </select>
+                    <p class="text-xs text-gray-500 mt-1">{{ __('Determines how the final grade is calculated when multiple attempts are allowed.') }}</p>
+                </div>
             </div>
 
             {{-- Questions Section --}}
@@ -121,10 +133,10 @@
                                         <input type="text" name="questions[{{ $qIndex }}][options][]" value="{{ $option }}"
                                                class="flex-1 bg-surface-800 border border-white/10 text-white rounded-xl py-2 px-3 text-sm focus:outline-none focus:border-brand-500"
                                                placeholder="{{ __('Option') }} {{ chr(65 + $optIndex) }}">
-                                        <label class="flex items-center gap-1.5 text-xs text-gray-500 shrink-0">
+                                        <label class="flex items-center gap-1.5 text-xs shrink-0 {{ $question->correct_answer !== null && (int)$question->correct_answer === $optIndex ? 'text-green-400 font-semibold' : 'text-gray-500' }}">
                                             <input type="radio" name="questions[{{ $qIndex }}][correct_answer]" value="{{ $optIndex }}" class="accent-brand-500"
                                                    {{ $question->correct_answer !== null && (int)$question->correct_answer === $optIndex ? 'checked' : '' }}>
-                                            {{ __('Correct') }}
+                                            {{ $question->correct_answer !== null && (int)$question->correct_answer === $optIndex ? '✓ Correct' : 'Correct' }}
                                         </label>
                                     </div>
                                 @endforeach
@@ -132,22 +144,23 @@
                             <div class="true-false-container space-y-2 mt-3 {{ $question->type !== 'true_false' ? 'hidden' : '' }}">
                                 <label class="block text-xs font-medium text-gray-500 mb-1">{{ __('Correct Answer') }}</label>
                                 <div class="flex items-center gap-4">
-                                    <label class="flex items-center gap-2 text-sm text-gray-300">
+                                    <label class="flex items-center gap-2 text-sm {{ $question->correct_answer === 'true' ? 'text-green-400 font-semibold' : 'text-gray-300' }}">
                                         <input type="radio" name="questions[{{ $qIndex }}][correct_answer]" value="true" class="accent-brand-500"
                                                {{ $question->correct_answer === 'true' ? 'checked' : '' }}>
-                                        {{ __('True') }}
+                                        {{ $question->correct_answer === 'true' ? '✓ True' : 'True' }}
                                     </label>
-                                    <label class="flex items-center gap-2 text-sm text-gray-300">
+                                    <label class="flex items-center gap-2 text-sm {{ $question->correct_answer === 'false' ? 'text-green-400 font-semibold' : 'text-gray-300' }}">
                                         <input type="radio" name="questions[{{ $qIndex }}][correct_answer]" value="false" class="accent-brand-500"
                                                {{ $question->correct_answer === 'false' ? 'checked' : '' }}>
-                                        {{ __('False') }}
+                                        {{ $question->correct_answer === 'false' ? '✓ False' : 'False' }}
                                     </label>
                                 </div>
                             </div>
                             <div class="short-answer-container mt-3 {{ $question->type !== 'short_answer' ? 'hidden' : '' }}">
                                 <label class="block text-xs font-medium text-gray-500 mb-1">{{ __('Correct Answer') }}</label>
                                 <input type="text" name="questions[{{ $qIndex }}][correct_answer]" value="{{ $question->type === 'short_answer' ? $question->correct_answer : '' }}"
-                                       class="w-full bg-surface-800 border border-white/10 text-white rounded-xl py-2.5 px-3 text-sm focus:outline-none focus:border-brand-500">
+                                       class="w-full bg-surface-800 border border-white/10 text-white rounded-xl py-2.5 px-3 text-sm focus:outline-none focus:border-brand-500"
+                                       {{ $question->type !== 'short_answer' ? 'disabled' : '' }}>
                             </div>
                         </div>
                     @endforeach
@@ -275,11 +288,11 @@
                     <label class="block text-xs font-medium text-gray-500 mb-1">{{ __('Correct Answer') }}</label>
                     <div class="flex items-center gap-4">
                         <label class="flex items-center gap-2 text-sm text-gray-300">
-                            <input type="radio" name="questions[${idx}][correct_answer]" value="true" class="accent-brand-500">
+                            <input type="radio" name="questions[${idx}][correct_answer]" value="true" class="accent-brand-500" disabled>
                             {{ __('True') }}
                         </label>
                         <label class="flex items-center gap-2 text-sm text-gray-300">
-                            <input type="radio" name="questions[${idx}][correct_answer]" value="false" class="accent-brand-500">
+                            <input type="radio" name="questions[${idx}][correct_answer]" value="false" class="accent-brand-500" disabled>
                             {{ __('False') }}
                         </label>
                     </div>
@@ -288,7 +301,7 @@
                     <label class="block text-xs font-medium text-gray-500 mb-1">{{ __('Correct Answer') }}</label>
                     <input type="text" name="questions[${idx}][correct_answer]"
                            class="w-full bg-surface-800 border border-white/10 text-white rounded-xl py-2.5 px-3 text-sm focus:outline-none focus:border-brand-500"
-                           placeholder="{{ __('Expected answer...') }}">
+                           placeholder="{{ __('Expected answer...') }}" disabled>
                 </div>
             </div>`;
             container.insertAdjacentHTML('beforeend', template);
@@ -299,9 +312,19 @@
             const optionsContainer = item.querySelector('.options-container');
             const tfContainer = item.querySelector('.true-false-container');
             const saContainer = item.querySelector('.short-answer-container');
+
+            [optionsContainer, tfContainer, saContainer].forEach(c => {
+                c.querySelectorAll('input[name$="[correct_answer]"]').forEach(el => el.disabled = true);
+            });
+
             optionsContainer.classList.toggle('hidden', select.value !== 'multiple_choice');
             tfContainer.classList.toggle('hidden', select.value !== 'true_false');
             saContainer.classList.toggle('hidden', select.value !== 'short_answer');
+
+            const active = { multiple_choice: optionsContainer, true_false: tfContainer, short_answer: saContainer }[select.value];
+            if (active) {
+                active.querySelectorAll('input[name$="[correct_answer]"]').forEach(el => el.disabled = false);
+            }
         }
 
         function updateQuestionNumbers() {

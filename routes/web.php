@@ -199,7 +199,7 @@ Route::post('/theme', [ViewController::class, 'theme'])->name('theme.switch');
             Route::get('/{quiz}', [QuizController::class, 'show'])->name('show');
             Route::get('/{quiz}/take', [QuizController::class, 'take'])->name('take');
             Route::post('/{quiz}/attempt', [QuizController::class, 'attempt'])->name('attempt');
-            Route::get('/{quiz}/results', [QuizController::class, 'results'])->name('results');
+            Route::get('/{quiz}/results/{attempt}', [QuizController::class, 'results'])->name('results');
             Route::middleware('role:instructor,admin')->group(function () {
                 Route::get('/{quiz}/edit', [QuizController::class, 'edit'])->name('edit');
                 Route::put('/{quiz}', [QuizController::class, 'update'])->name('update');

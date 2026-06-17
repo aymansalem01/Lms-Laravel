@@ -109,7 +109,7 @@ class AdminCourseController extends Controller
     {
         $course->load([
             'instructor',
-            'modules.lessons',
+            'modules.lessons', 'modules.quizzes', 'modules.assignments', 'modules.liveSessions',
             'enrollments.student',
             'assignments.submissions.grade',
             'liveSessions',

@@ -41,12 +41,25 @@
                     @forelse($students as $student)
                         @php
                             $attempts = $student->quizAttempts;
-                            $bestAttempt = $attempts->sortByDesc('score')->first();
                             $released = $attempts->firstWhere('released_at', '!==', null);
                             $status = match(true) {
                                 $attempts->isEmpty() => 'not_submitted',
                                 (bool) $released => 'graded',
                                 default => 'submitted',
+                            };
+                            $representative = match($quiz->grading_method) {
+                                'min' => $attempts->sortBy('score')->first(),
+                                'last' => $attempts->sortByDesc('created_at')->first(),
+                                'first' => $attempts->sortBy('created_at')->first(),
+                                'avg' => $attempts->sortByDesc('created_at')->first(),
+                                default => $attempts->sortByDesc('score')->first(),
+                            };
+                            $computedScore = match($quiz->grading_method) {
+                                'min' => $attempts->min('score'),
+                                'last' => $attempts->sortByDesc('created_at')->first()?->score,
+                                'first' => $attempts->sortBy('created_at')->first()?->score,
+                                'avg' => $attempts->avg('score'),
+                                default => $attempts->max('score'),
                             };
                         @endphp
                         <tr class="hover:bg-surface-700/50 transition-colors">
@@ -68,8 +81,8 @@
                                 @endif
                             </td>
                             <td class="px-5 py-3.5">
-                                @if($bestAttempt)
-                                    <span class="text-gray-300 font-medium">{{ number_format($bestAttempt->score, 1) }} / {{ number_format($bestAttempt->max_score, 1) }}</span>
+                                @if($computedScore !== null)
+                                    <span class="text-gray-300 font-medium">{{ number_format($computedScore, 1) }} / {{ number_format($attempts->first()->max_score ?? 0, 1) }}</span>
                                 @else
                                     <span class="text-gray-600">—</span>
                                 @endif
@@ -82,8 +95,8 @@
                                 @endif
                             </td>
                             <td class="px-5 py-3.5 text-right">
-                                @if($bestAttempt)
-                                    <a href="{{ route('courses.quizzes.results', [$course, $quiz, $bestAttempt]) }}"
+                                @if($representative)
+                                    <a href="{{ route('courses.quizzes.results', [$course, $quiz, $representative]) }}"
                                        class="text-sm bg-brand-600 hover:bg-brand-500 text-white font-medium rounded-xl px-4 py-1.5 transition-colors duration-200 inline-block">
                                         {{ __('View') }}
                                     </a>

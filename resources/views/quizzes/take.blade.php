@@ -46,7 +46,7 @@
                         <div class="space-y-2 ml-11">
                             @foreach($question->options as $optIndex => $option)
                                 <label class="flex items-center gap-3 bg-surface-700 border border-white/10 rounded-xl px-4 py-3 cursor-pointer hover:border-brand-500/50 transition-all duration-200 has-[:checked]:border-brand-500 has-[:checked]:bg-brand-500/10">
-                                    <input type="radio" name="answers[{{ $index }}]" value="{{ $optIndex }}"
+                                    <input type="radio" name="answers[{{ $question->id }}]" value="{{ $optIndex }}"
                                            class="accent-brand-500 shrink-0">
                                     <span class="text-sm text-gray-300">{{ $option }}</span>
                                 </label>
@@ -55,23 +55,23 @@
                     @elseif($question->type === 'true_false')
                         <div class="space-y-2 ml-11">
                             <label class="flex items-center gap-3 bg-surface-700 border border-white/10 rounded-xl px-4 py-3 cursor-pointer hover:border-brand-500/50 transition-all duration-200 has-[:checked]:border-brand-500 has-[:checked]:bg-brand-500/10">
-                                <input type="radio" name="answers[{{ $index }}]" value="true" class="accent-brand-500 shrink-0">
+                                <input type="radio" name="answers[{{ $question->id }}]" value="true" class="accent-brand-500 shrink-0">
                                 <span class="text-sm text-gray-300">{{ __('True') }}</span>
                             </label>
                             <label class="flex items-center gap-3 bg-surface-700 border border-white/10 rounded-xl px-4 py-3 cursor-pointer hover:border-brand-500/50 transition-all duration-200 has-[:checked]:border-brand-500 has-[:checked]:bg-brand-500/10">
-                                <input type="radio" name="answers[{{ $index }}]" value="false" class="accent-brand-500 shrink-0">
+                                <input type="radio" name="answers[{{ $question->id }}]" value="false" class="accent-brand-500 shrink-0">
                                 <span class="text-sm text-gray-300">{{ __('False') }}</span>
                             </label>
                         </div>
                     @elseif($question->type === 'short_answer')
                         <div class="ml-11">
-                            <input type="text" name="answers[{{ $index }}]"
+                            <input type="text" name="answers[{{ $question->id }}]"
                                    class="w-full bg-surface-700 border border-white/10 text-white rounded-xl py-3 px-4 text-sm focus:outline-none focus:border-brand-500"
                                    placeholder="{{ __('Type your answer...') }}">
                         </div>
                     @elseif($question->type === 'long_answer')
                         <div class="ml-11">
-                            <textarea name="answers[{{ $index }}]" rows="4"
+                            <textarea name="answers[{{ $question->id }}]" rows="4"
                                       class="w-full bg-surface-700 border border-white/10 text-white rounded-xl py-3 px-4 text-sm focus:outline-none focus:border-brand-500 resize-none"
                                       placeholder="{{ __('Write your answer...') }}"></textarea>
                         </div>

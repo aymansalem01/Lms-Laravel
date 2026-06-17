@@ -256,7 +256,7 @@
                             </div>
                             <div class="flex items-center gap-3 shrink-0">
                                 <a href="{{ route('courses.content.edit', [$course, $module]) }}" class="text-xs text-gray-400 hover:text-white px-2 py-1 rounded hover:bg-surface-600 transition-colors">Edit</a>
-                                <span class="text-xs text-gray-500">{{ $module->lessons->count() }} lessons</span>
+                                <span class="text-xs text-gray-500">{{ $module->lessons->count() }} {{ __('lessons') }}{{ $module->quizzes->count() ? ', ' . $module->quizzes->count() . ' quizzes' : '' }}{{ $module->assignments->count() ? ', ' . $module->assignments->count() . ' assignments' : '' }}</span>
                                 <svg class="w-4 h-4 text-gray-500 transition-transform duration-200" :class="{ 'rotate-180': open }" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
                             </div>
                         </button>
@@ -284,6 +284,68 @@
                                 <div class="pt-2">
                                     <a href="{{ route('courses.content.lesson.create', $course) }}" class="text-xs text-brand-400 hover:text-brand-300 transition-colors">+ Add Lesson</a>
                                 </div>
+
+                                {{-- Module resources --}}
+                                @php
+                                    $modQuizzes = $module->quizzes ?? collect();
+                                    $modAssignments = $module->assignments ?? collect();
+                                    $modSessions = $module->liveSessions ?? collect();
+                                @endphp
+
+                                @if($modQuizzes->isNotEmpty() || $modAssignments->isNotEmpty() || $modSessions->isNotEmpty())
+                                    <div class="border-t border-white/10 pt-2 mt-2 space-y-0.5">
+                                        @foreach($modQuizzes as $resource)
+                                            <div class="flex items-center justify-between px-3 py-2 rounded-lg hover:bg-surface-700/50 transition-colors group">
+                                                <a href="{{ route('courses.quizzes.show', [$course, $resource]) }}" class="flex items-center gap-3 text-sm text-gray-400 hover:text-brand-400 min-w-0 flex-1">
+                                                    <svg class="w-4 h-4 text-brand-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                                    <span class="truncate">{{ $resource->title }}</span>
+                                                    <span class="text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-brand-500/10 text-brand-400 shrink-0">{{ __('Quiz') }}</span>
+                                                </a>
+                                                <div class="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity shrink-0 ml-2">
+                                                    <a href="{{ route('courses.quizzes.edit', [$course, $resource]) }}" class="text-xs text-gray-400 hover:text-white px-2 py-1 rounded hover:bg-surface-600 transition-colors">Edit</a>
+                                                    <form method="POST" action="{{ route('courses.quizzes.destroy', [$course, $resource]) }}" onsubmit="return confirm('Delete this quiz?')">
+                                                        @csrf @method('DELETE')
+                                                        <button type="submit" class="text-xs text-red-400 hover:text-red-300 px-2 py-1 rounded hover:bg-red-500/10 transition-colors">Delete</button>
+                                                    </form>
+                                                </div>
+                                            </div>
+                                        @endforeach
+
+                                        @foreach($modAssignments as $resource)
+                                            <div class="flex items-center justify-between px-3 py-2 rounded-lg hover:bg-surface-700/50 transition-colors group">
+                                                <a href="{{ route('courses.assignments.show', [$course, $resource]) }}" class="flex items-center gap-3 text-sm text-gray-400 hover:text-blue-400 min-w-0 flex-1">
+                                                    <svg class="w-4 h-4 text-blue-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+                                                    <span class="truncate">{{ $resource->title }}</span>
+                                                    <span class="text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-blue-500/10 text-blue-400 shrink-0">{{ __('Assignment') }}</span>
+                                                </a>
+                                                <div class="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity shrink-0 ml-2">
+                                                    <a href="{{ route('courses.assignments.edit', [$course, $resource]) }}" class="text-xs text-gray-400 hover:text-white px-2 py-1 rounded hover:bg-surface-600 transition-colors">Edit</a>
+                                                    <form method="POST" action="{{ route('courses.assignments.destroy', [$course, $resource]) }}" onsubmit="return confirm('Delete this assignment?')">
+                                                        @csrf @method('DELETE')
+                                                        <button type="submit" class="text-xs text-red-400 hover:text-red-300 px-2 py-1 rounded hover:bg-red-500/10 transition-colors">Delete</button>
+                                                    </form>
+                                                </div>
+                                            </div>
+                                        @endforeach
+
+                                        @foreach($modSessions as $resource)
+                                            <div class="flex items-center justify-between px-3 py-2 rounded-lg hover:bg-surface-700/50 transition-colors group">
+                                                <a href="{{ route('courses.live.show', [$course, $resource]) }}" class="flex items-center gap-3 text-sm text-gray-400 hover:text-coral-400 min-w-0 flex-1">
+                                                    <svg class="w-4 h-4 text-coral-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                                                    <span class="truncate">{{ $resource->title }}</span>
+                                                    <span class="text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-coral-500/10 text-coral-400 shrink-0">{{ __('Live') }}</span>
+                                                </a>
+                                                <div class="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity shrink-0 ml-2">
+                                                    <a href="{{ route('courses.live.edit', [$course, $resource]) }}" class="text-xs text-gray-400 hover:text-white px-2 py-1 rounded hover:bg-surface-600 transition-colors">Edit</a>
+                                                    <form method="POST" action="{{ route('courses.live.destroy', [$course, $resource]) }}" onsubmit="return confirm('Delete this session?')">
+                                                        @csrf @method('DELETE')
+                                                        <button type="submit" class="text-xs text-red-400 hover:text-red-300 px-2 py-1 rounded hover:bg-red-500/10 transition-colors">Delete</button>
+                                                    </form>
+                                                </div>
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                @endif
                             </div>
                         </div>
                     </div>

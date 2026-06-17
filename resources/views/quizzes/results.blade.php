@@ -67,28 +67,28 @@
     {{-- Questions Breakdown --}}
     @if($quiz->show_results || auth()->user()->isInstructorOrAdmin())
     <div class="space-y-4">
-        @foreach($quiz->questions as $index => $question)
+        @foreach($quiz->questions as $question)
             @php
-                $answer = $attempt->answers[$index] ?? null;
+                $answer = $attempt->answers[$question->id] ?? null;
                 $isCorrect = false;
                 $showResult = in_array($question->type, ['multiple_choice', 'true_false']);
 
-                if ($showResult && $answer) {
+                if ($showResult && $answer !== null) {
                     if ($question->type === 'multiple_choice') {
-                        $isCorrect = isset($answer['selected']) && $question->correct_answer !== null && (int)$answer['selected'] === (int)$question->correct_answer;
+                        $isCorrect = $question->correct_answer !== null && (string)$answer === (string)$question->correct_answer;
                     } elseif ($question->type === 'true_false') {
-                        $isCorrect = isset($answer['value']) && $answer['value'] === $question->correct_answer;
+                        $isCorrect = (string)$answer === (string)$question->correct_answer;
                     }
                 }
 
-                $feedback = $answer['feedback'] ?? null;
-                $awardedPoints = $answer['points'] ?? 0;
+                $feedback = null;
+                $awardedPoints = $isCorrect ? $question->points : 0;
             @endphp
             <div class="bg-surface-800 border border-white/10 rounded-2xl p-6">
                 <div class="flex items-start justify-between gap-4 mb-4">
                     <div class="flex items-center gap-3">
                         <span class="w-8 h-8 rounded-full {{ $showResult ? ($isCorrect ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400') : 'bg-brand-500/20 text-brand-400' }} flex items-center justify-center text-sm font-bold shrink-0">
-                            {{ $showResult ? ($isCorrect ? '✓' : '✗') : ($index + 1) }}
+                            {{ $showResult ? ($isCorrect ? '✓' : '✗') : $loop->iteration }}
                         </span>
                         <div>
                             <h3 class="text-white font-medium">{{ $question->question }}</h3>
@@ -104,8 +104,8 @@
                     <div class="ml-11 space-y-2">
                         @foreach($question->options as $optIndex => $option)
                             @php
-                                $isSelected = isset($answer['selected']) && $answer['selected'] == $optIndex;
-                                $isCorrectOpt = $question->correct_answer !== null && (int)$question->correct_answer === $optIndex;
+                                $isSelected = $answer !== null && (string)$answer === (string)$optIndex;
+                                $isCorrectOpt = $question->correct_answer !== null && (string)$question->correct_answer === (string)$optIndex;
                             @endphp
                             <div class="flex items-center gap-3 bg-surface-700 border rounded-xl px-4 py-3
                                 {{ $isCorrectOpt ? 'border-green-500/50 bg-green-500/10' : ($isSelected && !$isCorrectOpt ? 'border-red-500/50 bg-red-500/10' : 'border-white/10') }}">
@@ -124,8 +124,8 @@
                     <div class="ml-11 flex items-center gap-4">
                         @foreach(['true' => __('True'), 'false' => __('False')] as $val => $label)
                             @php
-                                $isSelected = isset($answer['value']) && $answer['value'] === $val;
-                                $isCorrectVal = $question->correct_answer === $val;
+                                $isSelected = $answer !== null && (string)$answer === $val;
+                                $isCorrectVal = (string)$question->correct_answer === $val;
                             @endphp
                             <div class="flex items-center gap-2 bg-surface-700 border rounded-xl px-4 py-3
                                 {{ $isCorrectVal ? 'border-green-500/50 bg-green-500/10' : ($isSelected && !$isCorrectVal ? 'border-red-500/50 bg-red-500/10' : 'border-white/10') }}">
@@ -144,7 +144,7 @@
                     <div class="ml-11">
                         <div class="bg-surface-700 rounded-xl px-4 py-3 mb-2">
                             <p class="text-xs text-gray-500 mb-1">{{ __('Your answer') }}</p>
-                            <p class="text-sm text-gray-300">{{ $answer['text'] ?? '—' }}</p>
+                            <p class="text-sm text-gray-300">{{ $answer ?? '—' }}</p>
                         </div>
                         @if($feedback)
                             <div class="bg-brand-500/10 border border-brand-500/20 rounded-xl px-4 py-3">
