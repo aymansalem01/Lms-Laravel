@@ -7,7 +7,7 @@
 
     <div class="bg-surface-800 border border-surface-700 rounded-xl p-6 max-w-2xl">
         <h1 class="text-xl font-bold text-white mb-6">{{ __('Edit Lesson') }}</h1>
-        <form method="POST" action="{{ route('courses.content.lesson.update', [$course, $lesson]) }}" class="space-y-5">
+        <form method="POST" action="{{ route('courses.content.lesson.update', [$course, $lesson]) }}" enctype="multipart/form-data" class="space-y-5">
             @csrf
             @method('PUT')
 
@@ -44,6 +44,15 @@
                     <label class="block text-sm font-medium text-gray-300 mb-1.5">{{ __('Video URL') }}</label>
                     <input type="url" name="video_url" value="{{ old('video_url', $lesson->video_url) }}"
                            class="w-full bg-surface-700 border border-surface-600 rounded-lg px-4 py-2.5 text-sm text-gray-200 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-brand-500/50 transition-colors">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-300 mb-1.5">{{ __('Or Upload Video File') }}</label>
+                    <input type="file" name="video_file" accept="video/mp4,video/webm,video/ogg,video/quicktime"
+                           class="w-full bg-surface-700 border border-surface-600 rounded-lg px-4 py-2.5 text-sm text-gray-200 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-medium file:bg-brand-500/20 file:text-brand-400 hover:file:bg-brand-500/30">
+                    <p class="text-xs text-gray-500 mt-1">{{ __('MP4, WebM, OGG, MOV up to 200MB') }}</p>
+                    @if($lesson->video_path)
+                        <p class="text-xs text-emerald-400 mt-1">{{ __('Current video:') }} <a href="{{ Storage::url($lesson->video_path) }}" target="_blank" class="underline">View</a></p>
+                    @endif
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-300 mb-1.5">{{ __('Audio URL') }}</label>

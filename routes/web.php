@@ -340,6 +340,7 @@ Route::post('/theme', [ViewController::class, 'theme'])->name('theme.switch');
         Route::delete('/programs/{program}',                [ProgramController::class, 'destroy'])->name('programs.destroy');
         Route::post('/programs/{program}/courses',          [ProgramController::class, 'assignCourse'])->name('programs.courses.assign');
         Route::delete('/programs/{program}/courses/{course}',[ProgramController::class, 'unassignCourse'])->name('programs.courses.unassign');
+        Route::delete('/programs/{program}/students/{user}', [ProgramController::class, 'removeStudent'])->name('programs.students.remove');
 
         // ── Grades ────────────────────────────────────────────────────────────
         Route::get('/grades',                               [AdminGradeController::class, 'index'])->name('grades.index');

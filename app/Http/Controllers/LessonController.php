@@ -7,6 +7,7 @@ use App\Models\Module;
 use App\Models\Lesson;
 use App\Models\LessonProgress;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class LessonController extends Controller
 {
@@ -73,11 +74,16 @@ class LessonController extends Controller
             'title' => 'required|string|max:255',
             'content' => 'nullable|string',
             'video_url' => 'nullable|url|max:2048',
+            'video_file' => 'nullable|file|mimes:mp4,webm,ogg,avi,mov|max:204800',
             'audio_url' => 'nullable|url|max:2048',
             'file_url' => 'nullable|url|max:2048',
             'order_index' => 'nullable|integer',
             'prerequisite_lesson_id' => 'nullable|exists:lessons,id',
         ]);
+
+        if ($request->hasFile('video_file')) {
+            $data['video_path'] = $request->file('video_file')->store('videos', 'public');
+        }
 
         $module = Module::findOrFail($data['module_id']);
         if (!isset($data['order_index'])) {
@@ -104,11 +110,19 @@ class LessonController extends Controller
             'title' => 'required|string|max:255',
             'content' => 'nullable|string',
             'video_url' => 'nullable|url|max:2048',
+            'video_file' => 'nullable|file|mimes:mp4,webm,ogg,avi,mov|max:204800',
             'audio_url' => 'nullable|url|max:2048',
             'file_url' => 'nullable|url|max:2048',
             'order_index' => 'nullable|integer',
             'prerequisite_lesson_id' => 'nullable|exists:lessons,id',
         ]);
+
+        if ($request->hasFile('video_file')) {
+            if ($lesson->video_path) {
+                Storage::disk('public')->delete($lesson->video_path);
+            }
+            $data['video_path'] = $request->file('video_file')->store('videos', 'public');
+        }
 
         $lesson->update($data);
 
@@ -118,6 +132,9 @@ class LessonController extends Controller
     public function destroy(Course $course, Lesson $lesson)
     {
         if ($course->instructor_id !== auth()->id() && !auth()->user()->isAdmin()) abort(403);
+        if ($lesson->video_path) {
+            Storage::disk('public')->delete($lesson->video_path);
+        }
         $lesson->delete();
         return redirect()->route('courses.content.index', $course)->with('success', 'Lesson deleted successfully.');
     }

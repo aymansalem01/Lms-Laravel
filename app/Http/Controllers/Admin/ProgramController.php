@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Program;
 use App\Models\Course;
 use App\Models\User;
+use App\Models\Enrollment;
 use Illuminate\Http\Request;
 
 /**
@@ -213,5 +214,24 @@ class ProgramController extends Controller
         $course->update(['program' => null]);
 
         return back()->with('success', "\"{$course->title}\" removed from {$program->name}.");
+    }
+
+    // ── Remove Student from Program ─────────────────────────────────────────
+
+    /**
+     * DELETE /admin/programs/{program}/students/{user}
+     *
+     * Remove a student from the program (sets program to null)
+     * and unenrolls them from all courses in the program.
+     */
+    public function removeStudent(Program $program, User $user)
+    {
+        $user->update(['program' => null]);
+
+        Enrollment::where('student_id', $user->id)
+            ->whereIn('course_id', $program->courses()->pluck('courses.id'))
+            ->delete();
+
+        return back()->with('success', "{$user->name} removed from {$program->name}.");
     }
 }

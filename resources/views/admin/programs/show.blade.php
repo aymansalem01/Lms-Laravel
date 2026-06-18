@@ -42,7 +42,7 @@
                             </td>
                             <td class="px-4 py-3 text-gray-400">{{ $student->email }}</td>
                             <td class="px-4 py-3 text-right">
-                                <form method="POST" action="{{ route('admin.users.unenroll', [$student, 'program' => $program->name]) }}" onsubmit="return confirm('Remove this student from the program?')">
+                                <form method="POST" action="{{ route('admin.programs.students.remove', [$program, $student]) }}" onsubmit="return confirm('Remove this student from the program?')">
                                     @csrf @method('DELETE')
                                     <button type="submit" class="text-xs text-red-400 hover:text-red-300 px-2 py-1 rounded-lg hover:bg-surface-600 transition-colors">Remove</button>
                                 </form>

@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class Lesson extends Model
 {
     protected $fillable = [
-        'module_id', 'title', 'content', 'video_url', 'audio_url', 'file_url', 'order_index',
+        'module_id', 'title', 'content', 'video_url', 'video_path', 'audio_url', 'file_url', 'order_index',
     ];
 
     public function module(): BelongsTo

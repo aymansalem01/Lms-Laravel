@@ -48,7 +48,14 @@
         </div>
 
         {{-- Video embed --}}
-        @if($lesson->video_url)
+        @if($lesson->video_path)
+            <div class="bg-surface-800 border border-surface-700 rounded-xl overflow-hidden mb-6">
+                <video controls class="w-full aspect-video" preload="metadata">
+                    <source src="{{ Storage::url($lesson->video_path) }}" type="video/mp4">
+                    {{ __('Your browser does not support the video element.') }}
+                </video>
+            </div>
+        @elseif($lesson->video_url)
             <div class="bg-surface-800 border border-surface-700 rounded-xl overflow-hidden mb-6 aspect-video">
                 <iframe src="{{ $lesson->video_url }}" class="w-full h-full" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
             </div>

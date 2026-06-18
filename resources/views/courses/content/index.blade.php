@@ -102,6 +102,11 @@
                             <div class="flex items-center gap-3 min-w-0">
                                 <svg class="w-4 h-4 text-gray-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                                 <a href="{{ route('courses.content.lesson.show', [$course, $lesson]) }}" class="text-sm text-gray-300 hover:text-white transition-colors truncate">{{ $lesson->title }}</a>
+                                @if($lesson->video_path)
+                                    <span class="text-xs text-brand-400/70 shrink-0" title="{{ __('Has video file') }}">
+                                        <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20"><path d="M2 3a1 1 0 00-1 1v1a1 1 0 001 1h16a1 1 0 001-1V4a1 1 0 00-1-1H2zm0 4.5a1 1 0 00-1 1v1a1 1 0 001 1h16a1 1 0 001-1v-1a1 1 0 00-1-1H2zm0 4.5a1 1 0 00-1 1v1a1 1 0 001 1h16a1 1 0 001-1v-1a1 1 0 00-1-1H2z"/></svg>
+                                    </span>
+                                @endif
                             </div>
                             <div class="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                                 <a href="{{ route('courses.content.lesson.edit', [$course, $lesson]) }}" class="text-xs text-gray-500 hover:text-white px-2 py-0.5 rounded transition-colors">{{ __('Edit') }}</a>
