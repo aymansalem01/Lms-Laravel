@@ -18,6 +18,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $middleware->appendToGroup('web', \App\Http\Middleware\StudentViewMiddleware::class);
         $middleware->appendToGroup('web', \App\Http\Middleware\LocaleMiddleware::class);
+        $middleware->appendToGroup('web', \App\Http\Middleware\PreventBackHistory::class);
     })
     ->withSingletons([
         App\Services\Plagiarism\FingerprintService::class,

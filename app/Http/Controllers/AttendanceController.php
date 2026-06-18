@@ -67,11 +67,15 @@ class AttendanceController extends Controller
             ->with('success', 'Attendance saved.');
     }
 
-    private function attendanceStats(Course $course, ?int $studentId = null)
+    private function attendanceStats(Course $course, ?int $studentId = null, ?string $yearMonth = null)
     {
         $query = $course->attendance();
         if ($studentId) {
             $query->where('student_id', $studentId);
+        }
+        if ($yearMonth) {
+            $query->whereYear('date', substr($yearMonth, 0, 4))
+                  ->whereMonth('date', substr($yearMonth, 5, 2));
         }
         $all = $query->get();
 
@@ -81,35 +85,74 @@ class AttendanceController extends Controller
         $late = $all->where('status', 'late')->count();
         $excused = $all->where('status', 'excused')->count();
 
-        $attended = $present; // only "present" counts as attended
+        $attended = $present;
         $absenceRate = $total > 0 ? round(($absent / $total) * 100, 2) : 0;
         $attendanceRate = $total > 0 ? round(($attended / $total) * 100, 2) : 0;
 
         return compact('total', 'present', 'absent', 'late', 'excused', 'absenceRate', 'attendanceRate');
     }
 
-    public function myAttendance(Course $course)
+    private function availableMonths(Course $course, ?int $studentId = null)
     {
-        $user = auth()->user();
-        $records = $course->attendance()->where('student_id', $user->id)->orderBy('date', 'desc')->get();
-        $stats = $this->attendanceStats($course, $user->id);
-        $warnings = $course->attendanceWarnings()->where('student_id', $user->id)->orderBy('warning_level')->get();
-
-        return view('courses.attendance.student', compact('course', 'records', 'stats', 'warnings'));
+        $query = $course->attendance();
+        if ($studentId) {
+            $query->where('student_id', $studentId);
+        }
+        return $query->selectRaw("DATE_FORMAT(date, '%Y-%m') as ym")
+            ->distinct()
+            ->orderBy('ym', 'desc')
+            ->pluck('ym');
     }
 
-    public function report(Course $course)
+    public function myAttendance(Course $course, Request $request)
     {
+        $user = auth()->user();
+        $selectedMonth = $request->input('month');
+        $months = $this->availableMonths($course, $user->id);
+
+        $records = $course->attendance()->where('student_id', $user->id)
+            ->when($selectedMonth, function ($q) use ($selectedMonth) {
+                $q->whereYear('date', substr($selectedMonth, 0, 4))
+                  ->whereMonth('date', substr($selectedMonth, 5, 2));
+            })
+            ->orderBy('date', 'desc')
+            ->get();
+
+        $stats = $this->attendanceStats($course, $user->id, $selectedMonth ?: null);
+
+        $monthlyStats = [];
+        foreach ($months as $ym) {
+            $monthlyStats[$ym] = $this->attendanceStats($course, $user->id, $ym);
+        }
+
+        $warnings = $course->attendanceWarnings()->where('student_id', $user->id)->orderBy('warning_level')->get();
+
+        return view('courses.attendance.student', compact('course', 'records', 'stats', 'months', 'selectedMonth', 'monthlyStats', 'warnings'));
+    }
+
+    public function report(Course $course, Request $request)
+    {
+        $selectedMonth = $request->input('month');
         $students = $course->students()->orderBy('name')->get();
-        $reportData = $students->map(function ($student) use ($course) {
-            $stats = $this->attendanceStats($course, $student->id);
+        $months = $this->availableMonths($course);
+
+        $reportData = $students->map(function ($student) use ($course, $selectedMonth) {
+            $stats = $this->attendanceStats($course, $student->id, $selectedMonth ?: null);
             $warnings = $course->attendanceWarnings()->where('student_id', $student->id)->pluck('warning_level');
             return array_merge(['id' => $student->id, 'name' => $student->name, 'email' => $student->email], $stats, ['warnings' => $warnings]);
         });
 
+        $monthlyStats = $students->map(function ($student) use ($course, $months) {
+            $monthData = [];
+            foreach ($months as $ym) {
+                $monthData[$ym] = $this->attendanceStats($course, $student->id, $ym);
+            }
+            return ['id' => $student->id, 'name' => $student->name, 'months' => $monthData];
+        })->keyBy('id');
+
         $courseWarnings = $course->attendanceWarnings()->with('student')->orderBy('generated_at', 'desc')->get();
 
-        return view('courses.attendance.report', compact('course', 'reportData', 'courseWarnings'));
+        return view('courses.attendance.report', compact('course', 'reportData', 'months', 'selectedMonth', 'monthlyStats', 'courseWarnings'));
     }
 
     public function generateWarnings(Course $course)

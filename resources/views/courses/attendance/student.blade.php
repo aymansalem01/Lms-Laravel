@@ -33,6 +33,43 @@
         </div>
     </div>
 
+    {{-- Month Filter --}}
+    <div class="flex items-center gap-3 mb-6">
+        <form method="GET" class="flex items-center gap-3">
+            <label class="text-sm text-gray-400">{{ __('Filter by month') }}</label>
+            <select name="month" onchange="this.form.submit()"
+                    class="bg-surface-700 border border-white/10 text-white rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-brand-500 transition-colors">
+                <option value="">{{ __('All time') }}</option>
+                @foreach($months as $ym)
+                    <option value="{{ $ym }}" {{ ($selectedMonth ?? '') === $ym ? 'selected' : '' }}>
+                        {{ \Carbon\Carbon::createFromFormat('Y-m', $ym)->format('F Y') }}
+                    </option>
+                @endforeach
+            </select>
+            @if($selectedMonth)
+                <a href="{{ route('courses.attendance.my', $course) }}" class="text-xs text-gray-400 hover:text-white transition-colors">{{ __('Clear') }}</a>
+            @endif
+        </form>
+    </div>
+
+    {{-- Monthly Stats Cards --}}
+    @if($months->isNotEmpty())
+        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3 mb-6">
+            @foreach($months as $ym)
+                @php $ms = $monthlyStats[$ym] ?? []; @endphp
+                <div class="bg-surface-800 border border-white/10 rounded-xl p-3 text-center {{ $selectedMonth === $ym ? 'ring-2 ring-brand-500' : '' }}">
+                    <p class="text-xs text-gray-500 mb-1">{{ \Carbon\Carbon::createFromFormat('Y-m', $ym)->format('M') }}</p>
+                    <p class="text-lg font-bold {{ ($ms['attendanceRate'] ?? 100) < 80 ? 'text-red-400' : 'text-green-400' }}">{{ $ms['attendanceRate'] ?? 0 }}%</p>
+                    <div class="text-[10px] text-gray-500 mt-0.5">
+                        <span class="text-green-400">{{ $ms['present'] ?? 0 }}</span>/
+                        <span class="text-red-400">{{ $ms['absent'] ?? 0 }}</span>
+                        @if(($ms['late'] ?? 0) > 0) <span class="text-yellow-400">L{{ $ms['late'] }}</span>@endif
+                    </div>
+                </div>
+            @endforeach
+        </div>
+    @endif
+
     {{-- Warnings --}}
     @if($warnings->isNotEmpty())
         <div class="space-y-2 mb-6">

@@ -59,26 +59,26 @@
             <p class="text-sm text-gray-500 mb-4">{{ $course->description }}</p>
         @endif
 
-        <div class="grid grid-cols-5 gap-4 pt-4 border-t border-white/10">
-            <div class="text-center">
-                <p class="text-2xl font-bold text-white">{{ $course->modules_count ?? $course->modules->count() }}</p>
-                <p class="text-xs text-gray-500 mt-1">Modules</p>
+        <div class="flex flex-wrap gap-x-10 gap-y-2 pt-4 border-t border-white/10">
+            <div class="flex items-center gap-2">
+                <span class="text-2xl font-bold text-white">{{ $course->modules_count ?? $course->modules->count() }}</span>
+                <span class="text-xs text-gray-500">Modules</span>
             </div>
-            <div class="text-center">
-                <p class="text-2xl font-bold text-white">{{ $course->enrollments_count ?? $course->enrollments->count() }}</p>
-                <p class="text-xs text-gray-500 mt-1">Enrolled</p>
+            <div class="flex items-center gap-2">
+                <span class="text-2xl font-bold text-white">{{ $course->enrollments_count ?? $course->enrollments->count() }}</span>
+                <span class="text-xs text-gray-500">Enrolled</span>
             </div>
-            <div class="text-center">
-                <p class="text-2xl font-bold text-white">{{ $course->assignments_count ?? $assignments->count() }}</p>
-                <p class="text-xs text-gray-500 mt-1">Assignments</p>
+            <div class="flex items-center gap-2">
+                <span class="text-2xl font-bold text-white">{{ $course->assignments_count ?? $assignments->count() }}</span>
+                <span class="text-xs text-gray-500">Assignments</span>
             </div>
-            <div class="text-center">
-                <p class="text-2xl font-bold text-white">{{ $course->quizzes_count ?? $quizzes->count() }}</p>
-                <p class="text-xs text-gray-500 mt-1">Quizzes</p>
+            <div class="flex items-center gap-2">
+                <span class="text-2xl font-bold text-white">{{ $course->quizzes_count ?? $quizzes->count() }}</span>
+                <span class="text-xs text-gray-500">Quizzes</span>
             </div>
-            <div class="text-center">
-                <p class="text-2xl font-bold text-white">{{ $totalSubmissions ?? 0 }}</p>
-                <p class="text-xs text-gray-500 mt-1">Submissions</p>
+            <div class="flex items-center gap-2">
+                <span class="text-2xl font-bold text-white">{{ $totalSubmissions ?? 0 }}</span>
+                <span class="text-xs text-gray-500">Submissions</span>
             </div>
         </div>
 
@@ -141,7 +141,7 @@
     {{-- Tab content --}}
     @switch($activeTab)
         @case('overview')
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
                 <div class="bg-surface-800 border border-white/10 rounded-xl p-6">
                     <h3 class="text-sm font-semibold text-white mb-4">Enrolled Students ({{ $course->enrollments->count() }})</h3>
                     <div class="space-y-2">
@@ -186,7 +186,7 @@
 
                 <div class="bg-surface-800 border border-white/10 rounded-xl p-6">
                     <h3 class="text-sm font-semibold text-white mb-4">Quick Stats</h3>
-                    <div class="grid grid-cols-2 gap-4">
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
                         <div class="bg-surface-700/50 rounded-lg p-4 text-center">
                             <p class="text-lg font-bold text-white">{{ $course->modules_count ?? $modules->count() }}</p>
                             <p class="text-xs text-gray-500 mt-1">Modules</p>

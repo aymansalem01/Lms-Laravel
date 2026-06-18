@@ -20,6 +20,25 @@
         </div>
     </div>
 
+    {{-- Month Filter --}}
+    <div class="flex items-center gap-3 mb-6">
+        <form method="GET" class="flex items-center gap-3">
+            <label class="text-sm text-gray-400">{{ __('Filter by month') }}</label>
+            <select name="month" onchange="this.form.submit()"
+                    class="bg-surface-700 border border-white/10 text-white rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-brand-500 transition-colors">
+                <option value="">{{ __('All time') }}</option>
+                @foreach($months as $ym)
+                    <option value="{{ $ym }}" {{ $selectedMonth === $ym ? 'selected' : '' }}>
+                        {{ \Carbon\Carbon::createFromFormat('Y-m', $ym)->format('F Y') }}
+                    </option>
+                @endforeach
+            </select>
+            @if($selectedMonth)
+                <a href="{{ route('courses.attendance.report', $course) }}" class="text-xs text-gray-400 hover:text-white transition-colors">{{ __('Clear') }}</a>
+            @endif
+        </form>
+    </div>
+
     {{-- Student Attendance Table --}}
     <div class="bg-surface-800 border border-white/10 rounded-xl overflow-hidden mb-6">
         <div class="overflow-x-auto">
@@ -80,6 +99,52 @@
             </table>
         </div>
     </div>
+
+    {{-- Monthly Breakdown --}}
+    @if($months->isNotEmpty())
+        <div class="bg-surface-800 border border-white/10 rounded-xl overflow-hidden mb-6">
+            <div class="px-5 py-4 border-b border-white/10">
+                <h3 class="text-sm font-semibold text-white">{{ __('Monthly Breakdown') }}</h3>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                    <thead>
+                        <tr class="border-b border-white/10 bg-surface-700/50">
+                            <th class="text-left px-4 py-3 text-gray-400 font-medium">{{ __('Student') }}</th>
+                            @foreach($months as $ym)
+                                <th class="text-center px-2 py-3 text-gray-400 font-medium text-xs">{{ \Carbon\Carbon::createFromFormat('Y-m', $ym)->format('M Y') }}</th>
+                            @endforeach
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-white/5">
+                        @foreach($reportData as $row)
+                            @php $ms = $monthlyStats[$row['id']]['months'] ?? []; @endphp
+                            <tr class="hover:bg-surface-700/30 transition-colors">
+                                <td class="px-4 py-3 text-white font-medium text-xs">{{ $row['name'] }}</td>
+                                @foreach($months as $ym)
+                                    @php $m = $ms[$ym] ?? ['total' => 0, 'present' => 0, 'absent' => 0, 'late' => 0, 'excused' => 0, 'attendanceRate' => 0]; @endphp
+                                    <td class="text-center px-2 py-3">
+                                        @if($m['total'] > 0)
+                                            <div class="text-xs">
+                                                <span class="text-green-400 font-medium">{{ $m['present'] }}</span>
+                                                <span class="text-gray-600">/</span>
+                                                <span class="text-red-400">{{ $m['absent'] }}</span>
+                                                @if($m['late'] > 0)<span class="text-gray-500"> L{{ $m['late'] }}</span>@endif
+                                                @if($m['excused'] > 0)<span class="text-gray-500"> E{{ $m['excused'] }}</span>@endif
+                                            </div>
+                                            <div class="text-[10px] {{ $m['attendanceRate'] < 80 ? 'text-red-400' : 'text-green-400' }}">{{ $m['attendanceRate'] }}%</div>
+                                        @else
+                                            <span class="text-gray-600 text-xs">—</span>
+                                        @endif
+                                    </td>
+                                @endforeach
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    @endif
 
     {{-- Issued Warnings Log --}}
     @if($courseWarnings->isNotEmpty())
