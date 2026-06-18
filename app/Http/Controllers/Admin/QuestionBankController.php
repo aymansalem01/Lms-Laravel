@@ -135,6 +135,46 @@ class QuestionBankController extends Controller
             ->with('success', 'Bank updated.');
     }
 
+    public function editItem(QuestionBank $questionBank, QuestionBankItem $questionBankItem)
+    {
+        abort_if($questionBankItem->question_bank_id !== $questionBank->id, 404);
+        $questionBankItem->load('bank');
+        return view('admin.question-bank.item-edit', compact('questionBank', 'questionBankItem'));
+    }
+
+    public function updateItem(Request $request, QuestionBank $questionBank, QuestionBankItem $questionBankItem)
+    {
+        abort_if($questionBankItem->question_bank_id !== $questionBank->id, 404);
+
+        $data = $request->validate([
+            'type'             => 'required|in:multiple_choice,true_false,short_answer,long_answer',
+            'question'         => 'required|string',
+            'options'          => 'nullable|array',
+            'options.*'        => 'nullable|string',
+            'correct_answer'   => 'nullable|string',
+            'points'           => 'required|integer|min:1',
+        ]);
+
+        $questionBankItem->update([
+            'type'             => $data['type'],
+            'question'         => $data['question'],
+            'options'          => $data['type'] === 'multiple_choice' ? array_values(array_filter($data['options'] ?? [])) : null,
+            'correct_answer'   => $data['correct_answer'],
+            'points'           => $data['points'],
+        ]);
+
+        return redirect()->route('admin.question-bank.show', $questionBank)
+            ->with('success', 'Question updated.');
+    }
+
+    public function destroyItem(QuestionBank $questionBank, QuestionBankItem $questionBankItem)
+    {
+        abort_if($questionBankItem->question_bank_id !== $questionBank->id, 404);
+        $questionBankItem->delete();
+        return redirect()->route('admin.question-bank.show', $questionBank)
+            ->with('success', 'Question removed.');
+    }
+
     public function destroy(QuestionBank $questionBank)
     {
         $questionBank->delete();

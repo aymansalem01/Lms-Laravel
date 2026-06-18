@@ -319,6 +319,46 @@ class QuestionBankController extends Controller
         return new \Symfony\Component\HttpFoundation\StreamedResponse($callback, 200, $headers);
     }
 
+    public function editItem(QuestionBankItem $questionBankItem)
+    {
+        if (!auth()->user()->isInstructorOrAdmin()) { abort(403); }
+        $questionBankItem->load('bank');
+        return view('question-bank.edit', ['questionBankItem' => $questionBankItem, 'course' => $questionBankItem->bank->courses->first()]);
+    }
+
+    public function updateItem(Request $request, QuestionBankItem $questionBankItem)
+    {
+        if (!auth()->user()->isInstructorOrAdmin()) { abort(403); }
+
+        $data = $request->validate([
+            'type'             => 'required|in:multiple_choice,true_false,short_answer,long_answer',
+            'question'         => 'required|string',
+            'options'          => 'nullable|array',
+            'options.*'        => 'nullable|string',
+            'correct_answer'   => 'nullable|string',
+            'points'           => 'required|integer|min:1',
+        ]);
+
+        $questionBankItem->update([
+            'type'             => $data['type'],
+            'question'         => $data['question'],
+            'options'          => $data['type'] === 'multiple_choice' ? array_values(array_filter($data['options'] ?? [])) : null,
+            'correct_answer'   => $data['correct_answer'],
+            'points'           => $data['points'],
+        ]);
+
+        return redirect()->route('question-bank.index')
+            ->with('success', 'Question updated.');
+    }
+
+    public function destroyItem(QuestionBankItem $questionBankItem)
+    {
+        if (!auth()->user()->isInstructorOrAdmin()) { abort(403); }
+        $questionBankItem->delete();
+        return redirect()->route('question-bank.index')
+            ->with('success', 'Question removed from bank.');
+    }
+
     public function destroy(Course $course, QuestionBankItem $questionBankItem)
     {
         if (!auth()->user()->isInstructorOrAdmin()) { abort(403); }

@@ -95,6 +95,7 @@
                                     <th class="text-left px-5 py-3 text-[11px] font-semibold uppercase tracking-wider text-gray-500">{{ __('Question') }}</th>
                                     <th class="text-center px-5 py-3 text-[11px] font-semibold uppercase tracking-wider text-gray-500">{{ __('Points') }}</th>
                                     <th class="text-right px-5 py-3 text-[11px] font-semibold uppercase tracking-wider text-gray-500">{{ __('Course') }}</th>
+                                    <th class="text-right px-5 py-3 text-[11px] font-semibold uppercase tracking-wider text-gray-500">{{ __('Actions') }}</th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-white/5">
@@ -112,6 +113,15 @@
                                         <td class="px-5 py-3.5 text-sm text-gray-300 max-w-md truncate">{{ $item->question }}</td>
                                         <td class="px-5 py-3.5 text-center text-sm text-gray-400">{{ $item->points }}</td>
                                         <td class="px-5 py-3.5 text-right text-sm text-gray-500">{{ $bank->courses->pluck('title')->implode(', ') ?: ($bank->is_visible_to_all ? __('All') : '—') }}</td>
+                                        <td class="px-5 py-3.5 text-right">
+                                            <div class="flex items-center justify-end gap-2">
+                                                <a href="{{ route('question-bank.edit-item', $item) }}" class="text-xs text-gray-400 hover:text-white px-2 py-1 rounded hover:bg-surface-600 transition-colors">{{ __('Edit') }}</a>
+                                                <form method="POST" action="{{ route('question-bank.destroy-item', $item) }}" class="inline" onsubmit="return confirm('{{ __('Delete this question?') }}')">
+                                                    @csrf @method('DELETE')
+                                                    <button type="submit" class="text-xs text-red-400 hover:text-red-300 px-2 py-1 rounded hover:bg-red-500/10 transition-colors">{{ __('Delete') }}</button>
+                                                </form>
+                                            </div>
+                                        </td>
                                     </tr>
                                 @endforeach
                             </tbody>

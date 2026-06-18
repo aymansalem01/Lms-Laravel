@@ -5,8 +5,10 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Assignment;
 use App\Models\Course;
+use App\Models\Grade;
 use App\Models\Submission;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class GradingController extends Controller
 {
@@ -69,5 +71,33 @@ class GradingController extends Controller
         ];
 
         return view('admin.grading.submissions', compact('course', 'assignment', 'submissions', 'stats'));
+    }
+
+    public function grade(Request $request, Course $course, Assignment $assignment, Submission $submission)
+    {
+        if ($assignment->course_id !== $course->id || $submission->assignment_id !== $assignment->id) {
+            abort(404);
+        }
+
+        $data = $request->validate([
+            'score'    => 'required|numeric|min:0|max:' . ($assignment->max_score ?? 100),
+            'feedback' => 'nullable|string|max:5000',
+        ]);
+
+        DB::transaction(function () use ($data, $submission, $assignment) {
+            Grade::updateOrCreate(
+                ['submission_id' => $submission->id],
+                [
+                    'score'       => $data['score'],
+                    'feedback'    => $data['feedback'] ?? null,
+                    'instructor_id' => auth()->id(),
+                    'graded_at'   => now(),
+                ]
+            );
+
+            $submission->update(['status' => 'graded']);
+        });
+
+        return back()->with('success', 'Grade saved for ' . ($submission->student?->name ?? 'student') . '.');
     }
 }

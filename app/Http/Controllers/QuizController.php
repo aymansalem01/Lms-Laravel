@@ -375,10 +375,11 @@ class QuizController extends Controller
         }
 
         $totalManual = array_sum($manualScores);
-        $autoScore = (float) $attempt->score;
+        $previousManual = array_sum($attempt->manual_scores ?? []);
+        $autoScore = (float) $attempt->score - $previousManual;
         $attempt->update([
             'manual_scores' => $manualScores,
-            'score' => $autoScore + $totalManual,
+            'score' => max(0, $autoScore) + $totalManual,
         ]);
 
         return redirect()->route('courses.quizzes.review', [$course, $quiz])

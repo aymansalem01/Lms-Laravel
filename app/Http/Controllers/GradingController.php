@@ -6,6 +6,8 @@ use App\Mail\GradeReleased;
 use App\Models\Assignment;
 use App\Models\Course;
 use App\Models\Grade;
+use App\Models\Quiz;
+use App\Models\QuizAttempt;
 use App\Models\Submission;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -32,6 +34,10 @@ class GradingController extends Controller
                 'assignments as graded_submissions_count' => function ($q) {
                     $q->whereHas('submissions', fn($sq) => $sq->where('status', 'graded'));
                 },
+                'quizzes',
+                'quizzes as quiz_attempts_count' => function ($q) {
+                    $q->whereHas('attempts');
+                },
             ])
             ->orderBy('title')
             ->get();
@@ -53,6 +59,38 @@ class GradingController extends Controller
             ->get();
 
         return view('grading.assignments', compact('course', 'assignments'));
+    }
+
+    public function quizzes(Course $course)
+    {
+        if (!auth()->user()->isInstructorOrAdmin()) { abort(403); }
+        if (auth()->user()->isInstructor() && $course->instructor_id !== auth()->id()) { abort(403); }
+
+        $quizzes = $course->quizzes()
+            ->withCount([
+                'attempts',
+                'attempts as graded_count' => fn($q) => $q->whereNotNull('score'),
+            ])
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        return view('grading.quizzes', compact('course', 'quizzes'));
+    }
+
+    public function quizStudents(Course $course, Quiz $quiz)
+    {
+        if (!auth()->user()->isInstructorOrAdmin()) { abort(403); }
+        if (auth()->user()->isInstructor() && $course->instructor_id !== auth()->id()) { abort(403); }
+        if ($quiz->course_id !== $course->id) { abort(404); }
+
+        $students = $course->students()
+            ->with(['quizAttempts' => function ($q) use ($quiz) {
+                $q->where('quiz_id', $quiz->id);
+            }])
+            ->orderBy('name')
+            ->get();
+
+        return view('grading.quiz-students', compact('course', 'quiz', 'students'));
     }
 
     public function students(Course $course, Assignment $assignment)

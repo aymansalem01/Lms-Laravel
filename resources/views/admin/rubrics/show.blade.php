@@ -15,7 +15,7 @@
                 <div class="flex items-start justify-between mb-4">
                     <div>
                         <h2 class="text-xl font-bold text-white">{{ $rubric->title }}</h2>
-                        <p class="text-sm text-gray-400 mt-1">{{ $rubric->course->title ?? '—' }}</p>
+                        <p class="text-sm text-gray-400 mt-1">{{ $rubric->course?->title ?? '—' }}</p>
                     </div>
                     <div class="flex gap-2">
                         <a href="{{ route('admin.rubrics.edit', $rubric) }}" class="text-xs text-gray-400 hover:text-white px-3 py-1.5 rounded-lg hover:bg-surface-700 transition-colors border border-white/10">Edit</a>
@@ -62,8 +62,8 @@
         <div class="space-y-4">
             <div class="bg-surface-800 border border-white/10 rounded-xl p-5">
                 <h4 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">Course</h4>
-                <p class="text-white text-sm">{{ $rubric->course->title ?? '—' }}</p>
-                <p class="text-gray-500 text-xs mt-1">{{ $rubric->course->instructor->name ?? '—' }}</p>
+                <p class="text-white text-sm">{{ $rubric->course?->title ?? '—' }}</p>
+                <p class="text-gray-500 text-xs mt-1">{{ $rubric->course?->instructor?->name ?? '—' }}</p>
             </div>
 
             <div class="bg-surface-800 border border-white/10 rounded-xl p-5">

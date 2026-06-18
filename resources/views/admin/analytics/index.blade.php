@@ -86,30 +86,38 @@
     <div class="bg-surface-800 border border-white/10 rounded-xl p-6 mb-8">
         <h3 class="text-white font-semibold mb-4">Monthly Signups ({{ date('Y') }})</h3>
         @php $maxSignups = max($signupsByMonth) ?: 1; @endphp
-        <div class="flex items-end gap-2 h-40">
-            @foreach($signupsByMonth as $month => $count)
-                <div class="flex-1 flex flex-col items-center gap-2">
-                    <span class="text-xs text-gray-400 font-medium">{{ $count }}</span>
-                    <div class="w-full rounded-t-lg bg-brand-500 transition-all" style="height: {{ ($count / $maxSignups) * 120 }}px"></div>
-                    <span class="text-[11px] text-gray-500">{{ $monthNames[$month] ?? $month }}</span>
+        @forelse($signupsByMonth as $month => $count)
+            <div class="mb-2">
+                <div class="flex items-center justify-between text-sm mb-1">
+                    <span class="text-gray-300 text-xs">{{ $monthNames[$month] ?? $month }}</span>
+                    <span class="text-gray-500 text-xs">{{ $count }}</span>
                 </div>
-            @endforeach
-        </div>
+                <div class="w-full h-2 bg-surface-700 rounded-full overflow-hidden">
+                    <div class="h-full rounded-full bg-gradient-to-r from-brand-500 to-coral-500 transition-all" style="width: {{ ($count / $maxSignups) * 100 }}%"></div>
+                </div>
+            </div>
+        @empty
+            <p class="text-gray-500 text-sm">No signup data available.</p>
+        @endforelse
     </div>
 
     {{-- Monthly Submissions Chart --}}
     <div class="bg-surface-800 border border-white/10 rounded-xl p-6 mb-8">
         <h3 class="text-white font-semibold mb-4">Monthly Submissions ({{ date('Y') }})</h3>
         @php $maxSubmissions = max($submissionsByMonth) ?: 1; @endphp
-        <div class="flex items-end gap-2 h-40">
-            @foreach($submissionsByMonth as $month => $count)
-                <div class="flex-1 flex flex-col items-center gap-2">
-                    <span class="text-xs text-gray-400 font-medium">{{ $count }}</span>
-                    <div class="w-full rounded-t-lg bg-coral-400 transition-all" style="height: {{ ($count / $maxSubmissions) * 120 }}px"></div>
-                    <span class="text-[11px] text-gray-500">{{ $monthNames[$month] ?? $month }}</span>
+        @forelse($submissionsByMonth as $month => $count)
+            <div class="mb-2">
+                <div class="flex items-center justify-between text-sm mb-1">
+                    <span class="text-gray-300 text-xs">{{ $monthNames[$month] ?? $month }}</span>
+                    <span class="text-gray-500 text-xs">{{ $count }}</span>
                 </div>
-            @endforeach
-        </div>
+                <div class="w-full h-2 bg-surface-700 rounded-full overflow-hidden">
+                    <div class="h-full rounded-full bg-gradient-to-r from-coral-400 to-amber-400 transition-all" style="width: {{ ($count / $maxSubmissions) * 100 }}%"></div>
+                </div>
+            </div>
+        @empty
+            <p class="text-gray-500 text-sm">No submission data available.</p>
+        @endforelse
     </div>
 
     {{-- Recent Activity --}}

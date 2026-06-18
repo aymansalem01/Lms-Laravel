@@ -90,13 +90,40 @@
                                     <span class="text-gray-600">—</span>
                                 @endif
                             </td>
-                            <td class="px-4 py-3 text-gray-400 text-sm">{{ $submission->grade->instructor->name ?? '—' }}</td>
+                            <td class="px-4 py-3 text-gray-400 text-sm">{{ $submission->grade?->instructor?->name ?? '—' }}</td>
                             <td class="px-4 py-3 text-right">
-                                <a href="{{ route('admin.submissions.show', $submission) }}"
-                                   class="text-xs text-gray-400 hover:text-white px-3 py-1.5 rounded-lg hover:bg-surface-600 transition-colors inline-flex items-center gap-1">
-                                    Grade
-                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
-                                </a>
+                                <div class="flex items-center justify-end gap-2" x-data="{ grading: false, score: '{{ $submission->grade->score ?? '' }}', feedback: '{{ $submission->grade->feedback ?? '' }}' }">
+                                    <button @click="grading = true"
+                                       class="text-xs text-gray-400 hover:text-white px-3 py-1.5 rounded-lg hover:bg-surface-600 transition-colors inline-flex items-center gap-1">
+                                        Grade
+                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                                    </button>
+                                    {{-- Inline Grade Modal --}}
+                                    <div x-show="grading" x-cloak class="fixed inset-0 z-50 flex items-center justify-center p-4">
+                                        <div class="fixed inset-0 bg-black/60 backdrop-blur-sm" @click="grading = false"></div>
+                                        <div class="relative bg-surface-800 border border-white/10 rounded-xl p-6 w-full max-w-lg shadow-2xl">
+                                            <h3 class="text-lg font-semibold text-white mb-1">Grade Submission</h3>
+                                            <p class="text-sm text-gray-400 mb-4">{{ $submission->student?->name }} &mdash; {{ $assignment->title }}</p>
+                                            <form method="POST" action="{{ route('admin.grading.grade', [$course, $assignment, $submission]) }}">
+                                                @csrf
+                                                <div class="mb-4">
+                                                    <label class="block text-sm font-medium text-gray-300 mb-1.5">Score (max: {{ $assignment->max_score ?? 100 }})</label>
+                                                    <input type="number" name="score" x-model="score" min="0" :max="{{ $assignment->max_score ?? 100 }}" step="0.5"
+                                                           class="input-dashboard w-full" required>
+                                                </div>
+                                                <div class="mb-4">
+                                                    <label class="block text-sm font-medium text-gray-300 mb-1.5">Feedback</label>
+                                                    <textarea name="feedback" x-model="feedback" rows="3"
+                                                              class="input-dashboard w-full resize-none"></textarea>
+                                                </div>
+                                                <div class="flex justify-end gap-3">
+                                                    <button type="button" @click="grading = false" class="text-sm text-gray-400 hover:text-white transition-colors px-4 py-2.5">Cancel</button>
+                                                    <button type="submit" class="bg-brand-600 hover:bg-brand-500 text-white rounded-xl px-6 py-2.5 text-sm font-medium transition-colors">Save Grade</button>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
                             </td>
                         </tr>
                     @empty

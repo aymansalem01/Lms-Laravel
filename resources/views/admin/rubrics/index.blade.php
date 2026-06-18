@@ -29,8 +29,8 @@
                             <td class="px-4 py-3">
                                 <a href="{{ route('admin.rubrics.show', $rubric) }}" class="text-white font-medium hover:text-brand-300 transition-colors">{{ $rubric->title }}</a>
                             </td>
-                            <td class="px-4 py-3 text-gray-400">{{ $rubric->course->title ?? '—' }}</td>
-                            <td class="px-4 py-3 text-gray-400">{{ $rubric->course->instructor->name ?? '—' }}</td>
+                            <td class="px-4 py-3 text-gray-400">{{ $rubric->course?->title ?? '—' }}</td>
+                            <td class="px-4 py-3 text-gray-400">{{ $rubric->course?->instructor?->name ?? '—' }}</td>
                             <td class="px-4 py-3 text-center text-gray-400">{{ $rubric->assignments_count ?? 0 }}</td>
                             <td class="px-4 py-3 text-gray-400">{{ $rubric->created_at->format('M d, Y') }}</td>
                             <td class="px-4 py-3 text-right">

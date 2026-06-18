@@ -35,8 +35,14 @@
                 {{-- Assigned Courses --}}
                 <div class="mt-4 pt-4 border-t border-white/10">
                     <div class="flex items-center justify-between mb-2">
-                        <span class="text-xs text-gray-500 font-medium uppercase tracking-wider">Courses</span>
-                        <button @click="$dispatch('assign-course', { programId: {{ $program->id }} })" class="text-xs text-brand-400 hover:text-brand-300 transition-colors">Assign</button>
+                        <div class="flex items-center gap-2">
+                            <span class="text-xs text-gray-500 font-medium uppercase tracking-wider">Courses</span>
+                            <span class="text-[11px] font-medium px-1.5 py-0.5 rounded-full bg-brand-500/10 text-brand-400">{{ $program->courses_count ?? $program->courses->count() }}</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <a href="{{ route('admin.programs.show', $program) }}" class="text-xs text-gray-400 hover:text-white transition-colors">View all</a>
+                            <button @click="$dispatch('assign-course', { programId: {{ $program->id }} })" class="text-xs text-brand-400 hover:text-brand-300 transition-colors">Assign</button>
+                        </div>
                     </div>
                     @forelse($program->courses->take(3) as $course)
                         <div class="flex items-center justify-between py-1.5">
@@ -50,7 +56,7 @@
                         <p class="text-sm text-gray-600">No courses assigned.</p>
                     @endforelse
                     @if($program->courses->count() > 3)
-                        <p class="text-xs text-gray-500 mt-1">+{{ $program->courses->count() - 3 }} more</p>
+                        <a href="{{ route('admin.programs.show', $program) }}" class="text-xs text-brand-400/70 hover:text-brand-300 mt-1 inline-block">+{{ $program->courses->count() - 3 }} more</a>
                     @endif
                 </div>
             </div>

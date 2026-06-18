@@ -39,6 +39,13 @@ class RubricController extends Controller
         return view('admin.rubrics.show', compact('rubric'));
     }
 
+    public function edit(Rubric $rubric)
+    {
+        $rubric->load('course');
+        $courses = Course::orderBy('title')->get(['id', 'title']);
+        return view('admin.rubrics.edit', compact('rubric', 'courses'));
+    }
+
     public function store(Request $request)
     {
         $data = $request->validate([

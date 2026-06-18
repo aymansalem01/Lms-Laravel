@@ -47,6 +47,7 @@
                     <th class="text-left px-5 py-3 text-[11px] font-semibold uppercase tracking-wider text-gray-500">Question</th>
                     <th class="text-center px-5 py-3 text-[11px] font-semibold uppercase tracking-wider text-gray-500">Points</th>
                     <th class="text-right px-5 py-3 text-[11px] font-semibold uppercase tracking-wider text-gray-500">Added By</th>
+                    <th class="text-right px-5 py-3 text-[11px] font-semibold uppercase tracking-wider text-gray-500">Actions</th>
                 </tr>
             </thead>
             <tbody class="divide-y divide-white/5">
@@ -64,10 +65,19 @@
                         <td class="px-5 py-3.5 text-sm text-gray-300 max-w-md truncate">{{ $item->question }}</td>
                         <td class="px-5 py-3.5 text-center text-sm text-gray-400">{{ $item->points }}</td>
                         <td class="px-5 py-3.5 text-right text-sm text-gray-500">{{ $item->user?->name ?? 'Unknown' }}</td>
+                        <td class="px-5 py-3.5 text-right">
+                            <div class="flex items-center justify-end gap-2">
+                                <a href="{{ route('admin.question-bank.items.edit', [$questionBank, $item]) }}" class="text-xs text-gray-400 hover:text-white px-2 py-1 rounded hover:bg-surface-600 transition-colors">Edit</a>
+                                <form method="POST" action="{{ route('admin.question-bank.items.destroy', [$questionBank, $item]) }}" class="inline" onsubmit="return confirm('Delete this question?')">
+                                    @csrf @method('DELETE')
+                                    <button type="submit" class="text-xs text-red-400 hover:text-red-300 px-2 py-1 rounded hover:bg-red-500/10 transition-colors">Delete</button>
+                                </form>
+                            </div>
+                        </td>
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="4" class="px-5 py-12 text-center">
+                        <td colspan="5" class="px-5 py-12 text-center">
                             <p class="text-gray-400 text-sm">No questions in this bank.</p>
                         </td>
                     </tr>

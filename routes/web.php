@@ -98,6 +98,8 @@ Route::post('/theme', [ViewController::class, 'theme'])->name('theme.switch');
     Route::middleware('role:instructor,admin')->group(function () {
     Route::get('/grading', [GradingController::class, 'index'])->name('grading.index');
     Route::get('/grading/courses/{course}/assignments', [GradingController::class, 'assignments'])->name('grading.assignments');
+    Route::get('/grading/courses/{course}/quizzes', [GradingController::class, 'quizzes'])->name('grading.quizzes');
+    Route::get('/grading/courses/{course}/quizzes/{quiz}/students', [GradingController::class, 'quizStudents'])->name('grading.quiz-students');
     Route::get('/grading/courses/{course}/assignments/{assignment}/students', [GradingController::class, 'students'])->name('grading.students');
     Route::get('/grading/courses/{course}/assignments/export', [GradingController::class, 'exportCourse'])->name('grading.export-course');
     Route::get('/grading/courses/{course}/assignments/{assignment}/export', [GradingController::class, 'exportAssignment'])->name('grading.export-assignment');
@@ -107,6 +109,9 @@ Route::post('/theme', [ViewController::class, 'theme'])->name('theme.switch');
         Route::get('/question-bank', [\App\Http\Controllers\QuestionBankController::class, 'globalIndex'])->name('question-bank.index');
         Route::post('/question-bank/{questionBank}/items', [\App\Http\Controllers\QuestionBankController::class, 'addItem'])->name('question-bank.add-item');
         Route::post('/question-bank/{questionBank}/import', [\App\Http\Controllers\QuestionBankController::class, 'importQuestions'])->name('question-bank.import');
+        Route::get('/question-bank/items/{questionBankItem}/edit', [\App\Http\Controllers\QuestionBankController::class, 'editItem'])->name('question-bank.edit-item');
+        Route::put('/question-bank/items/{questionBankItem}', [\App\Http\Controllers\QuestionBankController::class, 'updateItem'])->name('question-bank.update-item');
+        Route::delete('/question-bank/items/{questionBankItem}', [\App\Http\Controllers\QuestionBankController::class, 'destroyItem'])->name('question-bank.destroy-item');
         Route::get('/question-bank/import-example', [\App\Http\Controllers\QuestionBankController::class, 'downloadImportExample'])->name('question-bank.import-example');
         Route::post('/question-bank/bulk-import', [\App\Http\Controllers\QuestionBankController::class, 'bulkImportBanks'])->name('question-bank.bulk-import');
         Route::get('/question-bank/bulk-import-example', [\App\Http\Controllers\QuestionBankController::class, 'downloadBulkImportExample'])->name('question-bank.bulk-import-example');
@@ -310,6 +315,9 @@ Route::post('/theme', [ViewController::class, 'theme'])->name('theme.switch');
         Route::put('/question-bank/{questionBank}',             [\App\Http\Controllers\Admin\QuestionBankController::class, 'update'])->name('question-bank.update');
         Route::delete('/question-bank/{questionBank}',          [\App\Http\Controllers\Admin\QuestionBankController::class, 'destroy'])->name('question-bank.destroy');
         Route::post('/question-bank/{questionBank}/items', [\App\Http\Controllers\Admin\QuestionBankController::class, 'addItem'])->name('question-bank.add-item');
+        Route::get('/question-bank/{questionBank}/items/{questionBankItem}/edit', [\App\Http\Controllers\Admin\QuestionBankController::class, 'editItem'])->name('question-bank.items.edit');
+        Route::put('/question-bank/{questionBank}/items/{questionBankItem}', [\App\Http\Controllers\Admin\QuestionBankController::class, 'updateItem'])->name('question-bank.items.update');
+        Route::delete('/question-bank/{questionBank}/items/{questionBankItem}', [\App\Http\Controllers\Admin\QuestionBankController::class, 'destroyItem'])->name('question-bank.items.destroy');
         Route::post('/question-bank/{questionBank}/import', [\App\Http\Controllers\Admin\QuestionBankController::class, 'importQuestions'])->name('question-bank.import');
         Route::post('/question-bank/bulk-import', [\App\Http\Controllers\Admin\QuestionBankController::class, 'bulkImportBanks'])->name('question-bank.bulk-import');
 
@@ -359,10 +367,19 @@ Route::post('/theme', [ViewController::class, 'theme'])->name('theme.switch');
         Route::get('/announcements-export',                     [\App\Http\Controllers\Admin\AnnouncementController::class, 'export'])->name('announcements.export');
         Route::get('/announcements-export-example',              [\App\Http\Controllers\Admin\AnnouncementController::class, 'downloadExample'])->name('announcements.export-example');
 
+        // ── Rubrics ─────────────────────────────────────────────────────────────
+        Route::get('/rubrics',                                  [\App\Http\Controllers\Admin\RubricController::class, 'index'])->name('rubrics.index');
+        Route::post('/rubrics',                                 [\App\Http\Controllers\Admin\RubricController::class, 'store'])->name('rubrics.store');
+        Route::get('/rubrics/{rubric}',                         [\App\Http\Controllers\Admin\RubricController::class, 'show'])->name('rubrics.show');
+        Route::get('/rubrics/{rubric}/edit',                    [\App\Http\Controllers\Admin\RubricController::class, 'edit'])->name('rubrics.edit');
+        Route::put('/rubrics/{rubric}',                         [\App\Http\Controllers\Admin\RubricController::class, 'update'])->name('rubrics.update');
+        Route::delete('/rubrics/{rubric}',                      [\App\Http\Controllers\Admin\RubricController::class, 'destroy'])->name('rubrics.destroy');
+
         // ── Grading ────────────────────────────────────────────────────────────
         Route::get('/grading',                                  [\App\Http\Controllers\Admin\GradingController::class, 'index'])->name('grading.index');
         Route::get('/grading/{course}',                         [\App\Http\Controllers\Admin\GradingController::class, 'assignments'])->name('grading.assignments');
         Route::get('/grading/{course}/{assignment}',             [\App\Http\Controllers\Admin\GradingController::class, 'submissions'])->name('grading.submissions');
+        Route::post('/grading/{course}/{assignment}/{submission}', [\App\Http\Controllers\Admin\GradingController::class, 'grade'])->name('grading.grade');
 
         // ── Submissions ────────────────────────────────────────────────────────
         Route::get('/submissions',                              [\App\Http\Controllers\Admin\SubmissionController::class, 'index'])->name('submissions.index');
