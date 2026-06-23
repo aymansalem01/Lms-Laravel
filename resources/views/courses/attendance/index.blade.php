@@ -7,26 +7,23 @@
             <p class="text-gray-400 text-sm mt-1">{{ $course->title }}</p>
         </div>
         <div class="flex items-center gap-2">
-            <a href="{{ route('courses.attendance.export-example', $course) }}" class="inline-flex items-center gap-1.5 bg-surface-600 hover:bg-surface-500 text-gray-300 rounded-xl px-3 py-2 text-sm font-medium transition-colors">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-                Example CSV
-            </a>
-            <form method="POST" action="{{ route('courses.attendance.import', $course) }}" enctype="multipart/form-data" class="inline">
-                @csrf
-                <label class="inline-flex items-center gap-1.5 bg-surface-600 hover:bg-surface-500 text-gray-300 rounded-xl px-3 py-2 text-sm font-medium transition-colors cursor-pointer">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
-                    Import CSV
-                    <input type="file" name="csv_file" accept=".csv,.txt" class="hidden" onchange="this.form.submit()">
-                </label>
-            </form>
-            <a href="{{ route('courses.attendance.export', $course) }}" class="inline-flex items-center gap-1.5 bg-brand-600 hover:bg-brand-500 text-white rounded-xl px-3 py-2 text-sm font-medium transition-colors">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-                Export CSV
-            </a>
             <a href="{{ route('courses.show', $course) }}"
                class="text-sm text-brand-400 hover:text-brand-300 transition-colors">&larr; {{ __('Back to Course') }}</a>
         </div>
     </div>
+
+    @if(session('success'))
+        <div class="mb-4 px-4 py-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-sm">{{ session('success') }}</div>
+    @endif
+    @if($errors->any())
+        <div class="mb-4 px-4 py-3 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-sm">
+            <ul class="list-disc list-inside">
+                @foreach($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
 
     <div x-data="attendanceApp()" x-init="init()" class="space-y-6">
         <div class="bg-surface-800 border border-white/10 rounded-xl p-6">
@@ -37,7 +34,7 @@
                            class="w-full bg-surface-700 border border-white/10 text-white rounded-xl py-2.5 px-4 text-sm focus:outline-none focus:border-brand-500 transition-colors">
                 </div>
                 <div class="flex items-center gap-3">
-                    <span class="text-xs text-gray-500">{{ __('Total') }}: <span class="text-white font-medium" x-text="students.length"></span></span>
+                    <span class="text-xs text-gray-500">{{ __('Total') }}: <span class="text-white font-medium" x-text="sortedStudents.length"></span></span>
                     <span class="text-xs text-green-400">{{ __('Present') }}: <span x-text="presentCount"></span></span>
                     <span class="text-xs text-red-400">{{ __('Absent') }}: <span x-text="absentCount"></span></span>
                     <span class="text-xs text-yellow-400">{{ __('Late') }}: <span x-text="lateCount"></span></span>
@@ -51,7 +48,14 @@
                 <table class="w-full text-sm">
                     <thead>
                         <tr class="border-b border-white/10 bg-surface-700/50">
-                            <th class="text-left px-5 py-3 text-gray-400 font-medium">{{ __('Student') }}</th>
+                            <th class="text-left px-5 py-3 text-gray-400 font-medium cursor-pointer hover:text-white select-none" @click="sortBy = 'name'; sortAsc = !sortAsc">
+                                <span class="flex items-center gap-1">
+                                    {{ __('Student') }}
+                                    <template x-if="sortBy === 'name'">
+                                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"/></svg>
+                                    </template>
+                                </span>
+                            </th>
                             <th class="text-center px-4 py-3 text-gray-400 font-medium">{{ __('Present') }}</th>
                             <th class="text-center px-4 py-3 text-gray-400 font-medium">{{ __('Absent') }}</th>
                             <th class="text-center px-4 py-3 text-gray-400 font-medium">{{ __('Late') }}</th>
@@ -59,7 +63,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <template x-for="(student, index) in students" :key="student.id">
+                        <template x-for="(student, index) in sortedStudents" :key="student.id">
                             <tr class="border-b border-white/5 hover:bg-surface-700/30 transition-colors">
                                 <td class="px-5 py-3">
                                     <div class="flex items-center gap-3">
@@ -105,15 +109,9 @@
             </div>
         </div>
 
-        <form method="POST" :action="saveUrl" id="attendance-form" class="hidden">
+        <form method="POST" action="{{ route('courses.attendance.bulk', $course) }}" id="attendance-form" class="hidden">
             @csrf
-            <input type="hidden" name="date" :value="selectedDate">
-            <template x-for="(status, studentId) in attendance" :key="studentId">
-                <template x-if="status">
-                    <input type="hidden" :name="'attendance[' + studentId + '][student_id]'" :value="studentId">
-                    <input type="hidden" :name="'attendance[' + studentId + '][status]'" :value="status">
-                </template>
-            </template>
+            <input type="hidden" name="date">
         </form>
     </div>
 
@@ -125,27 +123,57 @@
                 records: {!! json_encode($records) !!},
                 selectedDate: new Date().toISOString().split('T')[0],
                 attendance: {},
-                saveUrl: '{{ route('courses.attendance.bulk', $course) }}',
+                sortBy: 'name',
+                sortAsc: true,
 
                 init() {
                     this.loadAttendance();
+                },
+
+                get sortedStudents() {
+                    let sorted = [...this.students];
+                    if (this.sortBy === 'name') {
+                        sorted.sort((a, b) => a.name.localeCompare(b.name));
+                    }
+                    return this.sortAsc ? sorted : sorted.reverse();
                 },
 
                 loadAttendance() {
                     this.attendance = {};
                     let dateRecords = this.records[this.selectedDate] || {};
                     this.students.forEach(s => {
-                        this.attendance[s.id] = dateRecords[s.id] || null;
+                        if (dateRecords[s.id]) {
+                            this.attendance[s.id] = dateRecords[s.id];
+                        }
                     });
                 },
 
                 saveAll() {
-                    document.getElementById('attendance-form').submit();
+                    let form = document.getElementById('attendance-form');
+                    form.querySelectorAll('.attendance-dynamic').forEach(el => el.remove());
+                    form.querySelector('[name="date"]').value = this.selectedDate;
+                    this.students.forEach(s => {
+                        if (this.attendance[s.id]) {
+                            let sInput = document.createElement('input');
+                            sInput.type = 'hidden';
+                            sInput.name = 'attendance[' + s.id + '][student_id]';
+                            sInput.value = s.id;
+                            sInput.classList.add('attendance-dynamic');
+                            form.appendChild(sInput);
+                            let stInput = document.createElement('input');
+                            stInput.type = 'hidden';
+                            stInput.name = 'attendance[' + s.id + '][status]';
+                            stInput.value = this.attendance[s.id];
+                            stInput.classList.add('attendance-dynamic');
+                            form.appendChild(stInput);
+                        }
+                    });
+                    form.submit();
                 },
 
                 clearAll() {
                     this.students.forEach(s => {
-                        this.attendance[s.id] = null;
+                        delete this.attendance[s.id];
                     });
                 },
 

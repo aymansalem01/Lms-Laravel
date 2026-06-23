@@ -8,6 +8,7 @@ use App\Models\Course;
 use App\Models\CourseAttendance;
 use App\Models\AttendanceWarning;
 use Illuminate\Http\Request;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class AttendanceController extends Controller
 {
@@ -195,6 +196,43 @@ class AttendanceController extends Controller
 
         return redirect()->route('courses.attendance.report', $course)
             ->with('success', "Warnings generated/updated for {$generated} entries.");
+    }
+
+    public function exportReport(Course $course, Request $request)
+    {
+        $selectedMonth = $request->input('month');
+        $students = $course->students()->orderBy('name')->get();
+
+        $headers = [
+            'Content-Type' => 'text/csv; charset=utf-8',
+            'Content-Disposition' => 'attachment; filename="attendance-report-' . str_replace(' ', '-', $course->title) . '-' . now()->format('Y-m-d') . '.csv"',
+        ];
+
+        $callback = function () use ($course, $students, $selectedMonth) {
+            $handle = fopen('php://output', 'w');
+            fwrite($handle, "\xEF\xBB\xBF");
+
+            fputcsv($handle, ['Student Name', 'Student Email', 'Total', 'Present', 'Absent', 'Late', 'Excused', 'Absence %', 'Attendance %']);
+
+            foreach ($students as $student) {
+                $stats = $this->attendanceStats($course, $student->id, $selectedMonth ?: null);
+                fputcsv($handle, [
+                    $student->name,
+                    $student->email,
+                    $stats['total'],
+                    $stats['present'],
+                    $stats['absent'],
+                    $stats['late'],
+                    $stats['excused'],
+                    $stats['absenceRate'] . '%',
+                    $stats['attendanceRate'] . '%',
+                ]);
+            }
+
+            fclose($handle);
+        };
+
+        return new StreamedResponse($callback, 200, $headers);
     }
 
     public function export(Course $course, Request $request)

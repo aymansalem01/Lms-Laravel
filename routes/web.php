@@ -247,6 +247,7 @@ Route::post('/theme', [ViewController::class, 'theme'])->name('theme.switch');
                 Route::get('/report', [\App\Http\Controllers\AttendanceController::class, 'report'])->name('report');
                 Route::post('/generate-warnings', [\App\Http\Controllers\AttendanceController::class, 'generateWarnings'])->name('warnings');
                 Route::get('/export', [\App\Http\Controllers\AttendanceController::class, 'export'])->name('export');
+                Route::get('/export-report', [\App\Http\Controllers\AttendanceController::class, 'exportReport'])->name('export-report');
                 Route::post('/import', [\App\Http\Controllers\AttendanceController::class, 'import'])->name('import');
                 Route::get('/export-example', [\App\Http\Controllers\AttendanceController::class, 'downloadExample'])->name('export-example');
             });

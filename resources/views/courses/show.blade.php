@@ -12,9 +12,9 @@
     {{-- Course header --}}
     <div class="bg-surface-800 border border-surface-700 rounded-xl overflow-hidden mb-6">
         <div class="md:flex">
-            @if($course->cover_image)
+            @if($course->cover_image_url)
                 <div class="md:w-80 h-48 md:h-auto shrink-0">
-                    <img src="{{ $course->cover_image }}" alt="{{ $course->title }}" class="w-full h-full object-cover">
+                    <img src="{{ $course->cover_image_url }}" alt="{{ $course->title }}" class="w-full h-full object-cover">
                 </div>
             @else
                 <div class="md:w-80 h-48 md:h-auto shrink-0 gb flex items-center justify-center">

@@ -16,6 +16,11 @@
             <a href="{{ route('courses.attendance.index', $course) }}" class="text-sm bg-brand-600 hover:bg-brand-500 text-white rounded-xl px-5 py-2.5 font-medium transition-colors">
                 {{ __('Manage Attendance') }}
             </a>
+            <a href="{{ route('courses.attendance.export-report', array_merge(['course' => $course->id], $selectedMonth ? ['month' => $selectedMonth] : [])) }}"
+               class="inline-flex items-center gap-1.5 bg-brand-600 hover:bg-brand-500 text-white rounded-xl px-3 py-2 text-sm font-medium transition-colors">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                Export CSV
+            </a>
             <a href="{{ route('courses.show', $course) }}" class="text-sm text-brand-400 hover:text-brand-300 transition-colors">&larr; {{ __('Back') }}</a>
         </div>
     </div>
