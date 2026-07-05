@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="{{ app()->getLocale() }}" dir="{{ app()->getLocale() === 'ar' ? 'rtl' : 'ltr' }}" class="{{ session('theme', auth()->user()?->theme ?? 'dark') }}">
 <head>
     <meta charset="UTF-8">
@@ -12,14 +12,22 @@
         body { font-family: {{ app()->getLocale() === 'ar' ? "'Cairo'" : "'Inter'" }}, sans-serif; }
         [x-cloak] { display: none !important; }
         dialog::backdrop { background: rgba(25, 25, 35, 0.92); }
-        .card-1 { --card-accent: #ff4d8d; }
-        .card-2 { --card-accent: #ff8a3d; }
-        .card-3 { --card-accent: #4e76ff; }
-        .card-4 { --card-accent: #ff4d8d; }
-        .card-5 { --card-accent: #ff8a3d; }
-        .card-6 { --card-accent: #4e76ff; }
-        .card-7 { --card-accent: #ff4d8d; }
-        [class*="card-"] { border-color: var(--card-accent) !important; background: color-mix(in srgb, var(--card-accent) 25%, #f0f0f0) !important; }
+        .card-1 { --card-accent: #ff4d8d; background: rgba(255, 77, 141, 0.3); }
+        .card-2 { --card-accent: #A6e22e; background: rgba(166, 226, 46, 0.3); }
+        .card-3 { --card-accent: #4e7bff; background: rgba(78, 123, 255, 0.3); }
+        .card-4 { --card-accent: #ffc83d; background: rgba(255, 200, 61, 0.3); }
+        .card-5 { --card-accent: #ff4d8d; background: rgba(255, 77, 141, 0.3); }
+        .card-6 { --card-accent: #A6e22e; background: rgba(166, 226, 46, 0.3); }
+        .card-7 { --card-accent: #4e7bff; background: rgba(78, 123, 255, 0.3); }
+        html:not(.light) .card-1 { background: rgba(255, 77, 141, 0.3) !important; }
+        html:not(.light) .card-2 { background: rgba(166, 226, 46, 0.3) !important; }
+        html:not(.light) .card-3 { background: rgba(78, 123, 255, 0.3) !important; }
+        html:not(.light) .card-4 { background: rgba(255, 200, 61, 0.3) !important; }
+        html:not(.light) .card-5 { background: rgba(255, 77, 141, 0.3) !important; }
+        html:not(.light) .card-6 { background: rgba(166, 226, 46, 0.3) !important; }
+        html:not(.light) .card-7 { background: rgba(78, 123, 255, 0.3) !important; }
+        html:not(.light) [class*="card-"] p, html:not(.light) [class*="card-"] svg { color: #000 !important; }
+        [class*="card-"] { border-color: var(--card-accent) !important; }
         [class*="card-"] .card-accent-bg { background: var(--card-accent) !important; }
         [class*="card-"] .card-accent-text { color: var(--card-accent) !important; }
         [class*="card-"] .card-accent-glow { box-shadow: 0 0 20px var(--card-accent); }
