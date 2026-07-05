@@ -151,23 +151,22 @@
             </div>
             <div class="flex-1 min-w-0">
                 <div class="relative flex justify-center" x-data="{ s: null }" x-init="s = $refs.s">
-                    <button @click="s.scrollBy({ left: -400, behavior: 'smooth' })"
-                            class="absolute -left-3 top-1/2 -translate-y-1/2 z-10 w-9 h-9 rounded-full bg-surface-800 border border-white/10 flex items-center justify-center text-white shadow-lg hover:bg-surface-700 transition-all backdrop-blur-sm opacity-0 pointer-events-none"
-                            :class="s && s.scrollWidth > s.clientWidth ? 'opacity-100 pointer-events-auto' : ''">
+                    <button x-show="s && s.scrollWidth > s.clientWidth" @click="s.scrollBy({ left: -400, behavior: 'smooth' })"
+                            class="absolute -left-3 top-1/2 -translate-y-1/2 z-10 w-9 h-9 rounded-full bg-surface-800 border border-white/10 flex items-center justify-center text-white shadow-lg hover:bg-surface-700 transition-all backdrop-blur-sm">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
                     </button>
-                    <div x-ref="s" class="flex gap-4 overflow-x-auto pb-2 scroll-smooth max-w-full">
+                    <div x-ref="s" class="flex gap-3 overflow-x-auto scroll-smooth max-w-full scrollbar-hide">
                         @forelse(($myCourses ?? collect())->take(6) as $course)
-                        <a href="{{ route('courses.show', $course) }}" class="shrink-0 w-[480px] group relative overflow-hidden rounded-2xl border border-white/10 card-hover p-6 flex items-center gap-5 shadow-lg shadow-black/20 bg-surface-800">
+                        <a href="{{ route('courses.show', $course) }}" class="shrink-0 w-[360px] group relative overflow-hidden rounded-2xl border border-white/10 card-hover p-4 flex items-center gap-3 shadow-lg shadow-black/20 bg-surface-800">
                             @if($course->cover_image_url)
-                                <div class="relative w-14 h-14 rounded-xl shrink-0 overflow-hidden bg-cover bg-center" style="background-image: url('{{ $course->cover_image_url }}')"></div>
+                                <div class="relative w-16 h-16 rounded-xl shrink-0 overflow-hidden bg-cover bg-center" style="background-image: url('{{ $course->cover_image_url }}')"></div>
                             @else
-                                <div class="relative w-14 h-14 rounded-xl flex items-center justify-center shrink-0" style="background: color-mix(in srgb, #FF3B77 35%, transparent);">
-                                    <svg class="w-6 h-6" style="color: #FF3B77" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
+                                <div class="relative w-16 h-16 rounded-xl flex items-center justify-center shrink-0" style="background: color-mix(in srgb, #FF3B77 35%, transparent);">
+                                    <svg class="w-7 h-7" style="color: #FF3B77" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
                                 </div>
                             @endif
                             <div class="relative flex-1 min-w-0">
-                                <p class="font-bold text-white text-base leading-snug line-clamp-1">{{ $course->title }}</p>
+                                <p class="font-bold text-white text-sm leading-snug line-clamp-1">{{ $course->title }}</p>
                                 <p class="text-[11px] font-mono text-gray-500 mt-0.5 uppercase tracking-wider">
                                     {{ $course->enrollments_count ?? 0 }} {{ __('students') }}
                                 </p>
@@ -186,9 +185,8 @@
                         </div>
                         @endforelse
                     </div>
-                    <button @click="s.scrollBy({ left: 400, behavior: 'smooth' })"
-                            class="absolute -right-3 top-1/2 -translate-y-1/2 z-10 w-9 h-9 rounded-full bg-surface-800 border border-white/10 flex items-center justify-center text-white shadow-lg hover:bg-surface-700 transition-all backdrop-blur-sm opacity-0 pointer-events-none"
-                            :class="s && s.scrollWidth > s.clientWidth ? 'opacity-100 pointer-events-auto' : ''">
+                    <button x-show="s && s.scrollWidth > s.clientWidth" @click="s.scrollBy({ left: 400, behavior: 'smooth' })"
+                            class="absolute -right-3 top-1/2 -translate-y-1/2 z-10 w-9 h-9 rounded-full bg-surface-800 border border-white/10 flex items-center justify-center text-white shadow-lg hover:bg-surface-700 transition-all backdrop-blur-sm">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
                     </button>
                 </div>
@@ -324,25 +322,24 @@
             </div>
             <div class="flex-1 min-w-0">
                 <div class="relative flex justify-center" x-data="{ s: null }" x-init="s = $refs.s">
-                    <button @click="s.scrollBy({ left: -400, behavior: 'smooth' })"
-                            class="absolute -left-3 top-1/2 -translate-y-1/2 z-10 w-9 h-9 rounded-full bg-surface-800 border border-white/10 flex items-center justify-center text-white shadow-lg hover:bg-surface-700 transition-all backdrop-blur-sm opacity-0 pointer-events-none"
-                            :class="s && s.scrollWidth > s.clientWidth ? 'opacity-100 pointer-events-auto' : ''">
+                    <button x-show="s && s.scrollWidth > s.clientWidth" @click="s.scrollBy({ left: -400, behavior: 'smooth' })"
+                            class="absolute -left-3 top-1/2 -translate-y-1/2 z-10 w-9 h-9 rounded-full bg-surface-800 border border-white/10 flex items-center justify-center text-white shadow-lg hover:bg-surface-700 transition-all backdrop-blur-sm">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
                     </button>
-                    <div x-ref="s" class="flex gap-4 overflow-x-auto pb-2 scroll-smooth max-w-full">
+                    <div x-ref="s" class="flex gap-3 overflow-x-auto scroll-smooth max-w-full scrollbar-hide">
                         @forelse(($enrolledCourses ?? collect()) as $course)
-                        <a href="{{ route('courses.show', $course) }}" class="shrink-0 w-80 group relative overflow-hidden rounded-2xl border border-white/10 card-hover shadow-lg shadow-black/20 bg-surface-800">
+                        <a href="{{ route('courses.show', $course) }}" class="shrink-0 w-60 group relative overflow-hidden rounded-2xl border border-white/10 card-hover shadow-lg shadow-black/20 bg-surface-800">
                             @if($course->cover_image_url)
-                                <div class="relative h-40 bg-cover bg-center" style="background-image: url('{{ $course->cover_image_url }}')"></div>
+                                <div class="relative h-32 bg-cover bg-center" style="background-image: url('{{ $course->cover_image_url }}')"></div>
                             @else
-                                <div class="relative h-40 flex items-center justify-center" style="background: color-mix(in srgb, #FF3B77 35%, transparent);">
+                                <div class="relative h-32 flex items-center justify-center" style="background: color-mix(in srgb, #FF3B77 35%, transparent);">
                                     <span class="text-3xl font-bold text-white/60">{{ strtoupper(substr($course->title, 0, 2)) }}</span>
                                 </div>
                             @endif
-                            <div class="relative p-5">
+                            <div class="relative p-4">
                                 <div class="flex items-start justify-between gap-2">
                                     <div>
-                                        <h3 class="font-bold text-white text-lg leading-snug">{{ $course->title }}</h3>
+                                        <h3 class="font-bold text-white text-sm leading-snug">{{ $course->title }}</h3>
                                         <p class="text-[11px] font-mono uppercase tracking-wider text-gray-500 mt-0.5">{{ $course->instructor->name ?? __('Instructor') }}</p>
                                     </div>
                                     @if($course->program)
@@ -361,9 +358,8 @@
                         </div>
                         @endforelse
                     </div>
-                    <button @click="s.scrollBy({ left: 400, behavior: 'smooth' })"
-                            class="absolute -right-3 top-1/2 -translate-y-1/2 z-10 w-9 h-9 rounded-full bg-surface-800 border border-white/10 flex items-center justify-center text-white shadow-lg hover:bg-surface-700 transition-all backdrop-blur-sm opacity-0 pointer-events-none"
-                            :class="s && s.scrollWidth > s.clientWidth ? 'opacity-100 pointer-events-auto' : ''">
+                    <button x-show="s && s.scrollWidth > s.clientWidth" @click="s.scrollBy({ left: 400, behavior: 'smooth' })"
+                            class="absolute -right-3 top-1/2 -translate-y-1/2 z-10 w-9 h-9 rounded-full bg-surface-800 border border-white/10 flex items-center justify-center text-white shadow-lg hover:bg-surface-700 transition-all backdrop-blur-sm">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
                     </button>
                 </div>
