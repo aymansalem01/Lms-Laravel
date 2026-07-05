@@ -151,13 +151,13 @@
             </div>
             <div class="flex-1 min-w-0">
                 <div class="relative flex justify-center" x-data="{ s: null }" x-init="s = $refs.s">
-                    <button x-show="s && s.scrollWidth > s.clientWidth" @click="s.scrollBy({ left: -400, behavior: 'smooth' })"
+                    <button @click="s.scrollBy({ left: -400, behavior: 'smooth' })"
                             class="absolute -left-3 top-1/2 -translate-y-1/2 z-10 w-9 h-9 rounded-full bg-surface-800 border border-white/10 flex items-center justify-center text-white shadow-lg hover:bg-surface-700 transition-all backdrop-blur-sm">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
                     </button>
                     <div x-ref="s" class="flex gap-3 overflow-x-auto scroll-smooth max-w-full scrollbar-hide">
                         @forelse(($myCourses ?? collect())->take(6) as $course)
-                        <a href="{{ route('courses.show', $course) }}" class="shrink-0 w-[360px] group relative overflow-hidden rounded-2xl border border-white/10 card-hover p-4 flex items-center gap-3 shadow-lg shadow-black/20 bg-surface-800">
+                        <a href="{{ route('courses.show', $course) }}" class="shrink-0 w-[400px] group relative overflow-hidden rounded-2xl border border-white/10 card-hover p-4 flex items-center gap-3 shadow-lg shadow-black/20 bg-surface-800">
                             @if($course->cover_image_url)
                                 <div class="relative w-16 h-16 rounded-xl shrink-0 overflow-hidden bg-cover bg-center" style="background-image: url('{{ $course->cover_image_url }}')"></div>
                             @else
@@ -185,7 +185,7 @@
                         </div>
                         @endforelse
                     </div>
-                    <button x-show="s && s.scrollWidth > s.clientWidth" @click="s.scrollBy({ left: 400, behavior: 'smooth' })"
+                    <button @click="s.scrollBy({ left: 400, behavior: 'smooth' })"
                             class="absolute -right-3 top-1/2 -translate-y-1/2 z-10 w-9 h-9 rounded-full bg-surface-800 border border-white/10 flex items-center justify-center text-white shadow-lg hover:bg-surface-700 transition-all backdrop-blur-sm">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
                     </button>
@@ -326,9 +326,9 @@
                             class="absolute -left-3 top-1/2 -translate-y-1/2 z-10 w-9 h-9 rounded-full bg-surface-800 border border-white/10 flex items-center justify-center text-white shadow-lg hover:bg-surface-700 transition-all backdrop-blur-sm">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
                     </button>
-                    <div x-ref="s" class="flex gap-3 overflow-x-auto scroll-smooth max-w-full scrollbar-hide">
+                    <div x-ref="s" class="flex gap-5 overflow-x-auto scroll-smooth max-w-full scrollbar-hide">
                         @forelse(($enrolledCourses ?? collect()) as $course)
-                        <a href="{{ route('courses.show', $course) }}" class="shrink-0 w-60 group relative overflow-hidden rounded-2xl border border-white/10 card-hover shadow-lg shadow-black/20 bg-surface-800">
+                        <a href="{{ route('courses.show', $course) }}" class="shrink-0 w-70 group relative overflow-hidden rounded-2xl border border-white/10 card-hover shadow-lg shadow-black/20 bg-surface-800">
                             @if($course->cover_image_url)
                                 <div class="relative h-32 bg-cover bg-center" style="background-image: url('{{ $course->cover_image_url }}')"></div>
                             @else
