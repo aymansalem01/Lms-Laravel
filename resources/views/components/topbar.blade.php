@@ -1,14 +1,12 @@
 <header class="bg-surface-800/80 backdrop-blur-md border-b border-white/5 px-4 lg:px-6 py-3 flex items-center justify-between gap-4">
     {{-- Left: hamburger + search --}}
     <div class="flex items-center gap-3 flex-1 min-w-0">
-        {{-- Hamburger for mobile (admin only) --}}
-        @if(auth()->user()->role === 'admin')
-            <button @click="sidebarOpen = !sidebarOpen" class="lg:hidden p-2 rounded-lg text-gray-400 hover:text-white hover:bg-surface-700 transition-colors">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
-                </svg>
-            </button>
-        @endif
+        {{-- Hamburger for mobile (all roles with sidebar) --}}
+        <button @click="sidebarOpen = !sidebarOpen" class="lg:hidden p-2 rounded-lg text-gray-400 hover:text-white hover:bg-surface-700 transition-colors">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+            </svg>
+        </button>
 
         {{-- Search --}}
         <div class="relative hidden sm:block max-w-xs w-full">

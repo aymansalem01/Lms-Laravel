@@ -12,6 +12,18 @@
         body { font-family: {{ app()->getLocale() === 'ar' ? "'Cairo'" : "'Inter'" }}, sans-serif; }
         [x-cloak] { display: none !important; }
         dialog::backdrop { background: rgba(25, 25, 35, 0.92); }
+        .card-1 { --card-accent: #ff4d8d; }
+        .card-2 { --card-accent: #ff8a3d; }
+        .card-3 { --card-accent: #4e76ff; }
+        .card-4 { --card-accent: #ff4d8d; }
+        .card-5 { --card-accent: #ff8a3d; }
+        .card-6 { --card-accent: #4e76ff; }
+        .card-7 { --card-accent: #ff4d8d; }
+        [class*="card-"] { border-color: var(--card-accent) !important; background: color-mix(in srgb, var(--card-accent) 25%, #f0f0f0) !important; }
+        [class*="card-"] .card-accent-bg { background: var(--card-accent) !important; }
+        [class*="card-"] .card-accent-text { color: var(--card-accent) !important; }
+        [class*="card-"] .card-accent-glow { box-shadow: 0 0 20px var(--card-accent); }
+        [class*="card-"] .card-accent-gradient { background: linear-gradient(135deg, color-mix(in srgb, var(--card-accent) 30%, #374151), transparent); }
     </style>
     @stack('styles')
 </head>
@@ -19,32 +31,28 @@
     <x-layouts.student-view-banner />
     <div class="flex h-screen overflow-hidden {{ $studentView ? 'mt-10' : '' }}">
 
-        {{-- Sidebar (admin only) --}}
-        @if(auth()->user()->role === 'admin')
-            {{-- Mobile overlay --}}
-            <div x-show="sidebarOpen" x-cloak class="fixed inset-0 z-30 bg-surface-800/80 lg:hidden" @click="sidebarOpen = false"></div>
+        {{-- Mobile overlay --}}
+        <div x-show="sidebarOpen" x-cloak class="fixed inset-0 z-30 bg-surface-800/80 lg:hidden" @click="sidebarOpen = false"></div>
 
-            {{-- Sidebar panel --}}
-            <aside class="fixed inset-y-0 left-0 z-40 w-60 -translate-x-full transition-transform duration-200 ease-in-out lg:relative lg:translate-x-0 flex flex-col"
-                   :class="{ 'translate-x-0': sidebarOpen }">
+        {{-- Sidebar panel --}}
+        <aside class="fixed inset-y-0 left-0 z-40 w-60 -translate-x-full transition-transform duration-200 ease-in-out lg:relative lg:translate-x-0 flex flex-col"
+               :class="{ 'translate-x-0': sidebarOpen }">
+            @if(auth()->user()->role === 'admin')
                 <x-sidebar />
-                @if(!$studentView)
-                <div class="px-3 py-3 border-t border-white/5">
-                    <x-mini-calendar />
-                </div>
-                @endif
-            </aside>
-        @endif
+            @else
+                <x-user-sidebar />
+            @endif
+            @if(!$studentView)
+            <div class="px-3 py-3 border-t border-white/5">
+                <x-mini-calendar />
+            </div>
+            @endif
+        </aside>
 
         {{-- Main area --}}
         <div class="flex-1 flex flex-col min-h-0 min-w-0">
             {{-- Top bar --}}
             <x-topbar />
-
-            {{-- Horizontal nav (student/instructor) --}}
-            @if(auth()->user()->role !== 'admin')
-                <x-horizontal-nav />
-            @endif
 
             {{-- Main content --}}
             <main class="flex-1 overflow-y-auto p-6 animate-fade-in">
