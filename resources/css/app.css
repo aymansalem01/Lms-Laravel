@@ -348,6 +348,15 @@ select option:focus {
     box-shadow: 0 8px 30px -10px rgba(255,59,119,0.15);
 }
 
+/* ── Scrollbar hide ────────────────────────────────────────────── */
+.scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+    display: none;
+}
+
 /* ── Arabic / RTL ─────────────────────────────────────────────── */
 html[lang="ar"],
 html[lang="ar"] body {

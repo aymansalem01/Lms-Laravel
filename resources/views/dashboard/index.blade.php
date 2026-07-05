@@ -132,13 +132,25 @@
     </div>
 
     {{-- Your Courses — editorial split --}}
-    <section class="mb-10">
+    <section class="mb-16">
         <div class="flex flex-col lg:flex-row gap-8 lg:gap-12 items-start">
             <div class="flex-shrink-0 lg:w-64 xl:w-72 space-y-4">
-                <p class="section-label flex items-center gap-2">
-                    <span class="h-px w-8 bg-brand-500 inline-block"></span>
-                    {{ __('My Courses') }}
-                </p>
+                <div class="flex items-center justify-between">
+                    <p class="section-label flex items-center gap-2">
+                        <span class="h-px w-8 bg-brand-500 inline-block"></span>
+                        {{ __('My Courses') }}
+                    </p>
+                    <div class="flex gap-1">
+                        <button @click="$refs.s.scrollBy({ left: -400, behavior: 'smooth' })"
+                                class="w-8 h-8 rounded-full bg-surface-800 border border-white/10 flex items-center justify-center text-white shadow hover:bg-surface-700 transition-all">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+                        </button>
+                        <button @click="$refs.s.scrollBy({ left: 400, behavior: 'smooth' })"
+                                class="w-8 h-8 rounded-full bg-surface-800 border border-white/10 flex items-center justify-center text-white shadow hover:bg-surface-700 transition-all">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                        </button>
+                    </div>
+                </div>
                 <h2 class="text-5xl lg:text-6xl font-black text-white tracking-tight leading-[.9]">
                     Your<br><span class="gradient-text">Courses.</span>
                 </h2>
@@ -150,12 +162,7 @@
                 @endif
             </div>
             <div class="flex-1 min-w-0">
-                <div class="relative flex justify-center" x-data="{ s: null }" x-init="s = $refs.s">
-                    <button @click="s.scrollBy({ left: -400, behavior: 'smooth' })"
-                            class="absolute -left-3 top-1/2 -translate-y-1/2 z-10 w-9 h-9 rounded-full bg-surface-800 border border-white/10 flex items-center justify-center text-white shadow-lg hover:bg-surface-700 transition-all backdrop-blur-sm">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
-                    </button>
-                    <div x-ref="s" class="flex gap-3 overflow-x-auto scroll-smooth max-w-full scrollbar-hide">
+                <div x-ref="s" class="flex gap-3 overflow-x-auto scroll-smooth max-w-full scrollbar-hide justify-center">
                         @forelse(($myCourses ?? collect())->take(6) as $course)
                         <a href="{{ route('courses.show', $course) }}" class="shrink-0 w-[400px] group relative overflow-hidden rounded-2xl border border-white/10 card-hover p-4 flex items-center gap-3 shadow-lg shadow-black/20 bg-surface-800">
                             @if($course->cover_image_url)
@@ -185,11 +192,6 @@
                         </div>
                         @endforelse
                     </div>
-                    <button @click="s.scrollBy({ left: 400, behavior: 'smooth' })"
-                            class="absolute -right-3 top-1/2 -translate-y-1/2 z-10 w-9 h-9 rounded-full bg-surface-800 border border-white/10 flex items-center justify-center text-white shadow-lg hover:bg-surface-700 transition-all backdrop-blur-sm">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
-                    </button>
-                </div>
             </div>
         </div>
     </section>
@@ -244,13 +246,25 @@
     </section>
 
     {{-- Upcoming Events (Moodle-style calendar) --}}
-    <section class="mb-10">
+    <section class="mb-16">
         <div class="flex flex-col lg:flex-row gap-8 lg:gap-12 items-start">
             <div class="flex-shrink-0 lg:w-64 xl:w-72 space-y-4">
-                <p class="section-label flex items-center gap-2">
-                    <span class="h-px w-8 bg-blue-500 inline-block"></span>
-                    {{ __('Upcoming') }}
-                </p>
+                <div class="flex items-center justify-between">
+                    <p class="section-label flex items-center gap-2">
+                        <span class="h-px w-8 bg-brand-500 inline-block"></span>
+                        {{ __('My Courses') }}
+                    </p>
+                    <div class="flex gap-1">
+                        <button @click="$refs.s.scrollBy({ left: -400, behavior: 'smooth' })"
+                                class="w-8 h-8 rounded-full bg-surface-800 border border-white/10 flex items-center justify-center text-white shadow hover:bg-surface-700 transition-all">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+                        </button>
+                        <button @click="$refs.s.scrollBy({ left: 400, behavior: 'smooth' })"
+                                class="w-8 h-8 rounded-full bg-surface-800 border border-white/10 flex items-center justify-center text-white shadow hover:bg-surface-700 transition-all">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                        </button>
+                    </div>
+                </div>
                 <h2 class="text-5xl lg:text-6xl font-black text-white tracking-tight leading-[.9]">
                     Upcoming<br><span class="gradient-text">Events.</span>
                 </h2>
@@ -305,13 +319,25 @@
     </div>
 
     {{-- My Courses — editorial split --}}
-    <section class="mb-10">
+    <section class="mb-16">
         <div class="flex flex-col lg:flex-row gap-8 lg:gap-12 items-start">
             <div class="flex-shrink-0 lg:w-64 xl:w-72 space-y-4">
-                <p class="section-label flex items-center gap-2">
-                    <span class="h-px w-8 bg-brand-500 inline-block"></span>
-                    {{ __('My Courses') }}
-                </p>
+                <div class="flex items-center justify-between">
+                    <p class="section-label flex items-center gap-2">
+                        <span class="h-px w-8 bg-brand-500 inline-block"></span>
+                        {{ __('My Courses') }}
+                    </p>
+                    <div class="flex gap-1">
+                        <button @click="$refs.s2.scrollBy({ left: -400, behavior: 'smooth' })"
+                                class="w-8 h-8 rounded-full bg-surface-800 border border-white/10 flex items-center justify-center text-white shadow hover:bg-surface-700 transition-all">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+                        </button>
+                        <button @click="$refs.s2.scrollBy({ left: 400, behavior: 'smooth' })"
+                                class="w-8 h-8 rounded-full bg-surface-800 border border-white/10 flex items-center justify-center text-white shadow hover:bg-surface-700 transition-all">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                        </button>
+                    </div>
+                </div>
                 <h2 class="text-5xl lg:text-6xl font-black text-white tracking-tight leading-[.9]">
                     My<br><span class="gradient-text">Courses.</span>
                 </h2>
@@ -321,14 +347,9 @@
                 </a>
             </div>
             <div class="flex-1 min-w-0">
-                <div class="relative flex justify-center" x-data="{ s: null }" x-init="s = $refs.s">
-                    <button x-show="s && s.scrollWidth > s.clientWidth" @click="s.scrollBy({ left: -400, behavior: 'smooth' })"
-                            class="absolute -left-3 top-1/2 -translate-y-1/2 z-10 w-9 h-9 rounded-full bg-surface-800 border border-white/10 flex items-center justify-center text-white shadow-lg hover:bg-surface-700 transition-all backdrop-blur-sm">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
-                    </button>
-                    <div x-ref="s" class="flex gap-5 overflow-x-auto scroll-smooth max-w-full scrollbar-hide">
+                <div x-ref="s2" class="flex gap-4 overflow-x-auto scroll-smooth max-w-full scrollbar-hide justify-center">
                         @forelse(($enrolledCourses ?? collect()) as $course)
-                        <a href="{{ route('courses.show', $course) }}" class="shrink-0 w-70 group relative overflow-hidden rounded-2xl border border-white/10 card-hover shadow-lg shadow-black/20 bg-surface-800">
+                        <a href="{{ route('courses.show', $course) }}" class="shrink-0 w-64 group relative overflow-hidden rounded-2xl border border-white/10 card-hover shadow-lg shadow-black/20 bg-surface-800">
                             @if($course->cover_image_url)
                                 <div class="relative h-32 bg-cover bg-center" style="background-image: url('{{ $course->cover_image_url }}')"></div>
                             @else
@@ -358,23 +379,30 @@
                         </div>
                         @endforelse
                     </div>
-                    <button x-show="s && s.scrollWidth > s.clientWidth" @click="s.scrollBy({ left: 400, behavior: 'smooth' })"
-                            class="absolute -right-3 top-1/2 -translate-y-1/2 z-10 w-9 h-9 rounded-full bg-surface-800 border border-white/10 flex items-center justify-center text-white shadow-lg hover:bg-surface-700 transition-all backdrop-blur-sm">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
-                    </button>
-                </div>
             </div>
         </div>
     </section>
 
     {{-- Upcoming Events (Moodle-style calendar) --}}
-    <section class="mb-10">
+    <section class="mb-16">
         <div class="flex flex-col lg:flex-row gap-8 lg:gap-12 items-start">
             <div class="flex-shrink-0 lg:w-64 xl:w-72 space-y-4">
-                <p class="section-label flex items-center gap-2">
-                    <span class="h-px w-8 bg-coral-500 inline-block"></span>
-                    {{ __('Upcoming') }}
-                </p>
+                <div class="flex items-center justify-between">
+                    <p class="section-label flex items-center gap-2">
+                        <span class="h-px w-8 bg-brand-500 inline-block"></span>
+                        {{ __('My Courses') }}
+                    </p>
+                    <div class="flex gap-1">
+                        <button @click="$refs.s2.scrollBy({ left: -400, behavior: 'smooth' })"
+                                class="w-8 h-8 rounded-full bg-surface-800 border border-white/10 flex items-center justify-center text-white shadow hover:bg-surface-700 transition-all">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+                        </button>
+                        <button @click="$refs.s2.scrollBy({ left: 400, behavior: 'smooth' })"
+                                class="w-8 h-8 rounded-full bg-surface-800 border border-white/10 flex items-center justify-center text-white shadow hover:bg-surface-700 transition-all">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                        </button>
+                    </div>
+                </div>
                 <h2 class="text-5xl lg:text-6xl font-black text-white tracking-tight leading-[.9]">
                     Upcoming<br><span class="gradient-text">Events.</span>
                 </h2>
