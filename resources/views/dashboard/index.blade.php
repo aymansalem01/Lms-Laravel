@@ -4,10 +4,7 @@
     {{-- ── WELCOME SECTION ─────────────────────────────────────────── --}}
     <div class="mb-8">
         <h1 class="text-2xl font-bold text-gray-800 dark:text-white poppins">{{ __('Welcome back, :name', ['name' => auth()->user()->name]) }}</h1>
-        @switch(auth()->user()->role)
-            @case('student')<p class="text-sm text-gray-500 poppins mt-1">{{ __('Keep pushing forward! You\'re doing great.') }}</p>@break
-            @case('instructor')<p class="text-sm text-gray-500 poppins mt-1">{{ __('Your classroom is thriving.') }}</p>@break
-            @default<p class="text-sm text-gray-500 poppins mt-1">{{ __('Platform overview at a glance.') }}</p>@endswitch
+        <p class="text-xl font-black gradient-text poppins leading-tight">Create. Learn. Inspire.</p>
     </div>
 
     {{-- ── KPI GRID ─────────────────────────────────────────────────── --}}

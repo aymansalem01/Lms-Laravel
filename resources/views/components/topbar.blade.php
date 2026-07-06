@@ -8,11 +8,7 @@
         </button>
     </div>
 
-    {{-- Center: Welcome + Gradient Banner --}}
-    <div class="hidden md:flex flex-col items-center">
-        <p class="text-xs font-medium text-gray-500 poppins">{{ __('Welcome back, :name', ['name' => auth()->user()->name]) }}</p>
-        <p class="text-lg font-black gradient-text poppins leading-tight">Create. Learn. Inspire.</p>
-    </div>
+
 
     {{-- Right: Search + Actions --}}
     <div class="flex items-center gap-2 sm:gap-3">
