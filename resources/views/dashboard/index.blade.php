@@ -236,27 +236,27 @@
                     @if((auth()->user()->role === 'instructor' ? ($myCourses ?? collect())->count() : ($enrolledCourses ?? collect())->count()) > 0)
                     <div class="flex gap-1">
                         <button @click="$refs.{{ $carouselRef }}.scrollBy({ left: -400, behavior: 'smooth' })"
-                                class="w-8 h-8 rounded-full bg-surface-700 border border-white/10 flex items-center justify-center text-gray-500 hover:text-gray-800 dark:hover:text-white hover:bg-surface-600 transition-all">
+                                class="w-8 h-8 rounded-full bg-surface-700 border border-white/10 flex items-center justify-center text-white hover:bg-surface-600 transition-all">
                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
                         </button>
                         <button @click="$refs.{{ $carouselRef }}.scrollBy({ left: 400, behavior: 'smooth' })"
-                                class="w-8 h-8 rounded-full bg-surface-700 border border-white/10 flex items-center justify-center text-gray-500 hover:text-gray-800 dark:hover:text-white hover:bg-surface-600 transition-all">
+                                class="w-8 h-8 rounded-full bg-surface-700 border border-white/10 flex items-center justify-center text-white hover:bg-surface-600 transition-all">
                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
                         </button>
                     </div>
                     @endif
                 </div>
-                <div x-ref="{{ $carouselRef }}" class="flex gap-4 overflow-x-auto overflow-y-hidden scroll-smooth max-w-full scrollbar-hide pb-2">
+                <div x-ref="{{ $carouselRef }}" class="flex gap-4 overflow-x-auto overflow-y-hidden scroll-smooth w-full scrollbar-hide pb-2">
                     @php $courses = auth()->user()->role === 'instructor' ? ($myCourses ?? collect()) : ($enrolledCourses ?? collect()); @endphp
                     @forelse($courses as $course)
                     <a href="{{ route('courses.show', $course) }}" class="course-card shrink-0 w-64 group relative overflow-hidden rounded-2xl border border-white/10 bg-surface-800 shadow-sm">
                         {{-- Thumbnail --}}
                         @if($course->cover_image_url)
-                            <div class="relative h-36 overflow-hidden">
-                                <img src="{{ $course->cover_image_url }}" alt="{{ $course->title }}" class="w-full h-full object-cover">
+                            <div class="relative aspect-video overflow-hidden">
+                                <img src="{{ $course->cover_image_url }}" alt="{{ $course->title }}" class="w-full h-full object-cover object-center">
                             </div>
                         @else
-                            <div class="relative h-36 flex items-center justify-center" style="background: linear-gradient(135deg, {{ $ringColors[$loop->index % 4] }}33, transparent);">
+                            <div class="relative aspect-video flex items-center justify-center" style="background: linear-gradient(135deg, {{ $ringColors[$loop->index % 4] }}33, transparent);">
                                 <span class="text-4xl font-bold text-white/30 poppins">{{ strtoupper(substr($course->title, 0, 2)) }}</span>
                             </div>
                         @endif
@@ -302,7 +302,7 @@
             @endif
 
             {{-- ── RECENT ANNOUNCEMENTS ───────────────────────────── --}}
-            <section>
+            <section class="mt-12">
                 <div class="flex items-center justify-between mb-5">
                     <div>
                         <h2 class="text-lg font-bold text-white poppins">{{ __('Recent Announcements') }}</h2>
