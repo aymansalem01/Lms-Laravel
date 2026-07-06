@@ -1,12 +1,12 @@
-<nav class="h-full w-60 bg-surface-900 border-r border-white/5 flex flex-col overflow-y-auto">
+<nav class="h-full w-60 bg-surface-800 border-r border-white/10 flex flex-col overflow-y-auto shadow-sm">
     {{-- Logo --}}
-    <div class="px-5 py-5 border-b border-white/5">
+    <div class="px-5 py-5 border-b border-white/10">
         <a href="{{ route('dashboard') }}" class="flex items-center gap-2.5">
             <div class="w-8 h-8 rounded-lg gb flex items-center justify-center">
                 <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z"/></svg>
             </div>
             <div>
-                <p class="font-bold text-sm text-white leading-none">Luminus Digital Creative Technology</p>
+                <p class="font-bold text-sm text-gray-800 dark:text-white leading-none poppins">Luminus Digital Creative Technology</p>
                 <p class="text-[10px] text-gray-500 mt-0.5">Learning Platform</p>
             </div>
         </a>
@@ -16,7 +16,7 @@
     <div class="flex-1 px-3 py-4 space-y-1">
         <p class="section-label px-3 mb-3">{{ __('messages.main_menu') }}</p>
 
-        <a href="{{ route('dashboard') }}" class="{{ request()->routeIs('dashboard') ? 'nav-item-active' : 'nav-item' }}">
+        <a href="{{ route('dashboard') }}" class="{{ request()->routeIs('dashboard') ? 'nav-glow nav-item-active' : 'nav-item' }}">
             <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
             <span>{{ __('messages.dashboard') }}</span>
             @if(request()->routeIs('dashboard'))<svg class="ml-auto w-3.5 h-3.5 text-brand-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>@endif
@@ -30,7 +30,7 @@
             <span>{{ __('messages.notifications') }}</span>
         </a>
 
-        <div class="pt-4 mt-4 border-t border-white/5">
+        <div class="pt-4 mt-4 border-t border-white/10">
             <p class="section-label px-3 mb-3">{{ __('messages.administration') }}</p>
 
             <a href="{{ route('admin.users.index') }}" class="{{ request()->routeIs('admin.users.*') ? 'nav-item-active' : 'nav-item' }}">
@@ -68,8 +68,39 @@
         </div>
     </div>
 
-    {{-- Footer --}}
-    <div class="px-5 py-3 border-t border-white/5 text-[11px] text-gray-600">
-        &copy; {{ date('Y') }} Luminus Digital Creative Technology &mdash; Jordan
+    {{-- Streak Tracker --}}
+    <div class="px-3 py-3 mx-3 mb-2 rounded-xl streak-card">
+        <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-full bg-gradient-to-br from-orange-400 to-pink-500 flex items-center justify-center shadow-md">
+                <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C9.5 7.5 5 10.5 5 15c0 3.86 3.14 7 7 7s7-3.14 7-7c0-4.5-4.5-7.5-7-13z"/></svg>
+            </div>
+            <div>
+                <p class="text-sm font-bold text-gray-800 dark:text-white poppins">{{ __('Keep it up!') }}</p>
+                <p class="text-[11px] text-gray-500 poppins">{{ __('messages.streak_days', ['count' => auth()->user()->streak_days ?? 0]) }}</p>
+            </div>
+        </div>
+    </div>
+
+    {{-- User Profile Snippet --}}
+    <div class="sticky bottom-0 px-4 py-3 border-t border-white/10 bg-surface-800">
+        <div class="flex items-center gap-3">
+            <div class="w-9 h-9 rounded-full bg-brand-500/20 flex items-center justify-center text-sm font-bold text-brand-600 dark:text-brand-400 shrink-0 overflow-hidden">
+                @if(auth()->user()->avatar_url)
+                    <img src="{{ auth()->user()->avatar_url }}" alt="" class="w-full h-full object-cover">
+                @else
+                    {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
+                @endif
+            </div>
+            <div class="flex-1 min-w-0">
+                <p class="text-sm font-semibold text-gray-800 dark:text-white truncate poppins">{{ auth()->user()->name }}</p>
+                <p class="text-[11px] text-gray-500 truncate capitalize">{{ auth()->user()->role }}</p>
+            </div>
+            <form method="POST" action="{{ route('logout') }}" class="shrink-0">
+                @csrf
+                <button type="submit" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors" title="{{ __('messages.logout') }}">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+                </button>
+            </form>
+        </div>
     </div>
 </nav>

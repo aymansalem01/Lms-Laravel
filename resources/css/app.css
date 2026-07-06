@@ -1,11 +1,14 @@
 @import 'tailwindcss';
 
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap');
+
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 @source '../../storage/framework/views/*.php';
 @source '../**/*.blade.php';
 @source '../**/*.js';
 
 @theme {
+    --font-poppins: 'Poppins', sans-serif;
     --font-inter: 'Inter', sans-serif;
     --font-cairo: 'Cairo', sans-serif;
     --font-mono: 'JetBrains Mono', monospace;
@@ -31,6 +34,11 @@
     --color-surface-600: rgb(var(--c-surface-600) / <alpha-value>);
     --color-surface-500: rgb(var(--c-surface-500) / <alpha-value>);
     --color-surface-400: rgb(var(--c-surface-400) / <alpha-value>);
+
+    --color-kpi-1: #FFE4EC;
+    --color-kpi-2: #E0F7FA;
+    --color-kpi-3: #FFF3E0;
+    --color-kpi-4: #F3E5F5;
 
     --color-gray-200: var(--c-gray-200);
     --color-gray-300: var(--c-gray-300);
@@ -372,6 +380,75 @@ input:-webkit-autofill {
     -webkit-box-shadow: 0 0 0 30px rgb(var(--c-surface-700)) inset !important;
     -webkit-text-fill-color: rgb(var(--c-gray-200)) !important;
 }
+
+/* ── Dashboard new styles ─────────────────────────────────────── */
+.poppins {
+    font-family: 'Poppins', sans-serif;
+}
+
+.kpi-card {
+    transition: all 0.2s ease;
+}
+.kpi-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px -8px rgba(0,0,0,0.12);
+}
+
+.progress-ring-circle {
+    transition: stroke-dashoffset 0.5s ease;
+    transform: rotate(-90deg);
+    transform-origin: 50% 50%;
+}
+
+.course-card {
+    transition: all 0.25s ease;
+}
+.course-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 35px -10px rgba(255,59,119,0.25);
+}
+
+.streak-card {
+    background: linear-gradient(135deg, #FFF5F5 0%, #FFF0F5 100%);
+    border: 1px solid rgba(255,59,77,0.12);
+}
+
+.nav-glow {
+    position: relative;
+}
+.nav-glow::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 3px;
+    height: 60%;
+    border-radius: 0 3px 3px 0;
+    background: linear-gradient(180deg, #FF3B77, #CDFF00);
+}
+
+.dark .kpi-card:hover {
+    box-shadow: 0 8px 25px -8px rgba(255,255,255,0.08);
+}
+.dark .course-card:hover {
+    box-shadow: 0 12px 35px -10px rgba(255,59,119,0.2);
+}
+
+.dark .streak-card {
+    background: linear-gradient(135deg, rgba(255,59,77,0.08) 0%, rgba(255,59,119,0.05) 100%);
+}
+
+/* Calendar dot badges */
+.calendar-event-dot {
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    display: inline-block;
+}
+.calendar-event-dot.assignment { background: #FF3B77; }
+.calendar-event-dot.session { background: #4E7BFF; }
+.calendar-event-dot.quiz { background: #FFC83D; }
 
 /* ── Hero grid background (landing) ────────────────────────────── */
 .hero-grid-bg {

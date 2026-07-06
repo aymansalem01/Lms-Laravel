@@ -7,9 +7,9 @@
     <title>{{ $title ?? 'Luminus LMS' }}</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&family=Cairo:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&family=Cairo:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        body { font-family: {{ app()->getLocale() === 'ar' ? "'Cairo'" : "'Inter'" }}, sans-serif; }
+        body { font-family: {{ app()->getLocale() === 'ar' ? "'Cairo'" : "'Poppins', 'Inter'" }}, sans-serif; }
         [x-cloak] { display: none !important; }
         dialog::backdrop { background: rgba(25, 25, 35, 0.92); }
         .card-1 { --card-accent: #ff4d8d; background: rgba(255, 77, 141, 0.3); }
