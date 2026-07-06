@@ -252,7 +252,9 @@
                     <a href="{{ route('courses.show', $course) }}" class="course-card shrink-0 w-64 group relative overflow-hidden rounded-2xl border border-white/10 bg-surface-800 shadow-sm">
                         {{-- Thumbnail --}}
                         @if($course->cover_image_url)
-                            <div class="relative h-36 bg-cover bg-center" style="background-image: url('{{ $course->cover_image_url }}')"></div>
+                            <div class="relative h-36 overflow-hidden">
+                                <img src="{{ $course->cover_image_url }}" alt="{{ $course->title }}" class="w-full h-full object-cover">
+                            </div>
                         @else
                             <div class="relative h-36 flex items-center justify-center" style="background: linear-gradient(135deg, {{ $ringColors[$loop->index % 4] }}33, transparent);">
                                 <span class="text-4xl font-bold text-white/30 poppins">{{ strtoupper(substr($course->title, 0, 2)) }}</span>
@@ -372,7 +374,7 @@
                     {{-- Day headers --}}
                     <div class="grid grid-cols-7 gap-px mb-2">
                         @foreach($days as $day)
-                            <div class="text-[10px] font-semibold text-gray-500 text-center py-1 uppercase tracking-wider poppins">{{ $day }}</div>
+                            <div class="text-[10px] font-semibold text-gray-500 text-center py-1 uppercase tracking-wider poppins whitespace-nowrap">{{ $day }}</div>
                         @endforeach
                     </div>
                     {{-- Calendar grid --}}
@@ -386,7 +388,7 @@
                                 $hasEvent = $isCurrentMonth && $eventDates->contains($dateStr);
                                 $eventTypes = $isCurrentMonth ? ($upcomingEvents ?? collect())->filter(fn($e) => \Carbon\Carbon::parse($e['date'])->format('Y-m-d') === $dateStr)->pluck('type') : collect();
                             @endphp
-                            <div class="text-center py-1 {{ $isCurrentMonth ? '' : 'opacity-20' }}">
+                            <div class="text-center py-1 whitespace-nowrap {{ $isCurrentMonth ? '' : 'opacity-20' }}">
                                 <div class="inline-flex items-center justify-center w-8 h-8 rounded-full text-xs relative
                                     {{ $isToday ? 'bg-brand-500 text-white font-bold' : ($hasEvent ? 'text-white font-semibold' : 'text-gray-500') }} poppins">
                                     {{ $cell->day }}

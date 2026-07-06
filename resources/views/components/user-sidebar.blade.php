@@ -5,13 +5,13 @@
                 <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z"/></svg>
             </div>
             <div>
-                <p class="font-bold text-sm text-gray-800 dark:text-white leading-none poppins">Luminus Digital Creative Technology</p>
+                <p class="font-bold text-sm text-white leading-none poppins">Luminus Digital Creative Technology</p>
                 <p class="text-[10px] text-gray-500 mt-0.5">Learning Platform</p>
             </div>
         </a>
     </div>
 
-    <div class="flex-1 px-3 py-4 space-y-1">
+    <div class="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
         <p class="section-label px-3 mb-3">{{ __('messages.main_menu') }}</p>
 
         <a href="{{ route('dashboard') }}"
@@ -59,39 +59,42 @@
         </a>
     </div>
 
-    {{-- Streak Tracker --}}
-    <div class="px-3 py-3 mx-3 mb-2 rounded-xl streak-card">
-        <div class="flex items-center gap-3">
-            <div class="w-10 h-10 rounded-full bg-gradient-to-br from-orange-400 to-pink-500 flex items-center justify-center shadow-md">
-                <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C9.5 7.5 5 10.5 5 15c0 3.86 3.14 7 7 7s7-3.14 7-7c0-4.5-4.5-7.5-7-13z"/></svg>
-            </div>
-            <div>
-                <p class="text-sm font-bold text-gray-800 dark:text-white poppins">{{ __('Keep it up!') }}</p>
-                <p class="text-[11px] text-gray-500 poppins">{{ __('messages.streak_days', ['count' => auth()->user()->streak_days ?? 0]) }}</p>
+    {{-- Bottom sticky section: Streak + Profile --}}
+    <div class="sticky bottom-0 bg-surface-800">
+        {{-- Streak Tracker --}}
+        <div class="px-3 py-3 mx-3 mb-2 rounded-xl streak-card">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-full bg-gradient-to-br from-orange-400 to-pink-500 flex items-center justify-center shadow-md">
+                    <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C9.5 7.5 5 10.5 5 15c0 3.86 3.14 7 7 7s7-3.14 7-7c0-4.5-4.5-7.5-7-13z"/></svg>
+                </div>
+                <div>
+                    <p class="text-sm font-bold text-white poppins">{{ __('Keep it up!') }}</p>
+                    <p class="text-[11px] text-gray-500 poppins">{{ __('messages.streak_days', ['count' => auth()->user()->streak_days ?? 0]) }}</p>
+                </div>
             </div>
         </div>
-    </div>
 
-    {{-- User Profile Snippet --}}
-    <div class="sticky bottom-0 px-4 py-3 border-t border-white/10 bg-surface-800">
-        <div class="flex items-center gap-3">
-            <div class="w-9 h-9 rounded-full bg-brand-500/20 flex items-center justify-center text-sm font-bold text-brand-600 dark:text-brand-400 shrink-0 overflow-hidden">
-                @if(auth()->user()->avatar_url)
-                    <img src="{{ auth()->user()->avatar_url }}" alt="" class="w-full h-full object-cover">
-                @else
-                    {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
-                @endif
+        {{-- User Profile Snippet --}}
+        <div class="px-4 py-3 border-t border-white/10 bg-surface-800">
+            <div class="flex items-center gap-3">
+                <div class="w-9 h-9 rounded-full bg-brand-500/20 flex items-center justify-center text-sm font-bold text-brand-600 dark:text-brand-400 shrink-0 overflow-hidden">
+                    @if(auth()->user()->avatar_url)
+                        <img src="{{ auth()->user()->avatar_url }}" alt="" class="w-full h-full object-cover">
+                    @else
+                        {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
+                    @endif
+                </div>
+                <div class="flex-1 min-w-0">
+                    <p class="text-sm font-semibold text-white truncate poppins">{{ auth()->user()->name }}</p>
+                    <p class="text-[11px] text-gray-500 truncate capitalize">{{ auth()->user()->role }}</p>
+                </div>
+                <form method="POST" action="{{ route('logout') }}" class="shrink-0">
+                    @csrf
+                    <button type="submit" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors" title="{{ __('messages.logout') }}">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+                    </button>
+                </form>
             </div>
-            <div class="flex-1 min-w-0">
-                <p class="text-sm font-semibold text-gray-800 dark:text-white truncate poppins">{{ auth()->user()->name }}</p>
-                <p class="text-[11px] text-gray-500 truncate capitalize">{{ auth()->user()->role }}</p>
-            </div>
-            <form method="POST" action="{{ route('logout') }}" class="shrink-0">
-                @csrf
-                <button type="submit" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors" title="{{ __('messages.logout') }}">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
-                </button>
-            </form>
         </div>
     </div>
 </nav>
