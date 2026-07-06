@@ -3,7 +3,7 @@
 
     {{-- ── WELCOME SECTION ─────────────────────────────────────────── --}}
     <div class="mb-8">
-        <h1 class="text-2xl font-bold text-gray-800 dark:text-white poppins">{{ __('Welcome back, :name', ['name' => auth()->user()->name]) }}</h1>
+        <h1 class="text-2xl font-bold text-white poppins">{{ __('Welcome back, :name', ['name' => auth()->user()->name]) }}</h1>
         <p class="text-xl font-black gradient-text poppins leading-tight">Create. Learn. Inspire.</p>
     </div>
 
@@ -13,8 +13,8 @@
         $oranges = ['#F59E0B','#D97706'];
         $blues = ['#3B82F6','#2563EB'];
         $purples = ['#8B5CF6','#7C3AED'];
-        $ringColors = ['#FF3B77','#CDFF00','#4E7BFF','#FFC83D'];
-        $kpiBg = ['#FFE4EC','#E0F7FA','#FFF3E0','#F3E5F5'];
+        $ringColors = ['#FF4D6D','#A6E22E','#4E7BFF','#FFC83D'];
+        $kpiBg = ['rgba(255,77,109,0.30)','rgba(166,226,46,0.30)','rgba(78,123,255,0.30)','rgba(255,200,61,0.30)'];
         $kpiIcons = [
             'users' => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"/>',
             'courses' => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>',
@@ -41,15 +41,8 @@
                 </div>
                 <div class="flex items-end justify-between">
                     <div>
-                        <p class="text-3xl font-black text-gray-800 dark:text-white poppins">{{ $totalUsers ?? 0 }}</p>
+                        <p class="text-3xl font-black text-white poppins">{{ $totalUsers ?? 0 }}</p>
                         <p class="text-[11px] text-gray-500 mt-1 poppins">{{ __('Registered users') }}</p>
-                    </div>
-                    <div class="relative w-16 h-16">
-                        <svg class="w-16 h-16 -rotate-90" viewBox="0 0 44 44">
-                            <circle cx="22" cy="22" r="18" fill="none" stroke="rgba(0,0,0,0.06)" stroke-width="3"/>
-                            <circle cx="22" cy="22" r="18" fill="none" stroke="{{ $ringColors[0] }}" stroke-width="3" stroke-linecap="round" stroke-dasharray="{{ $circumference }}" stroke-dashoffset="{{ $circumference * 0.25 }}" class="progress-ring-circle"/>
-                        </svg>
-                        <span class="absolute inset-0 flex items-center justify-center text-[11px] font-bold text-gray-800 dark:text-white poppins">75%</span>
                     </div>
                 </div>
             </div>
@@ -63,13 +56,9 @@
                 </div>
                 <div class="flex items-end justify-between">
                     <div>
-                        <p class="text-3xl font-black text-gray-800 dark:text-white poppins">{{ $totalCourses ?? 0 }}</p>
+                        <p class="text-3xl font-black text-white poppins">{{ $totalCourses ?? 0 }}</p>
                         <p class="text-[11px] text-gray-500 mt-1 poppins">{{ __('Available courses') }}</p>
                     </div>
-                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 poppins">
-                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"/></svg>
-                        +{{ rand(5, 20) }}%
-                    </span>
                 </div>
             </div>
             {{-- Admin KPI 3: Submissions --}}
@@ -80,7 +69,7 @@
                         <svg class="w-5 h-5" style="color: {{ $ringColors[2] }};" fill="none" stroke="currentColor" viewBox="0 0 24 24">{!! $kpiIcons['submissions'] !!}</svg>
                     </div>
                 </div>
-                <p class="text-3xl font-black text-gray-800 dark:text-white poppins mb-1">{{ $totalSubmissions ?? 0 }}</p>
+                <p class="text-3xl font-black text-white poppins mb-1">{{ $totalSubmissions ?? 0 }}</p>
                 <p class="text-[11px] text-gray-500 poppins">{{ __('Total submissions') }}</p>
                 <a href="{{ route('admin.grading.index') }}" class="mt-3 inline-flex items-center gap-1 text-[11px] font-medium text-brand-500 hover:text-brand-400 poppins">
                     {{ __('Review all') }} <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
@@ -94,7 +83,7 @@
                         <svg class="w-5 h-5" style="color: {{ $ringColors[3] }};" fill="none" stroke="currentColor" viewBox="0 0 24 24">{!! $kpiIcons['pending'] !!}</svg>
                     </div>
                 </div>
-                <p class="text-3xl font-black text-gray-800 dark:text-white poppins mb-1">{{ $pendingGrades ?? 0 }}</p>
+                <p class="text-3xl font-black text-white poppins mb-1">{{ $pendingGrades ?? 0 }}</p>
                 <p class="text-[11px] text-gray-500 poppins">{{ __('Awaiting grading') }}</p>
                 <a href="{{ route('admin.grading.index') }}" class="mt-3 inline-flex items-center gap-1 text-[11px] font-medium text-brand-500 hover:text-brand-400 poppins">
                     {{ __('Grade now') }} <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
@@ -109,18 +98,9 @@
                         <svg class="w-5 h-5" style="color: {{ $ringColors[0] }};" fill="none" stroke="currentColor" viewBox="0 0 24 24">{!! $kpiIcons['courses'] !!}</svg>
                     </div>
                 </div>
-                <div class="flex items-end justify-between">
-                    <div>
-                        <p class="text-3xl font-black text-gray-800 dark:text-white poppins">{{ $myCoursesCount ?? 0 }}</p>
-                        <p class="text-[11px] text-gray-500 mt-1 poppins">{{ __('Active courses') }}</p>
-                    </div>
-                    <div class="relative w-16 h-16">
-                        <svg class="w-16 h-16 -rotate-90" viewBox="0 0 44 44">
-                            <circle cx="22" cy="22" r="18" fill="none" stroke="rgba(0,0,0,0.06)" stroke-width="3"/>
-                            <circle cx="22" cy="22" r="18" fill="none" stroke="{{ $ringColors[0] }}" stroke-width="3" stroke-linecap="round" stroke-dasharray="{{ $circumference }}" stroke-dashoffset="{{ $circumference * 0.3 }}" class="progress-ring-circle"/>
-                        </svg>
-                        <span class="absolute inset-0 flex items-center justify-center text-[11px] font-bold text-gray-800 dark:text-white poppins">{{ $myCoursesCount ?? 0 }}</span>
-                    </div>
+                <div>
+                    <p class="text-3xl font-black text-white poppins">{{ $myCoursesCount ?? 0 }}</p>
+                    <p class="text-[11px] text-gray-500 mt-1 poppins">{{ __('Active courses') }}</p>
                 </div>
             </div>
             {{-- Instructor KPI 2: Total Students w/ badge --}}
@@ -131,15 +111,9 @@
                         <svg class="w-5 h-5" style="color: {{ $ringColors[1] }};" fill="none" stroke="currentColor" viewBox="0 0 24 24">{!! $kpiIcons['students'] !!}</svg>
                     </div>
                 </div>
-                <div class="flex items-end justify-between">
-                    <div>
-                        <p class="text-3xl font-black text-gray-800 dark:text-white poppins">{{ $totalStudents ?? 0 }}</p>
-                        <p class="text-[11px] text-gray-500 mt-1 poppins">{{ __('Enrolled across courses') }}</p>
-                    </div>
-                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 poppins">
-                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"/></svg>
-                        +{{ rand(5, 20) }}%
-                    </span>
+                <div>
+                    <p class="text-3xl font-black text-white poppins">{{ $totalStudents ?? 0 }}</p>
+                    <p class="text-[11px] text-gray-500 mt-1 poppins">{{ __('Enrolled across courses') }}</p>
                 </div>
             </div>
             {{-- Instructor KPI 3: Pending Grading --}}
@@ -150,7 +124,7 @@
                         <svg class="w-5 h-5" style="color: {{ $ringColors[2] }};" fill="none" stroke="currentColor" viewBox="0 0 24 24">{!! $kpiIcons['pending'] !!}</svg>
                     </div>
                 </div>
-                <p class="text-3xl font-black text-gray-800 dark:text-white poppins mb-1">{{ $pendingGrading ?? 0 }}</p>
+                <p class="text-3xl font-black text-white poppins mb-1">{{ $pendingGrading ?? 0 }}</p>
                 <p class="text-[11px] text-gray-500 poppins">{{ __('Submissions to grade') }}</p>
                 <a href="{{ route('grading.index') }}" class="mt-3 inline-flex items-center gap-1 text-[11px] font-medium text-brand-500 hover:text-brand-400 poppins">
                     {{ __('Grade now') }} <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
@@ -164,7 +138,7 @@
                         <svg class="w-5 h-5" style="color: {{ $ringColors[3] }};" fill="none" stroke="currentColor" viewBox="0 0 24 24">{!! $kpiIcons['graded'] !!}</svg>
                     </div>
                 </div>
-                <p class="text-3xl font-black text-gray-800 dark:text-white poppins mb-1">{{ $pendingGrading ?? 0 }}</p>
+                <p class="text-3xl font-black text-white poppins mb-1">{{ ($recentSubmissions ?? collect())->count() }}</p>
                 <p class="text-[11px] text-gray-500 poppins">{{ __('Completed grades') }}</p>
                 <a href="{{ route('grading.index') }}" class="mt-3 inline-flex items-center gap-1 text-[11px] font-medium text-brand-500 hover:text-brand-400 poppins">
                     {{ __('View all') }} <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
@@ -181,16 +155,16 @@
                 </div>
                 <div class="flex items-end justify-between">
                     <div>
-                        <p class="text-3xl font-black text-gray-800 dark:text-white poppins">{{ ($recentGrades ?? collect())->avg('score') ? number_format(($recentGrades ?? collect())->avg('score'), 0) : '—' }}%</p>
+                        <p class="text-3xl font-black text-white poppins">{{ ($recentGrades ?? collect())->avg('score') ? number_format(($recentGrades ?? collect())->avg('score'), 0) : '—' }}%</p>
                         <p class="text-[11px] text-gray-500 mt-1 poppins">{{ __('Overall average') }}</p>
                     </div>
                     <div class="relative w-16 h-16">
-                        @php $progressPct = min(($recentGrades ?? collect())->avg('score') ?? 65, 100); @endphp
+                        @php $progressPct = min(($recentGrades ?? collect())->avg('score') ?? 0, 100); @endphp
                         <svg class="w-16 h-16 -rotate-90" viewBox="0 0 44 44">
                             <circle cx="22" cy="22" r="18" fill="none" stroke="rgba(0,0,0,0.06)" stroke-width="3"/>
                             <circle cx="22" cy="22" r="18" fill="none" stroke="{{ $ringColors[0] }}" stroke-width="3" stroke-linecap="round" stroke-dasharray="{{ $circumference }}" stroke-dashoffset="{{ $circumference * (1 - $progressPct / 100) }}" class="progress-ring-circle"/>
                         </svg>
-                        <span class="absolute inset-0 flex items-center justify-center text-[11px] font-bold text-gray-800 dark:text-white poppins">{{ number_format($progressPct, 0) }}%</span>
+                        <span class="absolute inset-0 flex items-center justify-center text-[11px] font-bold text-white poppins">{{ number_format($progressPct, 0) }}%</span>
                     </div>
                 </div>
             </div>
@@ -204,7 +178,7 @@
                 </div>
                 <div class="flex items-end justify-between">
                     <div>
-                        <p class="text-3xl font-black text-gray-800 dark:text-white poppins">{{ $avgScore ?? '—' }}%</p>
+                        <p class="text-3xl font-black text-white poppins">{{ $avgScore ?? '—' }}%</p>
                         <p class="text-[11px] text-gray-500 mt-1 poppins">{{ __('Across all courses') }}</p>
                     </div>
                     @if(($avgScore ?? 0) > 0)
@@ -223,7 +197,7 @@
                         <svg class="w-5 h-5" style="color: {{ $ringColors[2] }};" fill="none" stroke="currentColor" viewBox="0 0 24 24">{!! $kpiIcons['courses'] !!}</svg>
                     </div>
                 </div>
-                <p class="text-3xl font-black text-gray-800 dark:text-white poppins mb-1">{{ ($enrolledCourses ?? collect())->count() }}</p>
+                <p class="text-3xl font-black text-white poppins mb-1">{{ ($enrolledCourses ?? collect())->count() }}</p>
                 <p class="text-[11px] text-gray-500 poppins">{{ __('Currently enrolled') }}</p>
                 <a href="{{ route('courses.catalog') }}" class="mt-3 inline-flex items-center gap-1 text-[11px] font-medium text-brand-500 hover:text-brand-400 poppins">
                     {{ __('Browse catalog') }} <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
@@ -237,7 +211,7 @@
                         <svg class="w-5 h-5" style="color: {{ $ringColors[3] }};" fill="none" stroke="currentColor" viewBox="0 0 24 24">{!! $kpiIcons['sessions'] !!}</svg>
                     </div>
                 </div>
-                <p class="text-3xl font-black text-gray-800 dark:text-white poppins mb-1">{{ ($upcomingEvents ?? collect())->count() }}</p>
+                <p class="text-3xl font-black text-white poppins mb-1">{{ ($upcomingEvents ?? collect())->count() }}</p>
                 <p class="text-[11px] text-gray-500 poppins">{{ __('Scheduled events') }}</p>
                 <a href="{{ route('live.index') }}" class="mt-3 inline-flex items-center gap-1 text-[11px] font-medium text-brand-500 hover:text-brand-400 poppins">
                     {{ __('View schedule') }} <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
@@ -255,7 +229,7 @@
             <section>
                 <div class="flex items-center justify-between mb-5">
                     <div>
-                        <h2 class="text-lg font-bold text-gray-800 dark:text-white poppins">{{ __('Continue Learning') }}</h2>
+                        <h2 class="text-lg font-bold text-white poppins">{{ __('Continue Learning') }}</h2>
                         <p class="text-xs text-gray-500 poppins">{{ __('Pick up where you left off') }}</p>
                     </div>
                     @php $carouselRef = auth()->user()->role === 'instructor' ? 's' : 's2'; @endphp
@@ -281,7 +255,7 @@
                             <div class="relative h-36 bg-cover bg-center" style="background-image: url('{{ $course->cover_image_url }}')"></div>
                         @else
                             <div class="relative h-36 flex items-center justify-center" style="background: linear-gradient(135deg, {{ $ringColors[$loop->index % 4] }}33, transparent);">
-                                <span class="text-4xl font-bold text-gray-300 dark:text-white/30 poppins">{{ strtoupper(substr($course->title, 0, 2)) }}</span>
+                                <span class="text-4xl font-bold text-white/30 poppins">{{ strtoupper(substr($course->title, 0, 2)) }}</span>
                             </div>
                         @endif
                         {{-- Category badge --}}
@@ -290,23 +264,23 @@
                         </span>
                         {{-- Card body --}}
                         <div class="p-4">
-                            <h3 class="font-bold text-gray-800 dark:text-white text-sm leading-snug poppins line-clamp-1">{{ $course->title }}</h3>
+                            <h3 class="font-bold text-white text-sm leading-snug poppins line-clamp-1">{{ $course->title }}</h3>
                             <p class="text-[11px] text-gray-500 mt-1 poppins">{{ $course->instructor->name ?? __('Self-paced') }}</p>
                             {{-- Progress bar --}}
-                            @php $progress = $course->pivot->progress ?? $course->progress ?? rand(20, 95); @endphp
+                            @php $progress = $course->pivot->progress ?? $course->progress ?? 0; @endphp
                             <div class="mt-3">
                                 <div class="flex items-center justify-between mb-1">
                                     <span class="text-[10px] text-gray-500 poppins">{{ __('Progress') }}</span>
-                                    <span class="text-[10px] font-semibold text-gray-800 dark:text-gray-300 poppins">{{ $progress }}%</span>
+                                    <span class="text-[10px] font-semibold text-white/70 poppins">{{ $progress }}%</span>
                                 </div>
-                                <div class="w-full h-1.5 rounded-full bg-gray-100 dark:bg-white/10 overflow-hidden">
+                                <div class="w-full h-1.5 rounded-full bg-white/10 overflow-hidden">
                                     <div class="h-full rounded-full transition-all duration-500" style="width: {{ $progress }}%; background: linear-gradient(90deg, {{ $ringColors[$loop->index % 4] }}, {{ $ringColors[($loop->index + 1) % 4] }});"></div>
                                 </div>
                             </div>
                             {{-- Lesson count --}}
                             <p class="text-[11px] text-gray-500 mt-3 poppins flex items-center gap-1">
                                 <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
-                                {{ $course->lessons_count ?? $course->assignments_count ?? $loop->index + 1 }}/{{ $course->total_lessons ?? $course->sections_count ?? 12 }} {{ __('lessons') }}
+                                {{ $course->lessons_count ?? $course->assignments_count ?? 0 }}/{{ $course->total_lessons ?? $course->sections_count ?? 0 }} {{ __('lessons') }}
                             </p>
                         </div>
                     </a>
@@ -329,7 +303,7 @@
             <section>
                 <div class="flex items-center justify-between mb-5">
                     <div>
-                        <h2 class="text-lg font-bold text-gray-800 dark:text-white poppins">{{ __('Recent Announcements') }}</h2>
+                        <h2 class="text-lg font-bold text-white poppins">{{ __('Recent Announcements') }}</h2>
                         <p class="text-xs text-gray-500 poppins">{{ __('Latest updates from your instructors') }}</p>
                     </div>
                     @if(($announcements ?? collect())->count() > 0)
@@ -346,7 +320,7 @@
                             <div class="flex-1 min-w-0">
                                 <div class="flex items-start justify-between gap-2">
                                     <div class="min-w-0">
-                                        <p class="font-semibold text-gray-800 dark:text-white text-sm poppins">{{ $announcement->title }}</p>
+                                        <p class="font-semibold text-white text-sm poppins">{{ $announcement->title }}</p>
                                         <p class="text-xs text-gray-500 mt-1 poppins line-clamp-2">{{ $announcement->content }}</p>
                                     </div>
                                     <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium uppercase tracking-wider bg-brand-50 dark:bg-brand-500/10 text-brand-600 dark:text-brand-400 border border-brand-200 dark:border-brand-500/20 shrink-0 poppins">{{ __('New') }}</span>
@@ -389,7 +363,7 @@
             <section class="sticky top-24">
                 <div class="flex items-center justify-between mb-5">
                     <div>
-                        <h2 class="text-lg font-bold text-gray-800 dark:text-white poppins">{{ __('Calendar') }}</h2>
+                        <h2 class="text-lg font-bold text-white poppins">{{ __('Calendar') }}</h2>
                         <p class="text-xs text-gray-500 poppins">{{ $today->format('F Y') }}</p>
                     </div>
                     <a href="{{ route('assignments.index') }}" class="text-xs font-medium text-brand-500 hover:text-brand-400 poppins">{{ __('All events') }} &rarr;</a>
@@ -414,7 +388,7 @@
                             @endphp
                             <div class="text-center py-1 {{ $isCurrentMonth ? '' : 'opacity-20' }}">
                                 <div class="inline-flex items-center justify-center w-8 h-8 rounded-full text-xs relative
-                                    {{ $isToday ? 'bg-brand-500 text-white font-bold' : ($hasEvent ? 'text-gray-800 dark:text-white font-semibold' : 'text-gray-500') }} poppins">
+                                    {{ $isToday ? 'bg-brand-500 text-white font-bold' : ($hasEvent ? 'text-white font-semibold' : 'text-gray-500') }} poppins">
                                     {{ $cell->day }}
                                 </div>
                                 @if($hasEvent && !$isToday)
@@ -448,7 +422,7 @@
                     <a href="{{ $event['route'] }}" class="flex items-center gap-3 rounded-xl border border-white/10 bg-surface-800 p-3 hover:bg-surface-700 transition-all shadow-sm">
                         <div class="w-2 h-2 rounded-full {{ $event['type'] === 'live_session' ? 'bg-blue-500' : ($event['type'] === 'quiz' ? 'bg-amber-500' : 'bg-brand-500') }} shrink-0"></div>
                         <div class="flex-1 min-w-0">
-                            <p class="text-xs font-semibold text-gray-800 dark:text-white poppins truncate">{{ $event['title'] }}</p>
+                            <p class="text-xs font-semibold text-white poppins truncate">{{ $event['title'] }}</p>
                             <p class="text-[10px] text-gray-500 poppins">{{ \Carbon\Carbon::parse($event['date'])->format('M d, g:i A') }}</p>
                         </div>
                         <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[9px] font-medium uppercase tracking-wider poppins
