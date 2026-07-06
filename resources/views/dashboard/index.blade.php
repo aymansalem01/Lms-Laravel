@@ -261,7 +261,7 @@
                             </div>
                         @endif
                         {{-- Category badge --}}
-                        <span class="absolute top-3 left-3 inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wider bg-white/90 dark:bg-surface-900/90 text-brand-600 dark:text-brand-400 shadow-sm poppins">
+                        <span class="absolute top-3 left-3 inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-bold shadow-sm bg-brand-500/80 text-white poppins backdrop-blur-sm">
                             {{ $course->program ?? __('In Progress') }}
                         </span>
                         {{-- Card body --}}
