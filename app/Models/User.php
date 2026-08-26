@@ -6,16 +6,18 @@ use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
+use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
-    use HasFactory;
+    use HasApiTokens, HasFactory;
 
     protected $fillable = [
         'name', 'email', 'password', 'avatar_url', 'bio', 'program', 'role',
         'qualifications', 'linkedin_url', 'website_url', 'years_experience',
         'is_verified', 'verified_at', 'verified_by', 'locale', 'theme', 'invite_token',
+        'sis_crm_user_id', 'sso_provider',
     ];
 
     protected $hidden = [
@@ -26,7 +28,6 @@ class User extends Authenticatable
     {
         return [
             'email_verified_at' => 'datetime',
-            'password' => 'hashed',
             'qualifications' => 'json',
             'years_experience' => 'integer',
             'is_verified' => 'boolean',

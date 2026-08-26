@@ -47,4 +47,14 @@ return [
         'host' => env('LIVEKIT_HOST', env('LIVEKIT_URL')),
     ],
 
+    'sis_crm' => [
+        'url' => env('SIS_CRM_URL', 'http://localhost:8010'),
+        'api_secret' => env('SIS_CRM_API_SECRET', ''),
+    ],
+
+    'sso' => [
+        'secret_key' => env('SSO_SECRET_KEY', env('APP_KEY')),
+        'token_expiry' => env('SSO_TOKEN_EXPIRY', 3600),
+    ],
+
 ];

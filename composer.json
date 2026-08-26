@@ -11,6 +11,7 @@
         "firebase/php-jwt": "^7.0",
         "laravel/framework": "^12.0",
         "laravel/octane": "^2.17",
+        "laravel/sanctum": "^4.3",
         "laravel/socialite": "^5.27",
         "laravel/tinker": "^2.10.1",
         "spiral/roadrunner-cli": "^2.7",
