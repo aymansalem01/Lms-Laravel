@@ -48,7 +48,7 @@ return [
     ],
 
     'sis_crm' => [
-        'url' => env('SIS_CRM_URL', 'http://localhost:8010'),
+        'url' => env('SIS_CRM_URL', 'https://crm.luminusdigital.jo'),
         'api_secret' => env('SIS_CRM_API_SECRET', ''),
     ],
 

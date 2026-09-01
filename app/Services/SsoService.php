@@ -3,7 +3,6 @@
 namespace App\Services;
 
 use App\Models\User;
-use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Str;
 
 class SsoService
@@ -32,7 +31,9 @@ class SsoService
             'jti' => Str::uuid()->toString(),
         ];
 
-        return Crypt::encryptString(json_encode($payload));
+        $encoded = $this->base64UrlEncode((string) json_encode($payload));
+
+        return $encoded . '.' . $this->sign($encoded);
     }
 
     /**
@@ -40,22 +41,51 @@ class SsoService
      */
     public function validateToken(string $token): ?array
     {
-        try {
-            $decoded = Crypt::decryptString($token);
-            $payload = json_decode($decoded, true);
+        [$encoded, $signature] = array_pad(explode('.', $token, 2), 2, null);
 
-            if (! is_array($payload)) {
-                return null;
-            }
-
-            if (isset($payload['exp']) && $payload['exp'] < now()->timestamp) {
-                return null;
-            }
-
-            return $payload;
-        } catch (\Throwable) {
+        if ($encoded === null || $signature === null) {
             return null;
         }
+
+        if (! hash_equals($this->sign($encoded), $signature)) {
+            return null;
+        }
+
+        $decoded = $this->base64UrlDecode($encoded);
+
+        if ($decoded === null) {
+            return null;
+        }
+
+        $payload = json_decode($decoded, true);
+
+        if (! is_array($payload)) {
+            return null;
+        }
+
+        // Allow a small clock-skew grace period (5 minutes).
+        if (isset($payload['exp']) && $payload['exp'] < (now()->timestamp - 300)) {
+            return null;
+        }
+
+        return $payload;
+    }
+
+    private function sign(string $data): string
+    {
+        return hash_hmac('sha256', $data, $this->secretKey);
+    }
+
+    private function base64UrlEncode(string $data): string
+    {
+        return rtrim(strtr(base64_encode($data), '+/', '-_'), '=');
+    }
+
+    private function base64UrlDecode(string $data): ?string
+    {
+        $decoded = base64_decode(strtr($data, '-_', '+/'), true);
+
+        return $decoded === false ? null : $decoded;
     }
 
     /**

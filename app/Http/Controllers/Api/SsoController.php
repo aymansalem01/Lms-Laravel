@@ -6,7 +6,9 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Services\SsoService;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class SsoController extends Controller
 {
@@ -28,7 +30,7 @@ class SsoController extends Controller
         }
 
         $token = $this->sso->generateToken($user);
-        $sisCrmUrl = config('services.sis_crm.url', 'http://localhost:8010');
+        $sisCrmUrl = config('services.sis_crm.url', 'https://crm.luminusdigital.jo');
         $callbackUrl = $sisCrmUrl . '/api/v1/sso/callback';
 
         return redirect()->away($callbackUrl . '?' . http_build_query([
@@ -70,9 +72,24 @@ class SsoController extends Controller
     /**
      * GET /api/v1/sso/callback
      * Called by SIS_CRM after it generates its own session from the SSO token.
+     * Here it is the receiving side: a SIS_CRM user is redirected here with a
+     * signed token, so we log them into the LMS and send them to the dashboard.
      */
-    public function callback(Request $request): JsonResponse
+    public function callback(Request $request): RedirectResponse
     {
-        return response()->json(['status' => 'ok']);
+        $payload = $this->sso->validateToken((string) $request->query('token', ''));
+
+        $user = isset($payload['email'])
+            ? User::where('email', $payload['email'])->first()
+            : null;
+
+        if ($user === null) {
+            return redirect()->route('login');
+        }
+
+        Auth::login($user);
+        $request->session()->regenerate();
+
+        return redirect()->route('dashboard');
     }
 }

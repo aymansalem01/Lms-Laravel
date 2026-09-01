@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\AuthenticateApiSecret;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -15,6 +16,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'role' => \App\Http\Middleware\RoleMiddleware::class,
             'student.view' => \App\Http\Middleware\StudentViewMiddleware::class,
+            'api-secret' => AuthenticateApiSecret::class,
         ]);
 
         $middleware->appendToGroup('web', \App\Http\Middleware\StudentViewMiddleware::class);
