@@ -295,14 +295,14 @@ Route::post('/theme', [ViewController::class, 'theme'])->name('theme.switch');
         Route::get('/courses',                              [AdminCourseController::class, 'index'])->name('courses.index');
         Route::get('/courses/create',                       [AdminCourseController::class, 'create'])->name('courses.create');
         Route::post('/courses',                             [AdminCourseController::class, 'store'])->name('courses.store');
+        Route::post('/courses/bulk',                        [AdminCourseController::class, 'bulk'])->name('courses.bulk');
+        Route::post('/courses/bulk-create',                 [AdminCourseController::class, 'bulkCreate'])->name('courses.bulk-create');
+        Route::get('/courses/bulk-create-example',          [AdminCourseController::class, 'downloadBulkExample'])->name('courses.bulk-create-example');
         Route::get('/courses/{course}',                     [AdminCourseController::class, 'show'])->name('courses.show');
         Route::get('/courses/{course}/edit',                [AdminCourseController::class, 'edit'])->name('courses.edit');
         Route::put('/courses/{course}',                     [AdminCourseController::class, 'update'])->name('courses.update');
         Route::post('/courses/{course}/toggle-publish',     [AdminCourseController::class, 'togglePublish'])->name('courses.toggle-publish');
         Route::put('/courses/{course}/instructor',          [AdminCourseController::class, 'reassignInstructor'])->name('courses.reassign');
-        Route::post('/courses/bulk',                        [AdminCourseController::class, 'bulk'])->name('courses.bulk');
-        Route::post('/courses/bulk-create',                 [AdminCourseController::class, 'bulkCreate'])->name('courses.bulk-create');
-        Route::get('/courses/bulk-create-example',          [AdminCourseController::class, 'downloadBulkExample'])->name('courses.bulk-create-example');
         Route::delete('/courses/{course}',                  [AdminCourseController::class, 'destroy'])->name('courses.destroy');
 
         // ── Question Bank ─────────────────────────────────────────────────────
