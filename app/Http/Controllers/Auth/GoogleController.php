@@ -5,8 +5,7 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Str;
+
 use Laravel\Socialite\Facades\Socialite;
 
 class GoogleController extends Controller
@@ -23,12 +22,8 @@ class GoogleController extends Controller
         $user = User::where('email', $googleUser->getEmail())->first();
 
         if (!$user) {
-            $user = User::create([
-                'name' => $googleUser->getName(),
-                'email' => $googleUser->getEmail(),
-                'password' => Hash::make(Str::password(16)),
-                'role' => 'student',
-                'avatar_url' => $googleUser->getAvatar(),
+            return redirect()->route('login')->withErrors([
+                'email' => 'No account found with this Google email. Please register first.',
             ]);
         }
 
